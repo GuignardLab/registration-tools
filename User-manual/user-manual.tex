@@ -4,9 +4,150 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage[left=1cm,right=1cm,top=1cm,bottom=1.5cm]{geometry}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=1.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage[square,sectionbib]{natbib}
+\usepackage{hyperref}
+
+\definecolor{light-gray}{gray}{0.95}
+%\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\newcommand{\option}[1]{{\texttt{'#1'}}}
+
+\newenvironment{code}[1]{\mbox{}\\[1ex]\hspace*{-#1cm}\begin{minipage}{150mm}\begin{quote}\tt}{\end{quote}\end{minipage}\mbox{}\\[1ex]}
+
 \author{L\'eo Guignard}
 \title{Time registration Manual}
 \begin{document}
 \maketitle
+\tableofcontents
+\clearpage
+\section{Purpose}
+\paragraph{}This repository has for purpose to wrap the set of tools provided by the \option{blockmatching} algorithm described in \citep{Ourselin:2000aa} and used in \citep{McDole:2018aa,Guignard:2017aa,Guignard:2014aa}.
+\paragraph{}Provided the \option{blockmatching} library installed (see \href{https://gitlab.inria.fr/greg/Klab-BlockMatching}{\underline{here}}) this wrapper allows to easily apply it to register in time 3D movies.
+\section{Requirements and installation, (tested on Linux, Ubuntu 18.04)}
+To install \option{blockmatching}, it is necessary to have cmake, a c/c++ compiler and zlib installed:
+  \begin{code}{0.8}
+    \$ sudo apt install cmake \\
+    \$ sudo apt install cmake-curses-gui \\
+    \$ sudo apt install g++ \\
+    \$ sudo apt install zlib1g-dev
+  \end{code}\\
+  
+Here are the steps to install \option{blockmatching}:
+First one have to install the external libraries. To do so, one can run the following commands in a terminal from the BlockMatching folder:\\
+
+To install klb read/write tools:
+\begin{code}{0.8}
+\$ cd external/KLBFILE/ \\
+\$ mkdir build \\
+\$ cd build \\
+\$ cmake ../keller-lab-block-filetype \\
+\$ make -j<desired number of cores> \\
+\end{code}
+\\
+To install tiff read/write tools, from the folder BlockMatching:
+\begin{code}{0.8}
+\$ cd external/TIFF \\
+\$ mkdir build \\
+\$ cd build \\
+\$ cmake ../tiff-4.0.6 \\
+\$ make -j<desired number of cores> \\
+\end{code}
+\\
+Once these are installed one can run the following commands in a terminal from the BlockMatching folder:
+\begin{code}{0.8}
+\$ mkdir build \\
+\$ cd build \\
+\$ ccmake .. \\
+\end{code}
+press c then e\\
+Then enter the correct absolute paths for the tiff and klb builds (ie \option{/path/to/BlockMatching/external/TIFF/build and /path/to/BlockMatching/external/KLBFILE/build}).\\
+Then c then e then g
+\begin{code}{0.8}
+\$ make -j<desired number of cores> \\
+\end{code}
+Then this newly built binaries (found in BlockMatching/build/bin) have to be accessible from the different scripts that will be ran. To do so one can add the following command to their ~/.bashrc (~/.profile for mac users):
+\begin{code}{0.8}
+export PATH=\$PATH:/path/to/BlockMatching/build/bin
+\end{code}
+One 'direct' way to do so is to run the following command:
+\begin{code}{0.8}
+echo 'export PATH=\$PATH:/path/to/BlockMatching/build/bin' >> ~/.bashrc
+\end{code}
+or add a line to the json configuration file to specify the path to the binaries (see below).\\
+\paragraph{}Then, for this wrapper to it work it is first necessary to have installed:
+\begin{enumerate}
+\item[-] Python 2.7.x (\url{https://www.python.org/download/releases/2.7/})
+\end{enumerate}
+Some Python libraries are also required:
+\begin{enumerate}
+\item[-] Scipy (\url{https://www.scipy.org/})
+\item[-] Numpy (\url{https://numpy.org/})
+\item[-] IO (\url{https://github.com/leoguignard/IO})
+\begin{enumerate}
+\item[-] h5py (\url{https://pypi.python.org/pypi/h5py})
+\item[-] pylibtiff (\url{https://github.com/pearu/pylibtiff})
+\end{enumerate}
+\item[-] pyklb (\url{https://github.com/bhoeckendorf/pyklb})
+\item[-] statsmodels (\url{https://www.statsmodels.org})
+\end{enumerate}
+Once everything is installed \option{time-registration.py} is ready to run.
+\section{Running \option{time-registration.py}}
+To run the script \option{time-registration.py} one can run the following command from the folder containing it:
+\begin{code}{0.8}
+\$ python time-registration.py
+\end{code}
+The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples}.\\
+If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what specified the user in the json file).\\
+In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
+\begin{code}{0.8}
+\$ python time-registration.py /path/to/configuration/file.json
+\end{code}
+\section{Description of the configuration file}
+\paragraph{}Everything that the script will do is determined by the configuration file. The script being somewhat flexible, the configuration file has a significant number of possible parameters. Some of them are required, others have default values and some are optional depending on the chosen options. The parameter files are written in json (\url{https://www.json.org/}), please follow the standard format so your configuration files can be read correctly.
+\subsection{List of all parameters}
+Here is an exhaustive list of all the possible parameters:\\
+File path format:
+\begin{itemize}
+\item[-] \texttt{path\_to\_data}, mandatory, common path to the image data
+\item[-] \texttt{file\_name}, mandatory, image name pattern
+\item[-] \texttt{trsf\_folder}, mandatory, output path for the transformations
+\item[-] \texttt{output\_format}, default value: \texttt{None}, path to the ouput image. Can be a folder, in that case the original image name is kept. Can be a file name, in that case it will be written in the original folder. Can be a folder plus name pattern.
+\item[-] \texttt{suffix}, default value: \texttt{None}, suffix to add to the output image if output\_format is not specified
+\item[-] \texttt{projection\_path}, default value: \texttt{None}, path to the output folder for the maximum intensity projection images. If not specified it will be written like the output format with -1 for the time.
+\item[-] \texttt{check\_TP}, default value: \texttt{None}, whether or not checking of all the required images exist.
+\item[-] \texttt{path\_to\_bin}, default value: \texttt{""}, path to the blockmatching binaries, not necessary if it is in your \$PATH
+\end{itemize}~\\
+Image information:
+\begin{itemize}
+\item[-] \texttt{voxel\_size}, mandatory, voxel size of the image
+\item[-] \texttt{first}, mandatory, first time point of the sequence to register
+\item[-] \texttt{last}, mandatory, last time point of th sequence to register
+\item[-] \texttt{not\_to\_do}, default value: \texttt{[]}, list of time points to not process (they will be totally ignored from the process)
+\end{itemize}~\\
+Registration parameters:
+\begin{itemize}
+\item[-] \texttt{compute\_trsf}, default value: \texttt{1}, wheter or not computing the transformations (one might not want to do it if the transformations have already been computed for a different channel)
+\item[-] \texttt{ref\_TP}, mandatory, time point of the reference image onto which the registration will be made.
+\item[-] \texttt{ref\_path}, default value: \texttt{None}, path to the reference image, if specified, every image will be directly registered to that particular image
+\item[-] \texttt{trsf\_type}, default value: \texttt{"rigid"}, choose between \texttt{"translation"}, \texttt{"rigid"}, \texttt{"affine"}, \texttt{"vectorfield"}
+\item[-] \texttt{registration\_depth}, default value: \texttt{3}, Maximum size of the blocks for the registration algorithm (min \texttt{0}, max \texttt{5}), the lower the value is the more the registration will take into account local details but also the more it will take time to process
+\item[-] \texttt{interpolation}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has border effects when the signal is too low)
+\item[-] \texttt{padding}, default value: \texttt{1}, put to \texttt{1} if you want the resulting image bounding boxes to be padded to the union of the transformed bounding boxes. Otherwise (value at \texttt{0}) all the images will be written in the reference image bounding box
+\item[-] \texttt{recompute}, default value: \texttt{1}, if \texttt{1}, it forces to recompute the transformations even though they already exist
+\item[-] \texttt{lowess\_interpolation}, default value: \texttt{0}, if \texttt{1}, smoothes the transformations, so far only works with \texttt{"translations"}
+\item[-] \texttt{window\_size}, default value: \texttt{5}, size of the window for the lowess interpolation
+\item[-] \texttt{step\_size}, default value: \texttt{100}, if it is not necessary to compute all the time points, this is the step size between the computed times. To be used \texttt{lowess\_interpolation} has to be \texttt{1}
+\item[-] \texttt{sigma}, default value: \texttt{2.0}, smoothing parameter for the non-linear registration
+\item[-] \texttt{keep\_vectorfield}, default value: \texttt{0}, if \texttt{1}, will write the transformation vector field (it will be large!)
+\end{itemize}~\\
+Apply registration parameter:
+\begin{itemize}
+\item[-] \texttt{apply\_trsf}, default value: \texttt{1}, if \texttt{1}, will apply the computed transformations to the images.
+\end{itemize}
+\subsection{Mandatory parameters}
+It is mandatory to inform the path to your dataset, the file name pattern, the path to where the transformation will be stored and to inform the format of the output registered image. The path to the data set is specified with the keyword \texttt{"path\_to\_data"}.
+
+\bibliography{biblio}
+\bibliographystyle{apalike}
 \end{document}

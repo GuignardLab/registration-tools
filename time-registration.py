@@ -8,19 +8,36 @@ import os
 import scipy as sp
 from scipy import interpolate
 import json
-from multiprocessing import Pool
 import numpy as np
 from IO import imread, imsave, SpatialImage
 from pyklb import readheader
 from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
-import tempfile
-path_to_bin = ''
 
 class trsf_parameters(object):
     """docstring for trsf_parameters"""
     def check_parameters_consistancy(self):
         correct = True
+        if not 'path_to_data' in self.__dict__:
+            print '\n\t"path_to_data" is required'
+            correct = False
+        if not 'file_name' in self.__dict__:
+            print '\n\t"file_name" is required'
+            correct = False
+        if not 'trsf_folder' in self.__dict__:
+            print '\n\t"trsf_folder" is required'
+            correct = False
+        if not 'voxel_size' in self.__dict__:
+            print '\n\t"voxel_size" is required'
+            correct = False
+        if not 'ref_TP' in self.__dict__:
+            print '\n\t"ref_TP" is required'
+            correct = False            
+        if (self.apply_trsf and
+            self.output_format is None and
+            self.suffix is None):
+            print '\n\tEither "output_format" or "suffix" has to be specified'
+            correct = False
         if (self.lowess_interpolation and
             self.trsf_type!='translation'):
             print '\n\tLowess interpolation only works with translation'
@@ -76,7 +93,7 @@ class trsf_parameters(object):
             if self.trsf_type == 'vectorfield':
                 output += "sigma".ljust(max_key, ' ') + ": {:.2f}\n".format(self.sigma)
             output += "padding".ljust(max_key, ' ') + ": {:d}\n".format(self.padding)
-            output += ("lowess_interpolation".ljust(max_key, ' ') + 
+            output += ("lowess_interpolation".ljust(max_key, ' ') +
                        ": {:d}\n".format(self.lowess_interpolation))
             if self.lowess_interpolation:
                 output += "window_size".ljust(max_key, ' ') + ": {:d}\n".format(self.window_size)
@@ -115,8 +132,8 @@ class trsf_parameters(object):
         self.sigma = 2.0
         self.keep_vectorfield = False
         self.trsf_type = 'rigid'
-        self.ref_TP = 0
         self.interpolation = 'linear'
+        self.path_to_bin = ''
 
         self.param_dict = param_dict
 
@@ -166,10 +183,11 @@ def produce_trsf(params):
     if not make:
         print 'trsf tp %d-%d not done'%(t1, t2)
         np.savetxt(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref), np.identity(4))
-    elif (p.recompute or 
+    elif (p.recompute or
           not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))):
         if p.trsf_type != 'vectorfield':
-            os.system('blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+            os.system(self.path_to_bin +
+                      'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                       ' -reference-voxel %f %f %f'%p.voxel_size + \
                       ' -floating-voxel %f %f %f'%p.voxel_size + \
                       ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
@@ -183,12 +201,14 @@ def produce_trsf(params):
                 res_trsf = ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.klb'%(t_flo, t_ref)
             else:
                 res_trsf = ''
-            os.system('blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+            os.system(self.path_to_bin +
+                      'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                       ' -reference-voxel %f %f %f'%p.voxel_size + \
                       ' -floating-voxel %f %f %f'%p.voxel_size + \
                       ' -trsf-type affine -py-hl 6 -py-ll %d'%(p.registration_depth) + \
                       ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))
-            os.system('blockmatching -ref ' + p_im_ref + \
+            os.system(self.path_to_bin +
+                      'blockmatching -ref ' + p_im_ref + \
                       ' -flo ' + p_im_flo + \
                       ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
                       res + \
@@ -216,15 +236,9 @@ def run_produce_trsf(p, nb_cpu=1):
     mapping = [(p, t1, t2, not (t1 in p.not_to_do or t2 in p.not_to_do))
                for t1, t2 in zip(p.to_register[:-1], p.to_register[1:])]
     tic = time()
-    if nb_cpu == 1:
-        tmp = []
-        for mi in mapping:
-            tmp += [produce_trsf(mi)]
-    else:
-        pool = Pool(processes=nb_cpu)
-        tmp = pool.map(produce_trsf, mapping)
-        pool.close()
-        pool.terminate()
+    tmp = []
+    for mi in mapping:
+        tmp += [produce_trsf(mi)]
     tac = time()
     whole_time = tac - tic
     secs = whole_time%60
@@ -252,13 +266,13 @@ def compose_trsf(flo_t, ref_t, trsf_p, tp_list):
         # we need `T_{flo+1\leftarrow ref}` and `T_{flo\leftarrow ref-1}`
         trsf_1 = compose_trsf(flo_int, ref_t, trsf_p, tp_list)
         trsf_2 = compose_trsf(flo_t, flo_int, trsf_p, tp_list)
-        os.system(path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1)
+        os.system(p.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1)
     return out_trsf
 
 def lowess_smooth_interp(X, T, frac):
     X_smoothed = lowess(X, T, frac = frac, is_sorted = True, return_sorted = False)
     return sp.interpolate.InterpolatedUnivariateSpline(T, X_smoothed, k=1)
-    
+   
 def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
@@ -282,8 +296,9 @@ def read_param_file():
         p = trsf_parameters(file_name)
         if not p.check_parameters_consistancy():
             print "\n%s Failed the consistancy check, it will be skipped"
+        else:
+            params += [p]
         print ''
-        params += [p]
     return params
 
 def prepare_paths(p):
@@ -303,7 +318,7 @@ def prepare_paths(p):
 
     # Time points to work with
     p.time_points = np.array([i for i in np.arange(p.first, p.last + 1)
-                                  if not i in p.not_to_do])            
+                                  if not i in p.not_to_do])           
     if p.check_TP:
         missing_time_points = []
         for t in p.time_points:
@@ -363,14 +378,15 @@ def pad_trsfs(p, trsf_fmt):
     im.voxelsize = p.voxel_size
     imsave(p.trsf_folder + 'tmp.klb', im)
     identity = np.identity(4)
-    
+   
     trsf_fmt_no_flo = trsf_fmt.replace('{flo:06d}', '%06d')
     new_trsf_fmt = 't{flo:06d}-{ref:06d}-padded.txt'
     new_trsf_fmt_no_flo = new_trsf_fmt.replace('{flo:06d}', '%06d')
     for t in p.not_to_do:
         np.savetxt(p.trsf_folder+trsf_fmt.format(flo=t, ref=p.ref_TP), identity)
 
-    os.system('changeMultipleTrsfs -trsf-format ' + 
+    os.system(self.path_to_bin +
+              'changeMultipleTrsfs -trsf-format ' +
               p.trsf_folder + trsf_fmt_no_flo.format(ref=p.ref_TP) + \
               ' -index-reference %d -first %d -last %d '%(p.ref_TP,
                                                           min(p.time_points),
@@ -384,7 +400,7 @@ def compute_trsfs(p):
     # Create the output folder for the transfomrations
     if not os.path.exists(p.trsf_folder):
         os.makedirs(p.trsf_folder)
-    
+   
     max_t = max(p.time_points)
     if p.lowess_interpolation:
         p.to_register = sorted(p.time_points)[::p.step_size] + [max_t]
@@ -395,9 +411,9 @@ def compute_trsfs(p):
     try:
         run_produce_trsf(p, nb_cpu=1)
         if p.ref_path is None:
-            compose_trsf(min(p.to_register), p.ref_TP, 
+            compose_trsf(min(p.to_register), p.ref_TP,
                          p.trsf_folder, list(p.to_register))
-            compose_trsf(max(p.to_register), p.ref_TP, 
+            compose_trsf(max(p.to_register), p.ref_TP,
                          p.trsf_folder, list(p.to_register))
             np.savetxt(('{:s}'+trsf_fmt).format(p.trsf_folder,
                                                 flo=p.ref_TP,
@@ -435,7 +451,8 @@ def apply_trsf(p):
         folder_tmp = os.path.split(p.A0_out.format(t=t))[0]
         if not os.path.exists(folder_tmp):
             os.makedirs(folder_tmp)
-        os.system("applyTrsf '%s' '%s' -trsf "%(p.A0.format(t=t), p.A0_out.format(t=t)) + \
+        os.system(self.path_to_bin +
+                  "applyTrsf '%s' '%s' -trsf "%(p.A0.format(t=t), p.A0_out.format(t=t)) + \
                   p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP) + \
                   ' -template ' + template + \
                   ' -floating-voxel %f %f %f '%p.voxel_size + \
@@ -450,7 +467,7 @@ def apply_trsf(p):
             os.makedirs(p.projection_path)
         p_to_data = p.projection_path
         num_s = p.file_name.find('{')
-        num_e = p.file_name.find('}')+1 
+        num_e = p.file_name.find('}')+1
         f_name = p.file_name.replace(p.file_name[num_s:num_e], '')
     else:
         p_to_data = p.A0_out
