@@ -1,0 +1,22 @@
+{
+	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e113/e113_c0/",
+	"file_name": "e113_c0_t_{t:03d}.tif",
+	"trsf_folder": "/data/Keller-lab-toolbox/registration-container/trsf-trans-no-prop/",
+	"output_format": "/data/Keller-lab-toolbox/registration-container/registered-trans-no-prop/",
+	"projection_path": "/data/Keller-lab-toolbox/registration-container/proj-trans-no-prop/",
+	"check_TP": 0,
+
+	"voxel_size": [0.593, 0.593, 5],
+	"first": 0,
+	"last": 65,
+
+	"compute_trsf": 1,
+	"ref_TP": 38,
+	"ref_path": "/media/Y/Exchange/Leo/Miquel/e113/e113_c0/e113_c0_t_{t:03d}.tif",
+	"trsf_type": "translation",
+	"padding": 1,
+	"recompute": 1,
+
+	"apply_trsf": 1
+}
+
