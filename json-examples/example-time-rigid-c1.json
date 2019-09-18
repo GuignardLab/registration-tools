@@ -1,16 +1,16 @@
 {
-	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e113/e113_c1/",
-	"file_name": "e113_c1_t_{t:03d}.tif",
-	"trsf_folder": "/data/Keller-lab-toolbox/registration-container/trsf-rigid/",
-	"output_format": "/data/Keller-lab-toolbox/registration-container/registered-rigid/e113_c1_t_{t:03d}.klb",
-	"projection_path": "/data/Keller-lab-toolbox/registration-container/proj-rigid-c1/",
+	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e127/e127_c0/",
+	"file_name": "e127_c0_t_{t:03d}.tif",
+	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-rigid/",
+	"output_format": "/media/Y/Exchange/Leo/TMP/registered-rigid/e127_c0_t_{t:03d}.klb",
+	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-rigid-c0/",
 	"check_TP": 0,
 
 	"voxel_size": [0.593, 0.593, 5],
-	"first": 0,
-	"last": 65,
+	"first": 1,
+	"last": 61,
 	"padding": 1,
-	"ref_TP": 38,
+	"ref_TP": 31,
 
 	"compute_trsf": 0,
 

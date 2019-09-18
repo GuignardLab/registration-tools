@@ -2,8 +2,8 @@
 	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e127/e127_c1/",
 	"file_name": "e127_c1_t_{t:03d}.tif",
 	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-rigid/",
-	"output_format": "/media/Y/Exchange/Leo/TMP/registered-rigid-no-pad/e127_c1_t_{t:03d}.klb",
-	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-rigid-no-pad/",
+	"output_format": "/media/Y/Exchange/Leo/TMP/registered-rigid/e127_c1_t_{t:03d}.klb",
+	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-rigid/",
 	"check_TP": 0,
 
 	"voxel_size": [0.593, 0.593, 5],
@@ -13,8 +13,8 @@
 	"compute_trsf": 1,
 	"ref_TP": 31,
 	"trsf_type": "rigid",
-	"padding": 0,
-	"recompute": 0,
+	"padding": 1,
+	"recompute": 1,
 
 	"apply_trsf": 1
 }
