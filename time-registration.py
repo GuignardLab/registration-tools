@@ -5,6 +5,7 @@
 
 from time import time
 import os
+from subprocess import call
 import scipy as sp
 from scipy import interpolate
 import json
@@ -19,57 +20,57 @@ class trsf_parameters(object):
     def check_parameters_consistancy(self):
         correct = True
         if not 'path_to_data' in self.__dict__:
-            print '\n\t"path_to_data" is required'
+            print('\n\t"path_to_data" is required')
             correct = False
         if not 'file_name' in self.__dict__:
-            print '\n\t"file_name" is required'
+            print('\n\t"file_name" is required')
             correct = False
         if not 'trsf_folder' in self.__dict__:
-            print '\n\t"trsf_folder" is required'
+            print('\n\t"trsf_folder" is required')
             correct = False
         if not 'voxel_size' in self.__dict__:
-            print '\n\t"voxel_size" is required'
+            print('\n\t"voxel_size" is required')
             correct = False
         if not 'ref_TP' in self.__dict__:
-            print '\n\t"ref_TP" is required'
+            print('\n\t"ref_TP" is required')
             correct = False            
         if (self.apply_trsf and
             self.output_format is None and
             self.suffix is None):
-            print '\n\tEither "output_format" or "suffix" has to be specified'
+            print('\n\tEither "output_format" or "suffix" has to be specified')
             correct = False
         if (self.lowess_interpolation and
             self.trsf_type!='translation'):
-            print '\n\tLowess interpolation only works with translation'
+            print('\n\tLowess interpolation only works with translation')
             correct = False
         if (self.lowess_interpolation and
              self.ref_path is None):
-            print '\n\tLowess interpolation only works with a defined reference image'
+            print('\n\tLowess interpolation only works with a defined reference image')
             correct = False
         if (self.lowess_interpolation and
             not 'window_size' in self.param_dict):
-            print '\n\tLowess interpolation "window_size" is missing'
-            print '\tdefault value of 5 will be used\n'
+            print('\n\tLowess interpolation "window_size" is missing')
+            print('\tdefault value of 5 will be used\n')
         if (self.lowess_interpolation and
             not 'step_size' in self.param_dict):
-            print '\n\tLowess interpolation "step_size" is missing'
-            print '\tdefault value of 100 will be used\n'
+            print('\n\tLowess interpolation "step_size" is missing')
+            print('\tdefault value of 100 will be used\n')
         if self.suffix is None and self.output_format is None:
-            print '\tAt least of one the following argument has to be specified:'
-            print '\t\t"suffix"', '"output_format"'
+            print('\tAt least of one the following argument has to be specified:')
+            print('\t\t"suffix"', '"output_format"')
         if not(self.suffix is None or self.output_format is None):
-            print('\tThe parameters "suffix" and "output_format" '+\
-                  'have both been defined, "output_format" will be used:')
-            print '\t'+self.output_format
+            print(('\tThe parameters "suffix" and "output_format" '+\
+                  'have both been defined, "output_format" will be used:'))
+            print('\t'+self.output_format)
         if self.trsf_type=='vectorfield' and self.ref_path is None:
-            print 'Non-linear transformation asked with propagation.'
-            print 'While working it is highly not recommended'
-            print 'Please consider not doing a registration from propagation'
+            print('Non-linear transformation asked with propagation.')
+            print('While working it is highly not recommended')
+            print('Please consider not doing a registration from propagation')
         return correct
 
     def __str__(self):
-        max_key = max([len(k) for k in self.__dict__.iterkeys() if k!="param_dict"]) + 1
-        max_tot = max([len(str(v)) for k, v in self.__dict__.iteritems()
+        max_key = max([len(k) for k in self.__dict__.keys() if k!="param_dict"]) + 1
+        max_tot = max([len(str(v)) for k, v in self.__dict__.items()
                        if k!="param_dict"]) + 2 + max_key
         output  = 'The registration will run with the following arguments:\n'
         output += "\n" + " File format ".center(max_tot, '-') + "\n"
@@ -181,17 +182,18 @@ def produce_trsf(params):
         p_im_ref = p.A0.format(t=t_ref)
         p_im_flo = p.A0.format(t=t_flo)
     if not make:
-        print 'trsf tp %d-%d not done'%(t1, t2)
+        print('trsf tp %d-%d not done'%(t1, t2))
         np.savetxt(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref), np.identity(4))
     elif (p.recompute or
           not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))):
         if p.trsf_type != 'vectorfield':
-            os.system(self.path_to_bin +
-                      'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
-                      ' -reference-voxel %f %f %f'%p.voxel_size + \
-                      ' -floating-voxel %f %f %f'%p.voxel_size + \
-                      ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
-                      ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))
+            call(self.path_to_bin +
+                 'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+                 ' -reference-voxel %f %f %f'%p.voxel_size + \
+                 ' -floating-voxel %f %f %f'%p.voxel_size + \
+                 ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
+                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
+                 shell=True)
         else:
             if p.apply_trsf:
                 res = ' -res ' + p.A0_out.format(t=t_flo) + ' -interpolation ' + p.interpolation
@@ -201,23 +203,25 @@ def produce_trsf(params):
                 res_trsf = ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.klb'%(t_flo, t_ref)
             else:
                 res_trsf = ''
-            os.system(self.path_to_bin +
-                      'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
-                      ' -reference-voxel %f %f %f'%p.voxel_size + \
-                      ' -floating-voxel %f %f %f'%p.voxel_size + \
-                      ' -trsf-type affine -py-hl 6 -py-ll %d'%(p.registration_depth) + \
-                      ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))
-            os.system(self.path_to_bin +
-                      'blockmatching -ref ' + p_im_ref + \
-                      ' -flo ' + p_im_flo + \
-                      ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
-                      res + \
-                      ' -reference-voxel %f %f %f'%p.voxel_size + \
-                      ' -floating-voxel %f %f %f'%p.voxel_size + \
-                      ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
-                      res_trsf + \
-                      (' -elastic-sigma {s:.1f} {s:.1f} {s:.1f} ' + \
-                       ' -fluid-sigma {s:.1f} {s:.1f} {s:.1f}').format(s=p.sigma))
+            call(self.path_to_bin +
+                 'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+                 ' -reference-voxel %f %f %f'%p.voxel_size + \
+                 ' -floating-voxel %f %f %f'%p.voxel_size + \
+                 ' -trsf-type affine -py-hl 6 -py-ll %d'%(p.registration_depth) + \
+                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
+                 shell=True)
+            call(self.path_to_bin +
+                 'blockmatching -ref ' + p_im_ref + \
+                 ' -flo ' + p_im_flo + \
+                 ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
+                 res + \
+                 ' -reference-voxel %f %f %f'%p.voxel_size + \
+                 ' -floating-voxel %f %f %f'%p.voxel_size + \
+                 ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
+                 res_trsf + \
+                 (' -elastic-sigma {s:.1f} {s:.1f} {s:.1f} ' + \
+                  ' -fluid-sigma {s:.1f} {s:.1f} {s:.1f}').format(s=p.sigma),
+                 shell=True)
 
 def run_produce_trsf(p, nb_cpu=1):
     ''' Parallel processing of the transformations from t to t-1/t-1 to t (depending on t<r)
@@ -245,7 +249,7 @@ def run_produce_trsf(p, nb_cpu=1):
     whole_time = whole_time//60
     mins = whole_time%60
     hours = whole_time//60
-    print '%dh:%dmin:%ds'%(hours, mins, secs)
+    print('%dh:%dmin:%ds'%(hours, mins, secs))
 
 def compose_trsf(flo_t, ref_t, trsf_p, tp_list):
     ''' Recusrively build the transformation that allows
@@ -266,7 +270,7 @@ def compose_trsf(flo_t, ref_t, trsf_p, tp_list):
         # we need `T_{flo+1\leftarrow ref}` and `T_{flo\leftarrow ref-1}`
         trsf_1 = compose_trsf(flo_int, ref_t, trsf_p, tp_list)
         trsf_2 = compose_trsf(flo_t, flo_int, trsf_p, tp_list)
-        os.system(p.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1)
+        call(p.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1, shell=True)
     return out_trsf
 
 def lowess_smooth_interp(X, T, frac):
@@ -277,7 +281,7 @@ def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
     if len(sys.argv)<2:
-        p_param = raw_input('\nPlease inform the path to the json config file:\n')
+        p_param = input('\nPlease inform the path to the json config file:\n')
         p_param = p_param.replace('"', '')
         p_param = p_param.replace("'", '')
         p_param = p_param.replace(" ", '')
@@ -291,14 +295,14 @@ def read_param_file():
 
     params = []
     for file_name in f_names:
-        print ''
-        print "Extraction of the parameters from file %s"%file_name
+        print('')
+        print("Extraction of the parameters from file %s"%file_name)
         p = trsf_parameters(file_name)
         if not p.check_parameters_consistancy():
-            print "\n%s Failed the consistancy check, it will be skipped"
+            print("\n%s Failed the consistancy check, it will be skipped")
         else:
             params += [p]
-        print ''
+        print('')
     return params
 
 def prepare_paths(p):
@@ -325,9 +329,9 @@ def prepare_paths(p):
             if not os.path.exists(p.A0.format(t=t)):
                 missing_time_points += [t]
         if len(missing_time_points)!=0:
-            print "The following time points are missing:"
-            print "\t" + missing_time_points
-            print "Aborting the process"
+            print("The following time points are missing:")
+            print("\t" + missing_time_points)
+            print("Aborting the process")
             exit()
     if p.ref_path is not None:
         p.ref_path = p.ref_path.format(t=p.ref_TP)
@@ -385,16 +389,17 @@ def pad_trsfs(p, trsf_fmt):
     for t in p.not_to_do:
         np.savetxt(p.trsf_folder+trsf_fmt.format(flo=t, ref=p.ref_TP), identity)
 
-    os.system(self.path_to_bin +
-              'changeMultipleTrsfs -trsf-format ' +
-              p.trsf_folder + trsf_fmt_no_flo.format(ref=p.ref_TP) + \
-              ' -index-reference %d -first %d -last %d '%(p.ref_TP,
-                                                          min(p.time_points),
-                                                          max(p.time_points)) + \
-              ' -template ' + p.trsf_folder + 'tmp.klb ' + \
-              ' -res ' + p.trsf_folder + new_trsf_fmt_no_flo.format(ref=p.ref_TP) + \
-              ' -res-t ' + p.trsf_folder + 'template.klb ' + \
-              ' -trsf-type %s -vs %f %f %f'%((p.trsf_type,)+p.voxel_size))
+    call(self.path_to_bin +
+         'changeMultipleTrsfs -trsf-format ' +
+         p.trsf_folder + trsf_fmt_no_flo.format(ref=p.ref_TP) + \
+         ' -index-reference %d -first %d -last %d '%(p.ref_TP,
+                                                     min(p.time_points),
+                                                     max(p.time_points)) + \
+         ' -template ' + p.trsf_folder + 'tmp.klb ' + \
+         ' -res ' + p.trsf_folder + new_trsf_fmt_no_flo.format(ref=p.ref_TP) + \
+         ' -res-t ' + p.trsf_folder + 'template.klb ' + \
+         ' -trsf-type %s -vs %f %f %f'%((p.trsf_type,)+p.voxel_size),
+         shell=True)
 
 def compute_trsfs(p):
     # Create the output folder for the transfomrations
@@ -420,8 +425,8 @@ def compute_trsfs(p):
                                                 ref=p.ref_TP),
                        np.identity(4))
     except Exception as e:
-        print p.trsf_folder
-        print e
+        print(p.trsf_folder)
+        print(e)
 
     if p.lowess_interpolation:
         trsf_fmt = interpolate_trsfs(p, trsf_fmt)
@@ -451,13 +456,13 @@ def apply_trsf(p):
         folder_tmp = os.path.split(p.A0_out.format(t=t))[0]
         if not os.path.exists(folder_tmp):
             os.makedirs(folder_tmp)
-        os.system(self.path_to_bin +
-                  "applyTrsf '%s' '%s' -trsf "%(p.A0.format(t=t), p.A0_out.format(t=t)) + \
-                  p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP) + \
-                  ' -template ' + template + \
-                  ' -floating-voxel %f %f %f '%p.voxel_size + \
-                  ' -reference-voxel %f %f %f '%p.voxel_size + \
-                  ' -interpolation %s'%p.interpolation)
+        call(self.path_to_bin +
+             "applyTrsf '%s' '%s' -trsf "%(p.A0.format(t=t), p.A0_out.format(t=t)) + \
+             p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP) + \
+             ' -template ' + template + \
+             ' -floating-voxel %f %f %f '%p.voxel_size + \
+             ' -reference-voxel %f %f %f '%p.voxel_size + \
+             ' -interpolation %s'%p.interpolation)
         im = imread(p.A0_out.format(t=t))
         xy_proj[:, :, i] = SpatialImage(np.max(im, axis=2))
         xz_proj[:, :, i] = SpatialImage(np.max(im, axis=1))
@@ -484,8 +489,8 @@ if __name__ == '__main__':
     params = read_param_file()
     for p in params:
         try:
-            print "Starting experiment"
-            print p
+            print("Starting experiment")
+            print(p)
             prepare_paths(p)
 
             if p.compute_trsf:
@@ -494,5 +499,5 @@ if __name__ == '__main__':
             if p.apply_trsf and p.trsf_type!='vectorfield':
                 apply_trsf(p)
         except Exception as e:
-            print 'Failure of %s'%p.origin_file_name
-            print e
+            print('Failure of %s'%p.origin_file_name)
+            print(e)
