@@ -187,7 +187,7 @@ def produce_trsf(params):
     elif (p.recompute or
           not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))):
         if p.trsf_type != 'vectorfield':
-            call(self.path_to_bin +
+            call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
@@ -203,14 +203,14 @@ def produce_trsf(params):
                 res_trsf = ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.klb'%(t_flo, t_ref)
             else:
                 res_trsf = ''
-            call(self.path_to_bin +
+            call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
                  ' -trsf-type affine -py-hl 6 -py-ll %d'%(p.registration_depth) + \
                  ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
                  shell=True)
-            call(self.path_to_bin +
+            call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + \
                  ' -flo ' + p_im_flo + \
                  ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
@@ -389,7 +389,7 @@ def pad_trsfs(p, trsf_fmt):
     for t in p.not_to_do:
         np.savetxt(p.trsf_folder+trsf_fmt.format(flo=t, ref=p.ref_TP), identity)
 
-    call(self.path_to_bin +
+    call(p.path_to_bin +
          'changeMultipleTrsfs -trsf-format ' +
          p.trsf_folder + trsf_fmt_no_flo.format(ref=p.ref_TP) + \
          ' -index-reference %d -first %d -last %d '%(p.ref_TP,
@@ -456,7 +456,7 @@ def apply_trsf(p):
         folder_tmp = os.path.split(p.A0_out.format(t=t))[0]
         if not os.path.exists(folder_tmp):
             os.makedirs(folder_tmp)
-        call(self.path_to_bin +
+        call(p.path_to_bin +
              "applyTrsf '%s' '%s' -trsf "%(p.A0.format(t=t), p.A0_out.format(t=t)) + \
              p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP) + \
              ' -template ' + template + \
