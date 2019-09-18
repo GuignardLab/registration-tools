@@ -11,6 +11,7 @@
 	"last": 61,
 	"padding": 1,
 	"ref_TP": 31,
+	"not_to_do": [28],
 
 	"compute_trsf": 0,
 

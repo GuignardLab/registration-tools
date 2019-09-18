@@ -9,6 +9,7 @@
 	"voxel_size": [0.593, 0.593, 5],
 	"first": 1,
 	"last": 61,
+	"not_to_do": [28],
 
 	"compute_trsf": 1,
 	"ref_TP": 31,
