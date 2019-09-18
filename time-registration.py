@@ -462,7 +462,8 @@ def apply_trsf(p):
              ' -template ' + template + \
              ' -floating-voxel %f %f %f '%p.voxel_size + \
              ' -reference-voxel %f %f %f '%p.voxel_size + \
-             ' -interpolation %s'%p.interpolation)
+             ' -interpolation %s'%p.interpolation,
+             shell=True)
         im = imread(p.A0_out.format(t=t))
         xy_proj[:, :, i] = SpatialImage(np.max(im, axis=2))
         xz_proj[:, :, i] = SpatialImage(np.max(im, axis=1))
