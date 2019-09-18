@@ -194,7 +194,7 @@ def produce_trsf(params):
                       ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))
         else:
             if p.apply_trsf:
-                res = ' -res ' + p.A0_out.format(t=t_flo)
+                res = ' -res ' + p.A0_out.format(t=t_flo) + ' -interpolation ' + p.interpolation
             else:
                 res = ''
             if p.keep_vectorfield:

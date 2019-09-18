@@ -11,7 +11,7 @@
 \usepackage{hyperref}
 \usepackage{tabu}
 \usepackage{threeparttable}
-
+\usepackage{graphicx}
 
 \definecolor{light-gray}{gray}{0.95}
 %\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
@@ -71,8 +71,8 @@ $t_n$ onto $t_{ref}$& \cmark & \xmark & \xmark & \cmark\footnotemark[2] & \xmark
 \label{tab:scheme-prop}
 \end{table}
 \section{Requirements and installation, (tested on Linux, Ubuntu 18.04)}
-\footnotetext[1]{for this wrapper, only if the transformation is a translation}
-\footnotetext[2]{specific to this wrapper}
+\footnotetext[1]{specific to this wrapper}
+\footnotetext[2]{for this wrapper, only if the transformation is a translation}
 To install \option{blockmatching}, it is necessary to have cmake, a c/c++ compiler and zlib installed:
   \begin{code}{0.8}
     \$ sudo apt install cmake \\
@@ -195,46 +195,106 @@ Apply registration parameter:
 \end{itemize}~\\
 As a general point, the format for specifying time is in the "Pythonic" way of the function \texttt{str.format()} with \texttt{t} being the time argument. For example, if you expect your time being on 6 digits with 0s to fill the corresponding format is \texttt{\{t:06d\}}, \texttt{t} is the name of the field, \texttt{0} is the filling value, \texttt{6} is the number of digits and \texttt{d} stands for digit (therefore integer). If the time is present multiple times in the image name and or path to the image, the pattern can be entered multiple times. For example, if your path to an image is similar to: \option{/path/to/image/T000493/Im\_C0\_t000493.tif} then the correct values for \option{path\_to\_data} is \option{/path/to/image/T\{t:06d\}/} and for \option{file\_name} is \option{Im\_C0\_t\{t:06d\}.tif}.
 \section{Concrete examples}
-\paragraph{}This section exhibits concrete examples of problems and how to build a parameter file to solve it (see the summary Tab).
+\paragraph{}This section exhibits concrete examples of problems and how to build a parameter file to solve it (see the summary Fig. \ref{fig:poss}).
 \subsection{Long movies where the sample is not fixed}
 \paragraph{}A typical example is movies where the sample is somewhat free to move in front of the camera. It can happen when the part of the sample that is held in the mounting system is not rigid to the part of the sample to image (for example the cone of the mouse embryo after implantation, see \citep{McDole:2018aa}). It can also be the case when there is no possibility to hold the sample, which is then dropped and free to move (see \citep{Guignard:2017aa}). Then the desired main parameters are the following:
 	\begin{itemize}
-		\item[-] Transformation type: Rigid (keeping in mind that resolution loss might happen)
-		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$
-		\item[-] Padding: yes
-		\item[-] Undersampling time with Lowess interpolation: no
+		\item[-] Transformation type: Rigid (keeping in mind that resolution loss might happen)\\
+					\texttt{"trsf\_type":"rigid"}
+		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$\\
+					\texttt{"ref\_TP":$t_{ref}$}
+		\item[-] Padding: yes\\
+					\texttt{"padding":1}
+		\item[-] Undersampling time with Lowess interpolation: no\\
+					\texttt{"lowess\_interpolation":0}
 	\end{itemize}
 \subsection{Long movies where the sample is fixed}
 \paragraph{}When the sample can be held better, then a rigid transformation might be to many degrees of freedom. More over, when the images have an anysotropic voxel size then the rotation part of the rigid transformation might orient the voxel in a way that result in the lost of some of its information. It might then be better to only allow for a translation. A typical example for such setup would be the imaging if the \textit{Drosophila} embryo. In that case the main parameters are the following:
 	\begin{itemize}
-		\item[-] Transformation type: Translation
-		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$ or $t_n$ onto $t_{ref}$
-		\item[-] Padding: yes
-		\item[-] Undersampling time with Lowess interpolation: no
+		\item[-] Transformation type: Translation\\
+					\texttt{"trsf\_type":"translation"}
+		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$ or $t_n$ onto $t_{ref}$\\
+					\texttt{"ref\_TP":$t_{ref}$}\\
+					or\\
+					\texttt{"ref\_TP":$t_{ref}$}\\
+					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+		\item[-] Padding: yes\\
+					\texttt{"padding":1}
+		\item[-] Undersampling time with Lowess interpolation: no\\
+					\texttt{"lowess\_interpolation":0}
 	\end{itemize}
 \subsection{Extremely large movie where the sample slowly drifts over time}
 \paragraph{}If the sample is imaged often enough compared to its drift from the camera, then the difference between consecutive time points might not be large enough to be captured by our registration algorithm, it is then necessary to register every time point directly to the common reference frame. More over, if these movies have an extremely large number of time points and that the displacement is a smooth, slow drift, it might be useful to only compute the transformations for a subset of the time points and then to a Lowess interpolation between these time points. A typical example for such a case would be high frequency functional imaging of the nervous system explant of a \textit{Drosophila} larva [Chen's paper]. The desired main parameters are then:
 	\begin{itemize}
-		\item[-] Transformation type: Translation
-		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$
-		\item[-] Padding: no
-		\item[-] Undersampling time with Lowess interpolation: yes
+		\item[-] Transformation type: Translation\\
+					\texttt{"trsf\_type":"translation"}
+		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$\\
+					\texttt{"ref\_TP":$t_{ref}$}\\
+					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+		\item[-] Padding: no\\
+					\texttt{"padding":0}
+		\item[-] Undersampling time with Lowess interpolation: yes\\
+					\texttt{"lowess\_interpolation":1}
 	\end{itemize}
 \subsection{Correcting for non linear biological movements}
 In some extreme cases, the sample is not immobile in front of the camera creating non-linear distortions of the sample that can prevent the identification and tracking of objects in this very sample. An example for such a case is the imaging of the spinal chord of a non paralyzed Zebrafish, for these movies, the muscles start to have some activity that then deform in a non-linear manner the spinal chord. In order to look at calcium activity in cells, regardless of these muscle contractions, it is necessary to deform each time points non-linearly so they match a chosen reference point [Yinan's paper]. In that case the main parameters are the following:
 	\begin{itemize}
-		\item[-] Transformation type: Non linear
-		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$
-		\item[-] Padding: no
-		\item[-] Undersampling time with Lowess interpolation: no
+		\item[-] Transformation type: Non linear\\
+					\texttt{"trsf\_type":"vectorfield"}
+		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$\\
+					\texttt{"ref\_TP":$t_{ref}$}\\
+					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+		\item[-] Padding: no\\
+					\texttt{"padding":0}
+		\item[-] Undersampling time with Lowess interpolation: no\\
+					\texttt{"lowess\_interpolation":0}
 	\end{itemize}
-
-
-
-Then it is possible to use already produced transformations onto a different channel. This can be important when comparing two channels from the same movie.
-\subsection{Stabilizing a movie with high displacements over time}
-\paragraph{}When imaging for a long period of time, the imaged sample can move compared to the camera reference. It is even more pronounce if the sample cannot be attached during the imaging period. This movements of the sample in front of the camera over time can make the movie harder to interpret when looking at it but mostly it increases the difficulty for detection and tracking algorithms. Registering the whole movie onto a single time point would mostly get rid of these artificial movements and help the algorithms to extract quantitative information.
-\paragraph{}Let \option{/path/to/time/series/T000/CH00-T0000.tif} be the pattern for the images of our movie. Our movie goes from time point 0 to time point 200 but during the imaging period the time points 23 and 145 were wrongly imaged. This is then an example of a json configuration file:
+\subsection{Some special scenarios that could happen}
+\subsubsection{Computing the transformations on one channel and applying them onto a second one.}
+\paragraph{}Sometimes, the focus within the sample is towards a specific subset of this sample. If this subset has independent movement from the embryo itself, it can perturb the registration protocol to the point of giving erroneous results. Such examples could be imaging gene expression dynamic patterning or imaging blinking labeling strategies. To circumvent this issue we advise, when possible, on using a second channel where more consistent labeling methods  (to the global embryo) is used. An obvious example of such a labeling method would be ubiquitous labeling of the nuclei. If it is possible, then the dataset consists in two or more channels. Let $C1$ be the ubiquitous channel and $C2$ the relevant channel for this particular experiment. To do so it is necessary to sequentially run the algorithm two times, the first time to compute the transformation and the second time to apply the transformations.\\
+Computing the transformations:
+	\begin{itemize}
+		\item[-] Path to the image: path to channel $C1$\\
+					\texttt{"path\_to\_data":"/path/to/channel1/folder/"}\\
+					\texttt{"file\_name":"channel-$C1$-image-pattern-T\{t:03d\}.tif"}
+		\item[-] : Compute the transformation: yes\\
+					\texttt{"compute\_trsf":1}
+		\item[-] Apply the transformation: no\\
+					\texttt{"apply\_trsf":0}\\
+	\end{itemize}
+Applying the transformations:
+	\begin{itemize}
+		\item[-] Path to the image: path to channel $C2$\\
+					\texttt{"path\_to\_data":"/path/to/channel2/folder/"}\\
+					\texttt{"file\_name":"channel-$C2$-image-pattern-T\{t:03d\}.tif"}
+		\item[-] Compute the transformation: no\\
+					\texttt{"compute\_trsf":0}
+		\item[-] Apply the transformation: yes\\
+					\texttt{"apply\_trsf":1}\\
+	\end{itemize}
+\subsubsection{[...]}
+\begin{figure}
+  \centering
+    \includegraphics[width=.85\textwidth]{figures/possibilities.pdf}
+  \caption{\textbf{Graph of the possible combinations} Start from one of the blue nodes, if you can go back to it, you can do it!}\label{fig:poss}
+\end{figure}
+\section{Configuration file examples}
+\subsection{Long movies where the sample is not fixed}
+Description of environment:
+\begin{itemize}
+\item[-] We want to compute and apply the transformations with a trilinear interpolation
+\item[-] Path to images: \texttt{/path/to/time/series/T018/CH00-T0018.tif} (for time 18)
+\item[-] Time points: 0 to 200, time points 23 and 145 are defections and should be discarded.
+\item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
+\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.klb} (for time 18)
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/output/projection/}
+\item[-] The voxel size of the image in x, y, z is respectively 0.593, 0.893, 5.
+\item[-] The chosen reference time point is time 100
+\item[-] At most rigid transformation will be computed
+\item[-] The transformations will be computed from $t_n$ to $t_{n\pm 1}$ then composed
+\item[-] We want the images to be padded
+\end{itemize}
+Json file:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/T\{t:03d\}/",\\
@@ -245,7 +305,7 @@ Then it is possible to use already produced transformations onto a different cha
 \tab"check\_TP":1,\\
 \tab"voxel\_size":[\\
 \tab\tab0.593,\\
-\tab\tab0.593,\\
+\tab\tab0.893,\\
 \tab\tab5\\
 \tab],\\
 \tab"first":0,\\
@@ -261,7 +321,188 @@ Then it is possible to use already produced transformations onto a different cha
 \tab"apply\_trsf":1\\
 \}
 \end{code}
-From this configuration file 
+\subsection{Long movies where the sample is fixed}
+Description of environment:
+\begin{itemize}
+\item[-] We want to compute and apply the transformations with cubic spline interpolation
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Time points: 25 to 145, no time point should be discarded.
+\item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
+\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named \texttt{T18.klb} (for time 18)
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.klb}
+\item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
+\item[-] The chosen reference time point is time 25
+\item[-] Translation will be computed
+\item[-] The transformations will be computed from $t_n$ to $t_{ref}$
+\item[-] We want the images to be padded
+\end{itemize}
+Json file:
+\begin{code}{0.8}
+\{\\
+\tab"path\_to\_data":"/path/to/time/series/",\\
+\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_folder":"/path/to/output/trsf/",\\
+\tab"output\_format":"/path/to/output/T\{t:d\}.klb",\\
+\tab"check\_TP":1,\\
+\tab"voxel\_size":[\\
+\tab\tab1,\\
+\tab\tab1,\\
+\tab\tab6\\
+\tab],\\
+\tab"first":25,\\
+\tab"last":145,\\
+\tab"compute\_trsf":1,\\
+\tab"ref\_TP":25,\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_type":"translation",\\
+\tab"padding":1,\\
+\tab"apply\_trsf":1,\\
+\tab"interpolation":"cspline"\\
+\}
+\end{code}
+\subsection{Extremely large movie where the sample slowly drifts over time}
+Description of environment:
+\begin{itemize}
+\item[-] We want to compute and apply the transformations with a trilinear interpolation
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Time points: 0 to 100000, no time point should be discarded.
+\item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
+\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named as the original image name\texttt{CH00-T0018.klb} (for time 18)
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.klb}
+\item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
+\item[-] The chosen reference time point is time 25
+\item[-] We only want to compute the transformation every other 100 time point and apply a lowess smoothing with a smoothing window size of 5
+\item[-] Translation will be computed
+\item[-] The transformations will be computed from $t_n$ to $t_{ref}$
+\item[-] We don't want the images to be padded
+\end{itemize}
+Json file:
+\begin{code}{0.8}
+\{\\
+\tab"path\_to\_data":"/path/to/time/series/",\\
+\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_folder":"/path/to/output/trsf/",\\
+\tab"output\_format":"/path/to/output/",\\
+\tab"check\_TP":1,\\
+\tab"voxel\_size":[\\
+\tab\tab1,\\
+\tab\tab1,\\
+\tab\tab6\\
+\tab],\\
+\tab"first":0,\\
+\tab"last":100000,\\
+\tab"compute\_trsf":1,\\
+\tab"ref\_TP":25,\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_type":"translation",\\
+\tab"lowess\_interpolation":1,\\
+\tab"window\_size":5,\\
+\tab"step\_size":100,\\
+\tab"padding":0,\\
+\tab"apply\_trsf":1\\
+\}
+\end{code}
+\subsection{Correcting for non linear biological movements}
+Description of environment:
+\begin{itemize}
+\item[-] We want to compute and apply the transformations with a cubic spline interpolation
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Time points: 0 to 200, no time point should be discarded.
+\item[-] The output transformation files will not be written (option available only for non-linear registration)
+\item[-] The output registered images will be in the original folder \texttt{/path/to/time/series/} and the registered image will be named as the original with the suffix \texttt{NL}: \texttt{CH00-T0018.NL.klb} (for time 18)
+\item[-] No maximum intensity projection
+\item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
+\item[-] The chosen reference time point is time 25
+\item[-] Non-linear transformation will be computed (preceded by a first approximation using affine registration, mandatory) with a sigma of 2.5, a registration depth of 4.
+\item[-] The transformations will be computed from $t_n$ to $t_{ref}$
+\item[-] We don't want the images to be padded (not possible with non-linear transformations)
+\end{itemize}
+Json file:
+\begin{code}{0.8}
+\{\\
+\tab"path\_to\_data":"/path/to/time/series/",\\
+\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_folder":"/path/to/output/trsf/",\\
+\tab"suffix":"NL",\\
+\tab"check\_TP":1,\\
+\tab"voxel\_size":[\\
+\tab\tab1,\\
+\tab\tab1,\\
+\tab\tab6\\
+\tab],\\
+\tab"first":0,\\
+\tab"last":200,\\
+\tab"compute\_trsf":1,\\
+\tab"ref\_TP":25,\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_type":"vectorfield",\\
+\tab"registration\_depth":4,\\
+\tab"keep\_vectorfield":0,\\
+\tab"sigma":2.5,\\
+\tab"padding":0,\\
+\tab"apply\_trsf":1,\\
+\tab"interpolation":"cspline"\\
+\}
+\end{code}
+\subsection{Some special scenarios that could happen}
+\subsubsection{Computing the transformations on one channel and applying them onto a second one.}
+Description of environment:
+\begin{itemize}
+\item[-] We want to compute and apply the transformations on \texttt{/path/to/time/series/CH00-T0018.klb}
+\item[-] and apply the transformations with a tri-linear interpolation on \texttt{/path/to/time/series/CH01-T0018.klb}
+\item[-] Time points: 0 to 200, no time point should be discarded.
+\item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
+\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.klb} (for time 18) for \texttt{CH00} and \texttt{CH01-T0018-rigid.klb} for \texttt{CH01}
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/output/projection/}
+\item[-] The voxel size of the image in x, y, z is respectively 1, 1, 5.
+\item[-] The chosen reference time point is time 100
+\item[-] At most rigid transformation will be computed
+\item[-] The transformations will be computed from $t_n$ to $t_{n\pm 1}$ then composed
+\item[-] We want the images to be padded
+\end{itemize}
+Json file for \texttt{CH00}:
+\begin{code}{0.8}
+\{\\
+\tab"path\_to\_data":"/path/to/time/series/",\\
+\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"trsf\_folder":"/path/to/output/trsf/",\\
+\tab"output\_format":"CH00-T\{t:04d\}-rigid.klb",\\
+\tab"projection\_path":"/path/to/output/projection/",\\
+\tab"check\_TP":1,\\
+\tab"voxel\_size":[\\
+\tab\tab1,\\
+\tab\tab1,\\
+\tab\tab5\\
+\tab],\\
+\tab"first":0,\\
+\tab"last":200,\\
+\tab"compute\_trsf":1,\\
+\tab"ref\_TP":100,\\
+\tab"trsf\_type":"rigid",\\
+\tab"padding":1,\\
+\tab"apply\_trsf":1\\
+\}
+\end{code}
+Json file for \texttt{CH01}:
+\begin{code}{0.8}
+\{\\
+\tab"path\_to\_data":"/path/to/time/series/",\\
+\tab"file\_name":"CH01-T\{t:04d\}.klb",\\
+\tab"trsf\_folder":"/path/to/output/trsf/",\\
+\tab"output\_format":"CH01-T\{t:04d\}-rigid.klb",\\
+\tab"projection\_path":"/path/to/output/projection/",\\
+\tab"check\_TP":1,\\
+\tab"voxel\_size":[\\
+\tab\tab1,\\
+\tab\tab1,\\
+\tab\tab5\\
+\tab],\\
+\tab"first":0,\\
+\tab"last":200,\\
+\tab"compute\_trsf":0,\\
+\tab"apply\_trsf":1\\
+\}
+\end{code}
 \bibliography{biblio}
 \bibliographystyle{apalike}
 \end{document}
