@@ -196,7 +196,7 @@ def produce_trsf(params):
                  shell=True)
         else:
             if p.apply_trsf:
-                res = ' -res ' + p.A0_out.format(t=t_flo) + ' -interpolation ' + p.interpolation
+                res = ' -res ' + p.A0_out.format(t=t_flo)
             else:
                 res = ''
             if p.keep_vectorfield:
