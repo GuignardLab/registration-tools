@@ -170,7 +170,7 @@ def produce_trsf(params):
         p_im_ref = p.ref_path
         t_ref = p.ref_TP
         t_flo = t2
-        if t1<t2 and not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t2, t_ref)):
+        if t1 == p.to_register[0]: #t1<t2 and not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t2, t_ref)):
             produce_trsf((p, t2, t1, make))
     else:
         if t1 < p.ref_TP:
@@ -184,7 +184,7 @@ def produce_trsf(params):
     if not make:
         print('trsf tp %d-%d not done'%(t1, t2))
         np.savetxt(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref), np.identity(4))
-    elif (p.recompute or
+    elif t_flo !=  t_ref and (p.recompute or
           not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))):
         if p.trsf_type != 'vectorfield':
             call(p.path_to_bin +
@@ -422,9 +422,9 @@ def compute_trsfs(p):
                          p.trsf_folder, list(p.to_register))
             compose_trsf(max(p.to_register), p.ref_TP,
                          p.trsf_folder, list(p.to_register))
-            np.savetxt(('{:s}'+trsf_fmt).format(p.trsf_folder,
-                                                flo=p.ref_TP,
-                                                ref=p.ref_TP),
+        np.savetxt(('{:s}'+trsf_fmt).format(p.trsf_folder,
+                                            flo=p.ref_TP,
+                                            ref=p.ref_TP),
                        np.identity(4))
     except Exception as e:
         print(p.trsf_folder)
