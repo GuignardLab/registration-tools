@@ -408,7 +408,9 @@ def compute_trsfs(p):
    
     max_t = max(p.time_points)
     if p.lowess_interpolation:
-        p.to_register = sorted(p.time_points)[::p.step_size] + [max_t]
+        p.to_register = sorted(p.time_points)[::p.step_size]
+        if not max_t in p.to_register:
+            p.to_register += [max_t]
     else:
         p.to_register = p.time_points
 
