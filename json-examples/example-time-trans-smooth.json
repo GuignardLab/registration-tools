@@ -1,9 +1,9 @@
 {
 	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e127/e127_c1/",
 	"file_name": "e127_c1_t_{t:03d}.tif",
-	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-trans/",
-	"output_format": "/media/Y/Exchange/Leo/TMP/registered-trans/",
-	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-trans/",
+	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-trans-smooth/",
+	"output_format": "/media/Y/Exchange/Leo/TMP/registered-trans-smooth/",
+	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-trans-smooth/",
 	"check_TP": 0,
 
 	"voxel_size": [0.593, 0.593, 5],
@@ -14,6 +14,8 @@
 	"compute_trsf": 1,
 	"ref_TP": 31,
 	"trsf_type": "translation",
+	"lowess": 1,
+	"window_size": 4,
 	"padding": 1,
 	"recompute": 1,
 	"sequential": 1,

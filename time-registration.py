@@ -14,6 +14,8 @@ from IO import imread, imsave, SpatialImage
 from pyklb import readheader
 from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
+if sys.version_info[0]<3:
+    from future.builtins import input
 
 class trsf_parameters(object):
     """docstring for trsf_parameters"""
@@ -33,39 +35,36 @@ class trsf_parameters(object):
             correct = False
         if not 'ref_TP' in self.__dict__:
             print('\n\t"ref_TP" is required')
-            correct = False            
+            correct = False
+        if not 'projection_path' in self.__dict__:
+            print('\n\t"projection_path" is required')
+            correct = False
         if (self.apply_trsf and
-            self.output_format is None and
-            self.suffix is None):
-            print('\n\tEither "output_format" or "suffix" has to be specified')
+            not 'output_format' in self.__dict__):
+            print('\n\t"output_format" is required')
             correct = False
-        if (self.lowess_interpolation and
-            self.trsf_type!='translation'):
-            print('\n\tLowess interpolation only works with translation')
+        if (self.trsf_type!='translation' and 
+            (self.lowess or self.trsf_interpolation)):
+            print('\n\tLowess or transformation interplolation')
+            print('\tonly work with translation')
             correct = False
-        if (self.lowess_interpolation and
-             self.ref_path is None):
-            print('\n\tLowess interpolation only works with a defined reference image')
-            correct = False
-        if (self.lowess_interpolation and
+        if (self.lowess and
             not 'window_size' in self.param_dict):
-            print('\n\tLowess interpolation "window_size" is missing')
+            print('\n\tLowess smoothing "window_size" is missing')
             print('\tdefault value of 5 will be used\n')
-        if (self.lowess_interpolation and
+        if (self.trsf_interpolation and
             not 'step_size' in self.param_dict):
-            print('\n\tLowess interpolation "step_size" is missing')
+            print('\n\tTransformation interpolation "step_size" is missing')
             print('\tdefault value of 100 will be used\n')
-        if self.suffix is None and self.output_format is None:
-            print('\tAt least of one the following argument has to be specified:')
-            print('\t\t"suffix"', '"output_format"')
-        if not(self.suffix is None or self.output_format is None):
-            print(('\tThe parameters "suffix" and "output_format" '+\
-                  'have both been defined, "output_format" will be used:'))
-            print('\t'+self.output_format)
         if self.trsf_type=='vectorfield' and self.ref_path is None:
-            print('Non-linear transformation asked with propagation.')
-            print('While working it is highly not recommended')
-            print('Please consider not doing a registration from propagation')
+            print('\tNon-linear transformation asked with propagation.')
+            print('\tWhile working it is highly not recommended')
+            print('\tPlease consider not doing a registration from propagation')
+            print('\tTHIS WILL LITERALLY TAKE AGES!! IF IT WORKS AT ALL ...')
+        if not isinstance(self.spline, int) or self.spline<1 or 5<self.spline:
+            out = ('{:d}' if isinstance(self.spline, int) else '{:s}').format(self.spline)
+            print('The degree of smoothing for the spline interpolation')
+            print('Should be an Integer between 1 and 5, you gave ' + out)
         return correct
 
     def __str__(self):
@@ -77,7 +76,6 @@ class trsf_parameters(object):
         output += "path_to_data".ljust(max_key, ' ') + ": {:s}\n".format(self.path_to_data)
         output += "file_name".ljust(max_key, ' ') + ": {:s}\n".format(self.file_name)
         output += "trsf_folder".ljust(max_key, ' ') + ": {:s}\n".format(self.trsf_folder)
-        output += "suffix".ljust(max_key, ' ') + ": {:s}\n".format(self.suffix)
         output += "output_format".ljust(max_key, ' ') + ": {:s}\n".format(self.output_format)
         output += "check_TP".ljust(max_key, ' ') + ": {:d}\n".format(self.check_TP)
         output += "\n" + " Time series properties ".center(max_tot, '-') + "\n"
@@ -94,18 +92,21 @@ class trsf_parameters(object):
             if self.trsf_type == 'vectorfield':
                 output += "sigma".ljust(max_key, ' ') + ": {:.2f}\n".format(self.sigma)
             output += "padding".ljust(max_key, ' ') + ": {:d}\n".format(self.padding)
-            output += ("lowess_interpolation".ljust(max_key, ' ') +
-                       ": {:d}\n".format(self.lowess_interpolation))
-            if self.lowess_interpolation:
+            output += ("lowess".ljust(max_key, ' ') +
+                       ": {:d}\n".format(self.lowess))
+            if self.lowess:
                 output += "window_size".ljust(max_key, ' ') + ": {:d}\n".format(self.window_size)
+            output += ("trsf_interpolation".ljust(max_key, ' ') +
+                       ": {:d}\n".format(self.trsf_interpolation))
+            if self.trsf_interpolation:
                 output += "step_size".ljust(max_key, ' ') + ": {:d}\n".format(self.step_size)
             output += "recompute".ljust(max_key, ' ') + ": {:d}\n".format(self.recompute)
         output += "apply_trsf".ljust(max_key, ' ') + ": {:d}\n".format(self.apply_trsf)
         if self.apply_trsf:
             output += ("projection_path".ljust(max_key, ' ') +
                        ": {:s}\n".format(self.projection_path))
-            output += ("interpolation".ljust(max_key, ' ') +
-                       ": {:s}\n".format(self.interpolation))
+            output += ("image_interpolation".ljust(max_key, ' ') +
+                       ": {:s}\n".format(self.image_interpolation))
 
         return output
 
@@ -116,25 +117,25 @@ class trsf_parameters(object):
             f.close()
 
         # Default parameters
-        self.suffix = None
-        self.output_format = None
         self.check_TP = None
         self.not_to_do = []
         self.compute_trsf = True
         self.ref_path = None
         self.registration_depth = 3
         self.padding = 1
-        self.lowess_interpolation = False
+        self.lowess = False
         self.window_size = 5
         self.step_size = 100
         self.recompute = True
         self.apply_trsf = True
-        self.projection_path = None
         self.sigma = 2.0
         self.keep_vectorfield = False
         self.trsf_type = 'rigid'
-        self.interpolation = 'linear'
+        self.image_interpolation = 'linear'
         self.path_to_bin = ''
+        self.spline = 1
+        self.trsf_interpolation = False
+        self.sequential = True
 
         self.param_dict = param_dict
 
@@ -165,7 +166,7 @@ def produce_trsf(params):
         This function is meant to be call by multiprocess.Pool
     '''
     (p, t1, t2, make) = params
-    if p.ref_path is not None:
+    if not p.sequential:
         p_im_flo = p.A0.format(t=t2)
         p_im_ref = p.ref_path
         t_ref = p.ref_TP
@@ -273,20 +274,24 @@ def compose_trsf(flo_t, ref_t, trsf_p, tp_list):
         call(p.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1, shell=True)
     return out_trsf
 
-def lowess_smooth_interp(X, T, frac):
-    X_smoothed = lowess(X, T, frac = frac, is_sorted = True, return_sorted = False)
-    return sp.interpolate.InterpolatedUnivariateSpline(T, X_smoothed, k=1)
-   
+def lowess_smooth(p, X, T, frac):
+    return lowess(X, T, frac = frac, is_sorted = True, return_sorted = False)
+
+def interpolation(p, X, T):
+    return sp.interpolate.InterpolatedUnivariateSpline(T, X, k=p.spline)
+
 def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
     if len(sys.argv)<2:
         p_param = input('\nPlease inform the path to the json config file:\n')
-        p_param = p_param.replace('"', '')
-        p_param = p_param.replace("'", '')
-        p_param = p_param.replace(" ", '')
     else:
         p_param = sys.argv[1]
+    stable = False
+    while not stable:
+        tmp = p_param.strip('"').strip("'").strip(' ')
+        stable = tmp==p_param
+        p_param = tmp
     if os.path.isdir(p_param):
         f_names = [os.path.join(p_param, f) for f in os.listdir(p_param)
                    if '.json' in f and not '~' in f]
@@ -333,7 +338,7 @@ def prepare_paths(p):
             print("\t" + missing_time_points)
             print("Aborting the process")
             exit()
-    if p.ref_path is not None:
+    if not p.sequential:
         p.ref_path = p.ref_path.format(t=p.ref_TP)
     if p.apply_trsf:
         for i, t in enumerate(sorted(p.time_points)):
@@ -341,7 +346,16 @@ def prepare_paths(p):
             if not os.path.exists(folder_tmp):
                 os.makedirs(folder_tmp)
 
-def interpolate_trsfs(p, trsf_fmt):
+    max_t = max(p.time_points)
+    if p.trsf_interpolation:
+        p.to_register = sorted(p.time_points)[::p.step_size]
+        if not max_t in p.to_register:
+            p.to_register += [max_t]
+    else:
+        p.to_register = p.time_points
+
+
+def lowess_filter(p, trsf_fmt):
     X_T = []
     Y_T = []
     Z_T = []
@@ -355,24 +369,50 @@ def interpolate_trsfs(p, trsf_fmt):
         Z_T += [trsf[2, -1]]
 
     frac = float(p.window_size)/len(T)
-    X_smoothed = lowess_smooth_interp(X_T, T, frac = frac)
-    Y_smoothed = lowess_smooth_interp(Y_T, T, frac = frac)
-    Z_smoothed = lowess_smooth_interp(Z_T, T, frac = frac)
+    X_smoothed = lowess_smooth(p, X_T, T, frac = frac)
+    Y_smoothed = lowess_smooth(p, Y_T, T, frac = frac)
+    Z_smoothed = lowess_smooth(p, Z_T, T, frac = frac)
 
     new_trsf_fmt = 't{flo:06d}-{ref:06d}-filtered.txt'
-    for t in range(min(p.time_points), max(p.time_points)+1):
+    for i, t in enumerate(T):
         mat = np.identity(4)
-        mat[0, -1] = X_smoothed(t)
-        mat[1, -1] = Y_smoothed(t)
-        mat[2, -1] = Z_smoothed(t)
+        mat[0, -1] = X_smoothed[i]
+        mat[1, -1] = Y_smoothed[i]
+        mat[2, -1] = Z_smoothed[i]
+        np.savetxt(p.trsf_folder + new_trsf_fmt.format(flo=t, ref=p.ref_TP), mat)
+    return new_trsf_fmt
+
+def interpolate(p, trsf_fmt, new_trsf_fmt=None):
+    if new_trsf_fmt is None:
+        new_trsf_fmt = 't{flo:06d}-{ref:06d}-interpolated.txt'
+    X_T = []
+    Y_T = []
+    Z_T = []
+    T = []
+    for t in p.to_register:
+        trsf_p = p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP)
+        trsf = read_trsf(trsf_p)
+        T += [t]
+        X_T += [trsf[0, -1]]
+        Y_T += [trsf[1, -1]]
+        Z_T += [trsf[2, -1]]
+
+    X_interp = interpolation(p, X_T, T)
+    Y_interp = interpolation(p, Y_T, T)
+    Z_interp = interpolation(p, Z_T, T)
+    for t in p.time_points:
+        mat = np.identity(4)
+        mat[0, -1] = X_interp(t)
+        mat[1, -1] = Y_interp(t)
+        mat[2, -1] = Z_interp(t)
         np.savetxt(p.trsf_folder + new_trsf_fmt.format(flo=t, ref=p.ref_TP), mat)
     trsf_fmt = new_trsf_fmt
     return trsf_fmt
 
 def pad_trsfs(p, trsf_fmt):
-    if p.ref_path is not None and p.ref_path.split('.')[-1] == 'klb':
+    if not p.sequential and p.ref_path.split('.')[-1] == 'klb':
         im_shape = readheader(p.ref_path)['imagesize_tczyx'][-1:-4:-1]
-    elif p.ref_path is not None:
+    elif not p.sequential:
         im_shape = imread(p.ref_path).shape
     elif p.A0.split('.')[-1] == 'klb':
         im_shape = readheader(p.A0.format(t=p.ref_TP))['imagesize_tczyx'][-1:-4:-1]
@@ -405,19 +445,11 @@ def compute_trsfs(p):
     # Create the output folder for the transfomrations
     if not os.path.exists(p.trsf_folder):
         os.makedirs(p.trsf_folder)
-   
-    max_t = max(p.time_points)
-    if p.lowess_interpolation:
-        p.to_register = sorted(p.time_points)[::p.step_size]
-        if not max_t in p.to_register:
-            p.to_register += [max_t]
-    else:
-        p.to_register = p.time_points
 
     trsf_fmt = 't{flo:06d}-{ref:06d}.txt'
     try:
         run_produce_trsf(p, nb_cpu=1)
-        if p.ref_path is None:
+        if p.sequential:
             compose_trsf(min(p.to_register), p.ref_TP,
                          p.trsf_folder, list(p.to_register))
             compose_trsf(max(p.to_register), p.ref_TP,
@@ -430,16 +462,19 @@ def compute_trsfs(p):
         print(p.trsf_folder)
         print(e)
 
-    if p.lowess_interpolation:
-        trsf_fmt = interpolate_trsfs(p, trsf_fmt)
-
+    if p.lowess:
+        trsf_fmt = lowess_filter(p, trsf_fmt)
+    if p.trsf_interpolation:
+        trsf_fmt = interpolate(p, trsf_fmt)
     if p.padding:
         pad_trsfs(p, trsf_fmt)
 
 def apply_trsf(p):
     trsf_fmt = 't{flo:06d}-{ref:06d}.txt'
-    if p.lowess_interpolation:
+    if p.lowess:
         trsf_fmt = 't{flo:06d}-{ref:06d}-filtered.txt'
+    if p.trsf_interpolation:
+        trsf_fmt = 't{flo:06d}-{ref:06d}-interpolated.txt'
     if p.padding:
         trsf_fmt = 't{flo:06d}-{ref:06d}-padded.txt'
         X, Y, Z = readheader(p.trsf_folder + 'template.klb')['imagesize_tczyx'][-1:-4:-1]
@@ -464,7 +499,7 @@ def apply_trsf(p):
              ' -template ' + template + \
              ' -floating-voxel %f %f %f '%p.voxel_size + \
              ' -reference-voxel %f %f %f '%p.voxel_size + \
-             ' -interpolation %s'%p.interpolation,
+             ' -interpolation %s'%p.image_interpolation,
              shell=True)
         im = imread(p.A0_out.format(t=t))
         xy_proj[:, :, i] = SpatialImage(np.max(im, axis=2))

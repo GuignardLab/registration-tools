@@ -17,6 +17,7 @@
 	"trsf_type": "translation",
 	"padding": 1,
 	"recompute": 1,
+	"sequential": 0,
 
 	"apply_trsf": 1
 }
