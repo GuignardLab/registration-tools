@@ -12,7 +12,7 @@
 		"/media/W/SV3/RC_15-07-09/multiview-registration/",
 		"/media/W/SV3/RC_15-07-09/multiview-registration/"
 	],
-	"trsf_types": ["rigid"],
+	"trsf_types": ["affine"],
 	"ref_voxel": [1, 1, 15],
 	"flo_voxels": [
 		[1, 1, 15],

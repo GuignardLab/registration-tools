@@ -21,8 +21,6 @@
 		[1, 1, 15],
 		[1, 1, 15]
 	],
-	"write_image_output": 1,
 	"out_voxel": [5, 5, 5],
 	"out_pattern": "SpatialRegistration",
-	"init_trsf_real_unit": 0
 }
