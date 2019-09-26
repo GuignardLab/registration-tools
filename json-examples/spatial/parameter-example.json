@@ -1,0 +1,28 @@
+{
+	"path_to_data": "/media/W/SV3/RC_15-07-09/multiview-registration/",
+	"ref_im": "SPM00_TM000100_CM00_CHN00.klb",
+	"flo_ims": [
+		"SPM00_TM000100_CM01_CHN00.klb",
+		"SPM00_TM000100_CM02_CHN00.klb",
+		"SPM00_TM000100_CM03_CHN00.klb"
+	],
+	"init_trsfs": [
+		"/media/W/SV3/RC_15-07-09/multiview-registration/initial_trsfs/CM01.txt",
+		"/media/W/SV3/RC_15-07-09/multiview-registration/initial_trsfs/CM02.txt",
+		"/media/W/SV3/RC_15-07-09/multiview-registration/initial_trsfs/CM03.txt"
+	],
+	"trsf_types": [
+		"rigid",
+		"affine"
+	],
+	"ref_voxel": [1, 1, 15],
+	"flo_voxels": [
+		[1, 1, 15],
+		[1, 1, 15],
+		[1, 1, 15]
+	],
+	"write_image_output": 1,
+	"out_voxel": [5, 5, 5],
+	"out_pattern": "SpatialRegistration",
+	"init_trsf_real_unit": 0
+}

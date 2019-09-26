@@ -1,0 +1,26 @@
+{
+	"path_to_data": "/media/W/SV3/RC_15-07-09/multiview-registration/",
+	"ref_im": "SPM00_TM000100_CM00_CHN00.klb",
+	"flo_ims": [
+		"SPM00_TM000100_CM01_CHN00.klb",
+		"SPM00_TM000100_CM02_CHN00.klb",
+		"SPM00_TM000100_CM03_CHN00.klb"
+	],
+	"compute_trsf": 1,
+	"test_init": 1,
+	"trsf_paths": [
+		"/media/W/SV3/RC_15-07-09/multiview-registration/",
+		"/media/W/SV3/RC_15-07-09/multiview-registration/",
+		"/media/W/SV3/RC_15-07-09/multiview-registration/"
+	],
+	"init_trsf": [["flip", "X"], ["rot", "Y", 90], ["flip", "X", "rot", "Y", 90]],
+	"ref_voxel": [1, 1, 15],
+	"flo_voxels": [
+		[1, 1, 15],
+		[1, 1, 15],
+		[1, 1, 15]
+	],
+	"apply_trsf": 1,
+	"out_voxel": [5, 5, 5],
+	"out_pattern": "test-init"
+}
