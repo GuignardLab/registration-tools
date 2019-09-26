@@ -512,16 +512,14 @@ def apply_trsf(p):
         num_s = p.file_name.find('{')
         num_e = p.file_name.find('}')+1
         f_name = p.file_name.replace(p.file_name[num_s:num_e], '')
-    else:
-        p_to_data = p.A0_out
-    if not os.path.exists(p_to_data.format(t=-1)):
-        os.makedirs(p_to_data.format(t=-1))
-    imsave((p_to_data + f_name.replace(p.im_ext, 'xyProjection.klb')),
-           SpatialImage(xy_proj))
-    imsave((p_to_data + f_name.replace(p.im_ext, 'xzProjection.klb')),
-           SpatialImage(xz_proj))
-    imsave((p_to_data + f_name.replace(p.im_ext, 'yzProjection.klb')),
-           SpatialImage(yz_proj))
+        if not os.path.exists(p_to_data.format(t=-1)):
+            os.makedirs(p_to_data.format(t=-1))
+        imsave((p_to_data + f_name.replace(p.im_ext, 'xyProjection.klb')),
+               SpatialImage(xy_proj))
+        imsave((p_to_data + f_name.replace(p.im_ext, 'xzProjection.klb')),
+               SpatialImage(xz_proj))
+        imsave((p_to_data + f_name.replace(p.im_ext, 'yzProjection.klb')),
+               SpatialImage(yz_proj))
 
 if __name__ == '__main__':
     params = read_param_file()

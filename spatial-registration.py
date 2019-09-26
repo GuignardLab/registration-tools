@@ -344,7 +344,10 @@ def apply_trsf(p, t=None):
         trsf_path = p.trsf_paths[A_num]
         trsf_name = p.trsf_names[A_num]
         if p.test_init:
-            trsf = os.path.join(trsf_path, 'A{:d}-init.trsf'.format(A_num+1))
+            if isinstance(p.init_trsf[A_num], list):
+                trsf = os.path.join(trsf_path, 'A{:d}-init.trsf'.format(A_num+1))
+            else:
+                trsf = p.init_trsf[A_num]
         else:
             t_type = '' if len(p.trsf_types)<1 else p.trsf_types[-1]
             trsf = os.path.join(trsf_path,
@@ -369,9 +372,9 @@ if __name__ == '__main__':
             print("Starting experiment")
             print(p)
             prepare_paths(p)
-            if p.compute_trsf:
+            if p.compute_trsf or p.test_init:
                 compute_trsfs(p)
-            if p.apply_trsf:
+            if p.apply_trsf or p.test_init:
                 if not(p.begin is None and p.end is None):
                     for t in range(p.begin, p.end+1):
                         apply_trsf(p, t)
