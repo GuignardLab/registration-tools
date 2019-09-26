@@ -1,4 +1,4 @@
-\documentclass[10pt,a4paper]{article}
+\documentclass[10pt,a4paper]{book}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -23,56 +23,15 @@
 \newenvironment{code}[1]{\mbox{}\\[1ex]\hspace*{-#1cm}\begin{minipage}{150mm}\begin{quote}\tt}{\end{quote}\end{minipage}\mbox{}\\[1ex]}
 
 \author{L\'eo Guignard}
-\title{Time registration Manual}
+\title{Registration toolbox Manual}
 \begin{document}
 \maketitle
 \tableofcontents
-\clearpage
+\chapter{Installation}
 \section{Purpose}
 \paragraph{}This repository has for purpose to wrap the set of tools provided by the \option{blockmatching} algorithm described in \citep{Ourselin:2000aa} and used in \citep{McDole:2018aa,Guignard:2017aa,Guignard:2014aa}.
-\paragraph{}Provided the \option{blockmatching} library installed (see \href{https://gitlab.inria.fr/greg/Klab-BlockMatching}{\underline{here}}) this wrapper allows to easily apply it to register in time 3D movies.
-\section{What this wrapper can do for you.}
-\paragraph{}This wrapper allows to do an intra-registration of a time-series in order to stabilize it in time. Intra stabilization is important for time-series in order to ease the extraction of quantitative features. Such features could be cell detection and tracking for images of nuclei where the tracking is harder is the image has artificial movement or the extraction of $\Delta F/F$ for functional imaging where, for the analysis, it is often assumed that that each voxel contains the same part of the brain throughout the movie. But it is mostly important to have nicer movies for presentations!
-\subsection{Transformation types}
-\paragraph{}For the computation of the transformations different degrees or freedom are available, namely 3D translation, rigid (rotation + translation), affine (rigid + scaling and shearing) and fully non linear. Of course each mode has its usage (see Tab. \ref{tab:trsf-prop}).
-\begin{table}
-\tabulinesep =_3mm^3mm
-\begin{tabu} to 1\textwidth {X[1,cm]|X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[2,cm]}
-\hline
-Trans-formation type&Conserve original geometry&Potential quality loss when anysotropic image&Slow/Fast&Degrees of freedom&Best suited for\\
-\tabucline[1pt on2pt]\\
- Translation & Yes & No & Really Fast & 3 & Really small drift over long period of time (Functional imaging)\\
-\hline
-Rigid & Yes & Yes & Fast & 6 & Large movements over long period of development (Embryo development)\\
-\hline
-Affine & No & Yes & Slowish & 9 & ???\\
-\hline
-Non-linear & No & Yes & Really slow & \#voxels of the image & Correcting for punctual deformations (twitching embryo)\\
-\hline
-\end{tabu}
-\caption{List of transformation types with their properties}
-\label{tab:trsf-prop}
-\end{table}
-\subsection{Alignment scheme}
-\paragraph{}The transformations to stabilize a movie can be computed in multiple ways. The two that can be used with this wrapper are 1) by registering every single time point directly onto the reference time point and 2) by registering consecutive time points onto each others and build the composition of the transformation (see Tab. \ref{tab:scheme-prop}).
-\paragraph{}Moreover, when computing translations one can decide to only compute a subset of the time points and interpolate the translations in-between using a lowess interpolation \citep{Cleveland:1996aa}.
-\begin{table}[h!]
-\tabulinesep =_3mm^3mm
-\begin{tabu} to 1\textwidth {X[1,cm]|X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[2,cm]}
-\hline
-Registration scheme&Independent between time points&Handle large sample displacement&Propagate errors&Interpolation&Has to compute composition&Best suited for\\
-\tabucline[1pt on2pt]\\
-$t_n$ onto $t_{n\pm 1}$& \xmark & \cmark & \cmark & \xmark\footnotemark[1] & \cmark &Not fixed samples for extended period of time (Embryo development)\\
-\hline
-$t_n$ onto $t_{ref}$& \cmark & \xmark & \xmark & \cmark\footnotemark[2] & \xmark & Fixed samples (Functional imaging)\\
-\hline
-\end{tabu}
-\caption{List of schemes with their pros and cons}
-\label{tab:scheme-prop}
-\end{table}
+\paragraph{}Provided the \option{blockmatching} library installed (see \href{https://gitlab.inria.fr/greg/Klab-BlockMatching}{\underline{here}}) this wrapper allows to easily apply it to register in time or in space 3D+t movies.
 \section{Requirements and installation, (tested on Linux, Ubuntu 18.04)}
-\footnotetext[1]{specific to this wrapper}
-\footnotetext[2]{for this wrapper, only if the transformation is a translation}
 To install \option{blockmatching}, it is necessary to have cmake, a c/c++ compiler and zlib installed:
   \begin{code}{0.8}
     \$ sudo apt install cmake \\
@@ -139,7 +98,49 @@ Some Python libraries are also required:
 \item[-] pyklb (\url{https://github.com/bhoeckendorf/pyklb})
 \item[-] statsmodels (\url{https://www.statsmodels.org})
 \end{enumerate}
-Once everything is installed \option{time-registration.py} is ready to run.
+Once everything is installed the python scripts are ready to run.
+\chapter{Time Registration}
+\section{What time registration can do for you.}
+\paragraph{}This wrapper allows to do an intra-registration of a time-series in order to stabilize it in time. Intra stabilization is important for time-series in order to ease the extraction of quantitative features. Such features could be cell detection and tracking for images of nuclei where the tracking is harder is the image has artificial movement or the extraction of $\Delta F/F$ for functional imaging where, for the analysis, it is often assumed that that each voxel contains the same part of the brain throughout the movie. But it is mostly important to have nicer movies for presentations!
+\subsection{Transformation types}
+\paragraph{}For the computation of the transformations different degrees or freedom are available, namely 3D translation, rigid (rotation + translation), affine (rigid + scaling and shearing) and fully non linear. Of course each mode has its usage (see Tab. \ref{tab:trsf-prop}).
+\begin{table}
+\tabulinesep =_3mm^3mm
+\begin{tabu} to 1\textwidth {X[1,cm]|X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[2,cm]}
+\hline
+Trans-formation type&Conserve original geometry&Potential quality loss when anysotropic image&Slow/Fast&Degrees of freedom&Best suited for\\
+\tabucline[1pt on2pt]\\
+ Translation & Yes & No & Really Fast & 3 & Really small drift over long period of time (Functional imaging)\\
+\hline
+Rigid & Yes & Yes & Fast & 6 & Large movements over long period of development (Embryo development)\\
+\hline
+Affine & No & Yes & Slowish & 9 & ???\\
+\hline
+Non-linear & No & Yes & Really slow & \#voxels of the image & Correcting for punctual deformations (twitching embryo)\\
+\hline
+\end{tabu}
+\caption{List of transformation types with their properties}
+\label{tab:trsf-prop}
+\end{table}
+\subsection{Alignment scheme}
+\paragraph{}The transformations to stabilize a movie can be computed in multiple ways. The two that can be used with this wrapper are 1) by registering every single time point directly onto the reference time point and 2) by registering consecutive time points onto each others and build the composition of the transformation (see Tab. \ref{tab:scheme-prop}).
+\paragraph{}Moreover, when computing translations one can decide to only compute a subset of the time points and interpolate the translations in-between using a lowess interpolation \citep{Cleveland:1996aa}.
+\begin{table}
+\tabulinesep =_3mm^3mm
+\begin{tabu} to 1\textwidth {X[1,cm]|X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[2,cm]}
+\hline
+Registration scheme&Independent between time points&Handle large sample displacement&Propagate errors&Interpolation&Has to compute composition&Best suited for\\
+\tabucline[1pt on2pt]\\
+$t_n$ onto $t_{n\pm 1}$& \xmark & \cmark & \cmark & \xmark\footnotemark[1] & \cmark &Not fixed samples for extended period of time (Embryo development)\\
+\hline
+$t_n$ onto $t_{ref}$& \cmark & \xmark & \xmark & \cmark\footnotemark[2] & \xmark & Fixed samples (Functional imaging)\\
+\hline
+\end{tabu}
+\caption{List of schemes with their pros and cons}
+\label{tab:scheme-prop}
+\end{table}
+\footnotetext[1]{specific to this wrapper}
+\footnotetext[2]{for this wrapper, only if the transformation is a translation}
 \section{Running \option{time-registration.py}}
 To run the script \option{time-registration.py} one can run the following command from the folder containing it:
 \begin{code}{0.8}
@@ -160,9 +161,8 @@ File path format:
 \item[-] \texttt{path\_to\_data}, \texttt{str}, mandatory, common path to the image data
 \item[-] \texttt{file\_name}, \texttt{str}, mandatory, image name pattern
 \item[-] \texttt{trsf\_folder}, \texttt{str}, mandatory, output path for the transformations
-\item[-] \texttt{output\_format}, \texttt{str} default value: \texttt{None}, path to the ouput image. Can be a folder, in that case the original image name, \option{file\_name} is kept. Can be a file name, in that case it will be written in the original folder \option{path\_to\_data}. Can be a folder plus name pattern.
-\item[-] \texttt{suffix}, \texttt{str}, default value: \texttt{None}, suffix to add to the output image if output\_format is not specified
-\item[-] \texttt{projection\_path}, \texttt{str}, default value: \texttt{None}, path to the output folder for the maximum intensity projection images. If not specified it will be written like the output format with -1 for the time.
+\item[-] \texttt{output\_format}, \texttt{str}, mandatory, how to write the ouput image. Can be a folder, in that case the original image name, \option{file\_name} is kept. Can be a file name, in that case it will be written in the original folder \option{path\_to\_data}. Can be a folder plus name pattern. Can be a short string (suffix), in that case the string will be appended to the original name, before the file extension.
+\item[-] \texttt{projection\_path}, \texttt{str}, default value: \texttt{None}, path to the output folder for the maximum intensity projection images. If not specified, the projection will not be performed.
 \item[-] \texttt{check\_TP}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1} check if all the required images exist.
 \item[-] \texttt{path\_to\_bin}, \texttt{str}, default value: \texttt{""}, path to the blockmatching binaries, not necessary if that path is specified in your \$PATH
 \end{itemize}~\\
@@ -175,23 +175,26 @@ Image information:
 \end{itemize}~\\
 Registration parameters:
 \begin{itemize}
-\item[-] \texttt{compute\_trsf}, \texttt{[0 | 1]}, default value: \texttt{1}, wheter or not computing the transformations (one might not want to do it if the transformations have already been computed for a different channel)
+\item[-] \texttt{compute\_trsf}, \texttt{[0 | 1]}, default value: \texttt{1}, whether or not computing the transformations (one might not want to do it if the transformations have already been computed for a different channel)
+\item[-] \texttt{sequential}, \texttt{[0 | 1]}, default value \texttt{1}, whether or not performing the spatial registration sequentially ($t_n$ onto $t_{n\pm1}$)
 \item[-] \texttt{ref\_TP}, \texttt{int}, mandatory, time point of the reference image onto which the registration will be made.
 \item[-] \texttt{ref\_path}, \texttt{str}, default value: \texttt{None}, path to the reference image, if specified, every image will be directly registered to that particular image
 \item[-] \texttt{trsf\_type}, \texttt{str}, default value: \texttt{"rigid"}, choose between \texttt{"translation"}, \texttt{"rigid"}, \texttt{"affine"}, \texttt{"vectorfield"}
 \item[-] \texttt{registration\_depth}, \texttt{int}, default value: \texttt{3}, Maximum size of the blocks for the registration algorithm (min \texttt{0}, max \texttt{5}), the lower the value is the more the registration will take into account local details but also the more it will take time to process
-\item[-] \texttt{interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
 \item[-] \texttt{padding}, \texttt{[0 | 1]}, default value: \texttt{1}, put to \texttt{1} if you want the resulting image bounding boxes to be padded to the union of the transformed bounding boxes. Otherwise (value at \texttt{0}) all the images will be written in the reference image bounding box
 \item[-] \texttt{recompute}, \texttt{[0 | 1]}, default value: \texttt{1}, if \texttt{1}, it forces to recompute the transformations even though they already exist
-\item[-] \texttt{lowess\_interpolation}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, smoothes the transformations, so far only works with \texttt{"translations"}
-\item[-] \texttt{window\_size}, \texttt{int}, default value: \texttt{5}, size of the window for the lowess interpolation. To be used \texttt{lowess\_interpolation} has to be \texttt{1}
-\item[-] \texttt{step\_size}, \texttt{int}, default value: \texttt{100}, if it is not necessary to compute all the time points, this is the step size between the computed times. To be used \texttt{lowess\_interpolation} has to be \texttt{1}
+\item[-] \texttt{lowess}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, smoothes the transformations, so far only works with \texttt{"translations"}
+\item[-] \texttt{window\_size}, \texttt{int}, default value: \texttt{5}, size of the window for the lowess interpolation. To be used \texttt{lowess} has to be set to \texttt{1}
+\item[-]\texttt{trsf\_interpolation}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, interpolate between transformations using univariate spline interpolation, so far only works with \texttt{"translations"}
+\item[-] \texttt{step\_size}, \texttt{int}, default value: \texttt{100}, if it is not necessary to compute all the time points, this is the step size between the computed times. To be used \texttt{trsf\_interpolation} has to be \texttt{1}
+\item[-] \texttt{spline}, $1\geq \texttt{int} \geq 5$, default value: \texttt{1}, degree of the smoothing spline, $1$ is piecewise linear interpolation.
 \item[-] \texttt{sigma}, \texttt{float}, default value: \texttt{2.0}, smoothing parameter for the non-linear registration
 \item[-] \texttt{keep\_vectorfield}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, will write the transformation vector field (it will be large!)
 \end{itemize}~\\
 Apply registration parameter:
 \begin{itemize}
 \item[-] \texttt{apply\_trsf}, \texttt{[0 | 1]}, default value: \texttt{1}, if \texttt{1}, will apply the computed transformations to the images.
+\item[-] \texttt{interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
 \end{itemize}~\\
 As a general point, the format for specifying time is in the "Pythonic" way of the function \texttt{str.format()} with \texttt{t} being the time argument. For example, if you expect your time being on 6 digits with 0s to fill the corresponding format is \texttt{\{t:06d\}}, \texttt{t} is the name of the field, \texttt{0} is the filling value, \texttt{6} is the number of digits and \texttt{d} stands for digit (therefore integer). If the time is present multiple times in the image name and or path to the image, the pattern can be entered multiple times. For example, if your path to an image is similar to: \option{/path/to/image/T000493/Im\_C0\_t000493.tif} then the correct values for \option{path\_to\_data} is \option{/path/to/image/T\{t:06d\}/} and for \option{file\_name} is \option{Im\_C0\_t\{t:06d\}.tif}.
 \section{Concrete examples}
@@ -202,11 +205,13 @@ As a general point, the format for specifying time is in the "Pythonic" way of t
 		\item[-] Transformation type: Rigid (keeping in mind that resolution loss might happen)\\
 					\texttt{"trsf\_type":"rigid"}
 		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$\\
-					\texttt{"ref\_TP":$t_{ref}$}
+					\texttt{"sequential":1}
 		\item[-] Padding: yes\\
 					\texttt{"padding":1}
-		\item[-] Undersampling time with Lowess interpolation: no\\
-					\texttt{"lowess\_interpolation":0}
+		\item[-] Undersampling time: no\\
+					\texttt{"trsf\_interpolation":0}
+		\item[-] Lowess interpolation: no\\
+					\texttt{"lowess":0}
 	\end{itemize}
 \subsection{Long movies where the sample is fixed}
 \paragraph{}When the sample can be held better, then a rigid transformation might be to many degrees of freedom. More over, when the images have an anysotropic voxel size then the rotation part of the rigid transformation might orient the voxel in a way that result in the lost of some of its information. It might then be better to only allow for a translation. A typical example for such setup would be the imaging if the \textit{Drosophila} embryo. In that case the main parameters are the following:
@@ -214,14 +219,15 @@ As a general point, the format for specifying time is in the "Pythonic" way of t
 		\item[-] Transformation type: Translation\\
 					\texttt{"trsf\_type":"translation"}
 		\item[-] Computation Scheme: $t_n$ onto $t_{n\pm 1}$ or $t_n$ onto $t_{ref}$\\
-					\texttt{"ref\_TP":$t_{ref}$}\\
+					\texttt{"sequential":1}
 					or\\
-					\texttt{"ref\_TP":$t_{ref}$}\\
-					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+					\texttt{"sequential":0}
 		\item[-] Padding: yes\\
 					\texttt{"padding":1}
-		\item[-] Undersampling time with Lowess interpolation: no\\
-					\texttt{"lowess\_interpolation":0}
+		\item[-] Undersampling time: no\\
+					\texttt{"trsf\_interpolation":0}
+		\item[-] Lowess interpolation: no\\
+					\texttt{"lowess":0}
 	\end{itemize}
 \subsection{Extremely large movie where the sample slowly drifts over time}
 \paragraph{}If the sample is imaged often enough compared to its drift from the camera, then the difference between consecutive time points might not be large enough to be captured by our registration algorithm, it is then necessary to register every time point directly to the common reference frame. More over, if these movies have an extremely large number of time points and that the displacement is a smooth, slow drift, it might be useful to only compute the transformations for a subset of the time points and then to a Lowess interpolation between these time points. A typical example for such a case would be high frequency functional imaging of the nervous system explant of a \textit{Drosophila} larva [Chen's paper]. The desired main parameters are then:
@@ -229,12 +235,15 @@ As a general point, the format for specifying time is in the "Pythonic" way of t
 		\item[-] Transformation type: Translation\\
 					\texttt{"trsf\_type":"translation"}
 		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$\\
-					\texttt{"ref\_TP":$t_{ref}$}\\
-					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+					\texttt{"sequential":0}
 		\item[-] Padding: no\\
 					\texttt{"padding":0}
-		\item[-] Undersampling time with Lowess interpolation: yes\\
-					\texttt{"lowess\_interpolation":1}
+		\item[-] Undersampling time: yes\\
+					\texttt{"trsf\_interpolation":1}
+		\item[-] Lowess interpolation: depends\\
+					\texttt{"lowess":0}
+					or
+					\texttt{"lowess":1}
 	\end{itemize}
 \subsection{Correcting for non linear biological movements}
 In some extreme cases, the sample is not immobile in front of the camera creating non-linear distortions of the sample that can prevent the identification and tracking of objects in this very sample. An example for such a case is the imaging of the spinal chord of a non paralyzed Zebrafish, for these movies, the muscles start to have some activity that then deform in a non-linear manner the spinal chord. In order to look at calcium activity in cells, regardless of these muscle contractions, it is necessary to deform each time points non-linearly so they match a chosen reference point [Yinan's paper]. In that case the main parameters are the following:
@@ -242,12 +251,13 @@ In some extreme cases, the sample is not immobile in front of the camera creatin
 		\item[-] Transformation type: Non linear\\
 					\texttt{"trsf\_type":"vectorfield"}
 		\item[-] Computation Scheme: $t_n$ onto $t_{ref}$\\
-					\texttt{"ref\_TP":$t_{ref}$}\\
-					\texttt{"ref\_path":"/path/to/image/ref\_T$t_{ref}$.tif"}
+					\texttt{"sequential":0}
 		\item[-] Padding: no\\
 					\texttt{"padding":0}
-		\item[-] Undersampling time with Lowess interpolation: no\\
-					\texttt{"lowess\_interpolation":0}
+		\item[-] Undersampling time: no\\
+					\texttt{"trsf\_interpolation":0}
+		\item[-] Lowess interpolation: no\\
+					\texttt{"lowess":0}
 	\end{itemize}
 \subsection{Some special scenarios that could happen}
 \subsubsection{Computing the transformations on one channel and applying them onto a second one.}
