@@ -229,8 +229,6 @@ def prepare_paths(p):
             p.trsf_names += [n]
         p.trsf_paths = formated_paths
 
-
-    
 def build_init_trsf(trsf_type, axis, angle=None):
     trsf_mat = np.identity(4)
     if trsf_type=='flip':
@@ -343,11 +341,12 @@ def apply_trsf(p, t=None):
         flo_voxel = p.flo_voxels[A_num]
         trsf_path = p.trsf_paths[A_num]
         trsf_name = p.trsf_names[A_num]
+        init_trsf = p.init_trsfs[A_num]
         if p.test_init:
-            if isinstance(p.init_trsf[A_num], list):
+            if isinstance(init_trsf, list):
                 trsf = os.path.join(trsf_path, 'A{:d}-init.trsf'.format(A_num+1))
             else:
-                trsf = p.init_trsf[A_num]
+                trsf = init_trsf
         else:
             t_type = '' if len(p.trsf_types)<1 else p.trsf_types[-1]
             trsf = os.path.join(trsf_path,
