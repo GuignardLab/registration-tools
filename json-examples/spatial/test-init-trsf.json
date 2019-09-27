@@ -13,7 +13,7 @@
 		"/media/W/SV3/RC_15-07-09/multiview-registration/",
 		"/media/W/SV3/RC_15-07-09/multiview-registration/"
 	],
-	"init_trsf": [["flip", "X"], ["rot", "Y", 90], ["flip", "X", "rot", "Y", 90]],
+	"init_trsfs": [["flip", "X"], ["rot", "Y", 90], ["flip", "X", "rot", "Y", 90]],
 	"ref_voxel": [1, 1, 15],
 	"flo_voxels": [
 		[1, 1, 15],
