@@ -307,9 +307,9 @@ def compute_trsfs(p):
             res_trsf = os.path.join(trsf_path,
                                     trsf_name.format(a=A_num+1,
                                                      trsf=trsf_type))
-            res_voxel_trsf = os.path.join(trsf_path,
-                                          ('voxel-' + trsf_name).format(a=A_num+1,
-                                                                        trsf=trsf_type))
+            res_inv_trsf = os.path.join(trsf_path,
+                                        ('inv-' + trsf_name).format(a=A_num+1,
+                                                                      trsf=trsf_type))
             call(p.path_to_bin +
                  'blockmatching -ref ' + p.ref_A + ' -flo ' + flo_A + \
                  ' -reference-voxel %f %f %f'%p.ref_voxel + \
@@ -317,10 +317,12 @@ def compute_trsfs(p):
                  ' -trsf-type %s -py-hl 6 -py-ll %d'%(trsf_type, p.registration_depth) + \
                  init_trsf_command + \
                  ' -res-trsf ' + res_trsf +\
-                 ' -res-voxel-trsf ' + res_voxel_trsf + \
+                 # ' -res-voxel-trsf ' + res_voxel_trsf + \
                  # ' -res ' + flo_out +\
                  ' -composition-with-initial',
                  shell=True)
+            call(p.path_to_data +
+                 'invTrsf %s %s'%(res_trsf, res_inv_trsf))
 
 
 def apply_trsf(p, t=None):
