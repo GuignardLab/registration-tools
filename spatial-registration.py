@@ -321,9 +321,9 @@ def compute_trsfs(p):
                  # ' -res ' + flo_out +\
                  ' -composition-with-initial',
                  shell=True)
-            call(p.path_to_data +
-                 'invTrsf %s %s'%(res_trsf, res_inv_trsf))
-
+            call(p.path_to_bin +\
+                 'invTrsf %s %s'%(res_trsf, res_inv_trsf),
+                 shell=True)
 
 def apply_trsf(p, t=None):
     if  p.out_voxel != p.ref_voxel:
