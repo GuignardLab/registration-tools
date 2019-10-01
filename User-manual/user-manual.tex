@@ -194,11 +194,11 @@ Registration parameters:
 Apply registration parameter:
 \begin{itemize}
 \item[-] \texttt{apply\_trsf}, \texttt{[0 | 1]}, default value: \texttt{1}, if \texttt{1}, will apply the computed transformations to the images.
-\item[-] \texttt{interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
+\item[-] \texttt{image\_interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
 \end{itemize}~\\
 As a general point, the format for specifying time is in the "Pythonic" way of the function \texttt{str.format()} with \texttt{t} being the time argument. For example, if you expect your time being on 6 digits with 0s to fill the corresponding format is \texttt{\{t:06d\}}, \texttt{t} is the name of the field, \texttt{0} is the filling value, \texttt{6} is the number of digits and \texttt{d} stands for digit (therefore integer). If the time is present multiple times in the image name and or path to the image, the pattern can be entered multiple times. For example, if your path to an image is similar to: \option{/path/to/image/T000493/Im\_C0\_t000493.tif} then the correct values for \option{path\_to\_data} is \option{/path/to/image/T\{t:06d\}/} and for \option{file\_name} is \option{Im\_C0\_t\{t:06d\}.tif}.
 \section{Concrete examples}
-\paragraph{}This section exhibits concrete examples of problems and how to build a parameter file to solve it (see the summary Fig. \ref{fig:poss}).
+\paragraph{}This section exhibits concrete examples of problems and how to build a parameter file to solve it.
 \subsection{Long movies where the sample is not fixed}
 \paragraph{}A typical example is movies where the sample is somewhat free to move in front of the camera. It can happen when the part of the sample that is held in the mounting system is not rigid to the part of the sample to image (for example the cone of the mouse embryo after implantation, see \citep{McDole:2018aa}). It can also be the case when there is no possibility to hold the sample, which is then dropped and free to move (see \citep{Guignard:2017aa}). Then the desired main parameters are the following:
 	\begin{itemize}
@@ -283,11 +283,11 @@ Applying the transformations:
 					\texttt{"apply\_trsf":1}\\
 	\end{itemize}
 \subsubsection{[...]}
-\begin{figure}
-  \centering
-    \includegraphics[width=.85\textwidth]{figures/possibilities.pdf}
-  \caption{\textbf{Graph of the possible combinations} Start from one of the blue nodes, if you can go back to it, you can do it!}\label{fig:poss}
-\end{figure}
+%\begin{figure}
+%  \centering
+%    \includegraphics[width=.85\textwidth]{figures/possibilities.pdf}
+%  \caption{\textbf{Graph of the possible combinations} Start from one of the blue nodes, if you can go back to it, you can do it!}\label{fig:poss}
+%\end{figure}
 \section{Configuration file examples}
 \subsection{Long movies where the sample is not fixed}
 Description of environment:
@@ -513,6 +513,60 @@ Json file for \texttt{CH01}:
 \tab"apply\_trsf":1\\
 \}
 \end{code}
+\chapter{Spatial registration}
+\section{What spatial registration can do for you}
+Given $n$ images, provided a reference image ($I_0$), this wrapper allows you to compute the set of transformations that register the $n-1$ images onto the reference image $I_0$. This is mainly useful when multiple angles of the same sample have been acquired that then need to be co-registered together to ultimately be potentially deconvolved and fused. \underline{Warning:} This wrapper does not allow you to fuse the different angles together!!
+\subsection{Transformation types}
+As for the time registration you can choose to allow increasing degrees of freedom starting with translation to fully non linear. In the case of the spatial registration translation and rigid transformations are usually not enough due to potential small alignment of the optical system creating aberrations that require higher number of degrees of freedom to correct.
+\subsection{Alignment scheme}
+While multiple alignment can be developed and built, this wrapper only allows you to use one scheme, the simplest one: every image is registered onto a provided reference image using potential initial transformations.
+\section{Running \option{spatial-registration.py}}
+To run the script \option{spatial-registration.py} one can run the following command from the folder containing it:
+\begin{code}{0.8}
+\$ python time-registration.py
+\end{code}
+The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples/spatial}.\\
+If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what specified the user in the json file).\\
+In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
+\begin{code}{0.8}
+\$ python time-registration.py /path/to/configuration/file.json
+\end{code}
+\section{Description of the configuration file}
+\paragraph{}Everything that the script will do is determined by the configuration file. The script being somewhat flexible, the configuration file has a significant number of possible parameters. Some of them are required, others have default values and some are optional depending on the chosen options. The parameter files are written in json (\url{https://www.json.org/}), please follow the standard format so your configuration files can be read correctly.
+\subsection{List of all parameters}
+Here is an exhaustive list of all the possible parameters:\\
+File path format:
+\begin{enumerate}
+\item[-] \texttt{path\_to\_data}, \texttt{str}, mandatory, common path to the image data
+\item[-] \texttt{ref\_im}, \texttt{str}, mandatory, name of the reference image (\texttt{path\_to\_data} + \texttt{ref\_im} should be valid)
+\item[-] \texttt{flo\_im}, [\texttt{str}, ...], mandatory, list of names to the floating images, the order given in that list has to be conserved throughout the configuration file.
+\end{enumerate}
+Transformation computation:
+\begin{enumerate}
+\item[-] \texttt{compute\_trsf}, \texttt{[1 | 0]}, default \texttt{1}, whether or not to compute the transformations, 1 yes.
+\item[-] \texttt{trsf\_paths}, \texttt{str}, mandatory, paths to the output transformation folders (for each of the angles to register). If only a folder is provided the default transformation names will be \texttt{'A{a:s}-{trsf:s}.trsf'}, the \texttt{a} parameter is for the angle number (0 is the reference, 1 the first angle and so on and so forth). The \texttt{trsf} parameter is for the transformation type, if not provided only the last transformation will be kept in the case of multiple transformations are asked.
+\item[-] \texttt{init\_trsf}, [\texttt{str}, ...] or [\texttt{trsf description}, ...], when \texttt{str} it is the path to 4x4 matrices to use as initial transformations, last line should be $[0, 0, 0, 1]$, last column $[T_x, T_y, T_z,1]^T$. It is possible to specify the initial transformations manually, \texttt{trsf description} is a list, with 2 or 3 elements, the first element is the type of transformation it can be \texttt{flip} for a flip of the image or \texttt{rot} for a rotation of the image. If \texttt{flip} is the first element then only a second element is expect and it is the flip axis, it can be \texttt{X}, \texttt{Y} or \texttt{Z}. If \texttt{rot} if the first element then two other elements are expected the rotation axis (\texttt{X, Y, Z}) and then the rotation angle in degrees. If multiple transformations are necessary (flip plus rotation) these transformations can be chained. \underline{Warning:} it is recommended to use that way to specify the initial transformation to avoid mismatch between what is expected by the script and what is given in your text file.
+\item[-] \texttt{test\_init}, \texttt{[1 | 0]}, whether or not to test the initial transformations. When on, it is the only thing the script does. It is highly recommended to check if the initial transformation is correct before trying to compute any other transformation.
+\item[-] \texttt{trsf\_type}, [\texttt{str}, ...], mandatory if \texttt{compute\_trsf} is at 1, list of transformations to compute (to choose from \texttt{translation, rigid, affine, vectorfield}. The first transformation will be computed first and so on and so forth. The order is therefore important, while there is no actual constraint on it, it does not serve any purpose to compute higher degrees of freedom first.
+\item[-] \texttt{ref\_voxel}, [\texttt{float}, \texttt{float}, \texttt{float}], mandatory, x, y, z voxel size of the reference image
+\item[-] \texttt{flo\_voxel}, [[\texttt{float}, \texttt{float}, \texttt{float}], ...], mandatory, x, y, z voxel sizes of the floating images
+\item[-] \texttt{im\_sizes}, [[\texttt{int}, \texttt{int}, \texttt{int}], ...], mandatory if describing the initial transformations (as opposed to providing text files), x, y, z number of voxels of the floating images.
+\item[-] \texttt{registration\_depth}, \texttt{int}, default value: \texttt{3}, Maximum size of the blocks for the registration algorithm (min \texttt{0}, max \texttt{5}), the lower the value is the more the registration will take into account local details but also the more it will take time to process
+\end{enumerate}
+Applying the transformations:
+\begin{enumerate}
+\item[-] \texttt{apply\_trsf}, \texttt{[1 | 0]}, default \texttt{1}, whether or not to apply the transformations, 1 yes.
+\item[-] \texttt{out\_voxel}, [\texttt{float}, \texttt{float}, \texttt{float}], voxel size of the registered images. If not specified \texttt{ref\_voxel} is taken.
+\item[-] \texttt{out\_pattern}, \texttt{str}, mandatory, how to write the ouput images. Can be a folder, in that case the original image name, \option{file\_name} is kept. Can be a short string (no \texttt{"/"} in it) (suffix), in that case the string will be appended to the original name, before the file extension.
+\item[-] \texttt{image\_interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
+\item[-] \texttt{begin}, \texttt{int}, if the transformations should be applied to multiple time points one can specify the position of time information in \texttt{ref\_im} and \texttt{flo\_im} using the \texttt{.format} syntax (for example \texttt{\{t:06d\}}. Then this parameter \texttt{begin} will be the first time point to be processed
+\item[-] \texttt{end},  \texttt{int}, see \texttt{begin}, this is the last time point to be processed.
+\end{enumerate}
+\section{Notes on the produced outputs}
+\paragraph{}It is important to remember that the produced outputs (especially the transformations) are written in the context of that script, meaning that if one want to use the transformations in an external context some other information are necessary.
+\paragraph{}First of all, the provided transformations are the composition of the initial transformations and all the intermediate transformations, meaning that it allows to register $I_{flo}$ onto $I_{ref}$. The transformations unit is the unit $\min(\texttt{ref\_voxel})$ and do not include any re-sampling information (ie it always will be isometric units).
+\paragraph{}Second, the provided transformations go from the reference space into the floating space, allowing to rewrite the floating image into the reference frame. In some applications the inverse transformation is expected and therefore this script output the inverse transformations.
+\paragraph{}An example, if you would like to use these transformations in BigDataViewer you need to use the inverse transformations and to apply the scaling matrix.
 \bibliography{biblio}
 \bibliographystyle{apalike}
 \end{document}
