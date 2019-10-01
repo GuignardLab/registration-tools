@@ -70,9 +70,7 @@ class trsf_parameters(object):
 
         # Default parameters
         self.init_trsfs = [None, None, None]
-        self.write_output = False
         self.param_dict = param_dict
-        self.trsf_output = None
         self.path_to_bin = ''
         self.registration_depth = 3
         self.init_trsf_real_unit = True
