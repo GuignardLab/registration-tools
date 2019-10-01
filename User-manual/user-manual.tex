@@ -566,7 +566,7 @@ Applying the transformations:
 \paragraph{}It is important to remember that the produced outputs (especially the transformations) are written in the context of that script, meaning that if one want to use the transformations in an external context some other information are necessary.
 \paragraph{}First of all, the provided transformations are the composition of the initial transformations and all the intermediate transformations, meaning that it allows to register $I_{flo}$ onto $I_{ref}$. The transformations unit is the unit $\min(\texttt{ref\_voxel})$ and do not include any re-sampling information (ie it always will be isometric units).
 \paragraph{}Second, the provided transformations go from the reference space into the floating space, allowing to rewrite the floating image into the reference frame. In some applications the inverse transformation is expected and therefore this script output the inverse transformations.
-\paragraph{}An example, if you would like to use these transformations in BigDataViewer you need to use the inverse transformations and to apply the scaling matrix.
+\paragraph{}An example, if you would like to use these transformations in BigDataViewer you need to first provide the voxel ratio for the voxel size (and not the actual $\mu m$ value), to use the inverse transformations and to apply the scaling matrix.
 \bibliography{biblio}
 \bibliographystyle{apalike}
 \end{document}
