@@ -15,7 +15,9 @@ from pyklb import readheader
 from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
 if sys.version_info[0]<3:
-    from future.builtins import input
+    from future_builtins import input
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 class trsf_parameters(object):
     """docstring for trsf_parameters"""
@@ -136,6 +138,8 @@ class trsf_parameters(object):
         self.spline = 1
         self.trsf_interpolation = False
         self.sequential = True
+        self.time_tag = 'TM'
+        self.do_bdv = 1
 
         self.param_dict = param_dict
 
@@ -353,7 +357,10 @@ def prepare_paths(p):
             p.to_register += [max_t]
     else:
         p.to_register = p.time_points
-
+    if not hasattr(p, 'bdv_im') or p.bdv_im is None:
+        p.bdv_im = p.A0
+    if not hasattr(p, 'out_bdv') or p.out_bdv is None:
+        p.out_bdv = os.path.join(p.trsf_folder, 'bdv.xml')
 
 def lowess_filter(p, trsf_fmt):
     X_T = []
@@ -521,6 +528,156 @@ def apply_trsf(p):
         imsave((p_to_data + f_name.replace(p.im_ext, 'yzProjection.klb')),
                SpatialImage(yz_proj))
 
+def inv_trsf(trsf):
+    return np.linalg.lstsq(trsf, np.identity(4))[0]
+
+def prettify(elem):
+    """Return a pretty-printed XML string for the Element.
+    """
+    rough_string = ET.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
+
+def do_viewSetup(ViewSetup, voxel, im_size, i):
+    id_ = ET.SubElement(ViewSetup, 'id')
+    id_.text = '%d'%i
+    name = ET.SubElement(ViewSetup, 'name')
+    name.text = '%d'%i
+    size = ET.SubElement(ViewSetup, 'size')
+    size.text = '%d %d %d'%tuple(im_size)
+    voxelSize = ET.SubElement(ViewSetup, 'voxelSize')
+    unit = ET.SubElement(voxelSize, 'unit')
+    unit.text = 'microns'
+    size = ET.SubElement(voxelSize, 'size')
+    size.text = '%f %f %f'%voxel
+    attributes = ET.SubElement(ViewSetup, 'attributes')
+    illumination = ET.SubElement(attributes, 'illumination')
+    illumination.text = '0'
+    channel = ET.SubElement(attributes, 'channel')
+    channel.text = '0'
+    tile = ET.SubElement(attributes, 'tile')
+    tile.text = '0'
+    angle = ET.SubElement(attributes, 'angle')
+    angle.text = '%d'%i
+
+def do_ViewRegistration(ViewRegistrations, p, t):
+    ViewRegistration = ET.SubElement(ViewRegistrations, 'ViewRegistration')
+    ViewRegistration.set('timepoint', '%d'%t)
+    ViewRegistration.set('setup', '0')
+    ViewTransform = ET.SubElement(ViewRegistration, 'ViewTransform')
+    ViewTransform.set('type', 'affine')
+    affine = ET.SubElement(ViewTransform, 'affine')
+    f = os.path.join(p.trsf_folder, 't%06d-%06d.txt'%(t, p.ref_TP))
+    trsf = read_trsf(f)
+    trsf = inv_trsf(trsf)
+    formated_trsf = tuple(trsf[:-1,:].flatten())
+    affine.text = ('%f '*12)%formated_trsf
+    ViewTransform = ET.SubElement(ViewRegistration, 'ViewTransform')
+    ViewTransform.set('type', 'affine')
+    affine = ET.SubElement(ViewTransform, 'affine')
+    affine.text = '%f 0.0 0.0 0.0 0.0 %f 0.0 0.0 0.0 0.0 %f 0.0'%p.voxel_size
+
+def build_bdv(p):
+    if not p.im_ext in ['tif', 'klb', 'tiff']:
+        print('Image format not adapted for BigDataViewer')
+        return
+    SpimData = ET.Element('SpimData')
+    SpimData.set('version', "0.2")
+    SpimData.set('encoding', "UTF-8")
+
+    base_path = ET.SubElement(SpimData, 'BasePath')
+    base_path.set('type', 'relative')
+    base_path.text = '.'
+
+    SequenceDescription = ET.SubElement(SpimData, 'SequenceDescription')
+    
+    ImageLoader = ET.SubElement(SequenceDescription, 'ImageLoader')
+    if p.im_ext == 'klb':
+        ImageLoader.set('format', p.im_ext)
+        Resolver = ET.SubElement(ImageLoader, 'Resolver')
+        Resolver.set('type', "org.janelia.simview.klb.bdv.KlbPartitionResolver")
+        ViewSetupTemplate = ET.SubElement(Resolver, 'ViewSetupTemplate')
+        template = ET.SubElement(ViewSetupTemplate, 'template')
+        template.text = p.bdv_im.format(t=p.to_register[0])
+        timeTag = ET.SubElement(ViewSetupTemplate, 'timeTag')
+        timeTag.text = p.time_tag
+    else:
+        ImageLoader.set('format', 'spimreconstruction.stack.loci')
+        imagedirectory = ET.SubElement(ImageLoader, 'imagedirectory')
+        imagedirectory.set('type', 'relative')
+        imagedirectory.text = '.'
+        filePattern = ET.SubElement(ImageLoader, 'filePattern')
+        b = p.bdv_im.find('{t:')
+        e = b + p.bdv_im[b:].find('}')+1
+        t_pat = p.bdv_im[b:e]
+        filePattern.text = p.bdv_im.replace(t_pat, '{t}')
+        layoutTimepoints = ET.SubElement(ImageLoader, 'layoutTimepoints')
+        layoutTimepoints.text = '0'
+        layoutChannels = ET.SubElement(ImageLoader, 'layoutChannels')
+        layoutChannels.text = '0'
+        layoutIlluminations = ET.SubElement(ImageLoader, 'layoutIlluminations')
+        layoutIlluminations.text = '0'
+        layoutAngles = ET.SubElement(ImageLoader, 'layoutAngles')
+        layoutAngles.text = '0'
+        imglib2container = ET.SubElement(ImageLoader, 'imglib2container')
+        imglib2container.text = 'ArrayImgFactory'
+
+    ViewSetups = ET.SubElement(SequenceDescription, 'ViewSetups')
+    ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
+    if p.im_ext == 'klb':
+        im_size = tuple(readheader(p.A0.format(t=p.ref_TP))['imagesize_tczyx'][-1:-4:-1])
+    else:
+        im_size = tuple(imread(p.A0.format(t=p.ref_TP)).shape)
+    do_viewSetup(ViewSetup, p.voxel_size, im_size, 0)
+
+    Attributes = ET.SubElement(ViewSetups, 'Attributes')
+    Attributes.set('name', 'illumination')
+    Illumination = ET.SubElement(Attributes, 'Illumination')
+    id_ = ET.SubElement(Illumination, 'id')
+    id_.text = '0'
+    name = ET.SubElement(Illumination, 'name')
+    name.text = '0'
+
+    Attributes = ET.SubElement(ViewSetups, 'Attributes')
+    Attributes.set('name', 'channel')
+    Channel = ET.SubElement(Attributes, 'Channel')
+    id_ = ET.SubElement(Channel, 'id')
+    id_.text = '0'
+    name = ET.SubElement(Channel, 'name')
+    name.text = '0'
+
+    Attributes = ET.SubElement(ViewSetups, 'Attributes')
+    Attributes.set('name', 'tile')
+    Tile = ET.SubElement(Attributes, 'Tile')
+    id_ = ET.SubElement(Tile, 'id')
+    id_.text = '0'
+    name = ET.SubElement(Tile, 'name')
+    name.text = '0'
+
+    Attributes = ET.SubElement(ViewSetups, 'Attributes')
+    Attributes.set('name', 'angle')
+    Angle = ET.SubElement(Attributes, 'Angle')
+    id_ = ET.SubElement(Angle, 'id')
+    id_.text = '0'
+    name = ET.SubElement(Angle, 'name')
+    name.text = '0'
+
+    TimePoints = ET.SubElement(SequenceDescription, 'Timepoints')
+    TimePoints.set('type', 'range')
+    first = ET.SubElement(TimePoints, 'first')
+    first.text = '%d'%min(p.to_register)
+    last = ET.SubElement(TimePoints, 'last')
+    last.text = '%d'%max(p.to_register)
+    ViewRegistrations = ET.SubElement(SpimData, 'ViewRegistrations')
+    b = min(p.to_register)
+    e = max(p.to_register)
+    for t in range(b, e+1):
+        do_ViewRegistration(ViewRegistrations, p, t)
+
+    with open(p.out_bdv, 'w') as f:
+        f.write(prettify(SpimData))
+        f.close()
+
 if __name__ == '__main__':
     params = read_param_file()
     for p in params:
@@ -534,6 +691,8 @@ if __name__ == '__main__':
 
             if p.apply_trsf and p.trsf_type!='vectorfield':
                 apply_trsf(p)
+            # if p.do_bdv:
+            #     build_bdv(p)
         except Exception as e:
             print('Failure of %s'%p.origin_file_name)
             print(e)
