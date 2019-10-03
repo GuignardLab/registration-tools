@@ -578,7 +578,7 @@ def do_ViewRegistration(ViewRegistrations, p, t):
     affine.text = '%f 0.0 0.0 0.0 0.0 %f 0.0 0.0 0.0 0.0 %f 0.0'%p.voxel_size
 
 def build_bdv(p):
-    if not p.im_ext in ['tif', 'klb', 'tiff']:
+    if not p.im_ext in ['klb']:#['tif', 'klb', 'tiff']:
         print('Image format not adapted for BigDataViewer')
         return
     SpimData = ET.Element('SpimData')
@@ -601,26 +601,26 @@ def build_bdv(p):
         template.text = p.bdv_im.format(t=p.to_register[0])
         timeTag = ET.SubElement(ViewSetupTemplate, 'timeTag')
         timeTag.text = p.time_tag
-    else:
-        ImageLoader.set('format', 'spimreconstruction.stack.loci')
-        imagedirectory = ET.SubElement(ImageLoader, 'imagedirectory')
-        imagedirectory.set('type', 'relative')
-        imagedirectory.text = '.'
-        filePattern = ET.SubElement(ImageLoader, 'filePattern')
-        b = p.bdv_im.find('{t:')
-        e = b + p.bdv_im[b:].find('}')+1
-        t_pat = p.bdv_im[b:e]
-        filePattern.text = p.bdv_im.replace(t_pat, '{t}')
-        layoutTimepoints = ET.SubElement(ImageLoader, 'layoutTimepoints')
-        layoutTimepoints.text = '0'
-        layoutChannels = ET.SubElement(ImageLoader, 'layoutChannels')
-        layoutChannels.text = '0'
-        layoutIlluminations = ET.SubElement(ImageLoader, 'layoutIlluminations')
-        layoutIlluminations.text = '0'
-        layoutAngles = ET.SubElement(ImageLoader, 'layoutAngles')
-        layoutAngles.text = '0'
-        imglib2container = ET.SubElement(ImageLoader, 'imglib2container')
-        imglib2container.text = 'ArrayImgFactory'
+    # else:
+    #     ImageLoader.set('format', 'spimreconstruction.stack.loci')
+    #     imagedirectory = ET.SubElement(ImageLoader, 'imagedirectory')
+    #     imagedirectory.set('type', 'relative')
+    #     imagedirectory.text = '.'
+    #     filePattern = ET.SubElement(ImageLoader, 'filePattern')
+    #     b = p.bdv_im.find('{t:')
+    #     e = b + p.bdv_im[b:].find('}')+1
+    #     t_pat = p.bdv_im[b:e]
+    #     filePattern.text = p.bdv_im.replace(t_pat, '{t}')
+    #     layoutTimepoints = ET.SubElement(ImageLoader, 'layoutTimepoints')
+    #     layoutTimepoints.text = '0'
+    #     layoutChannels = ET.SubElement(ImageLoader, 'layoutChannels')
+    #     layoutChannels.text = '0'
+    #     layoutIlluminations = ET.SubElement(ImageLoader, 'layoutIlluminations')
+    #     layoutIlluminations.text = '0'
+    #     layoutAngles = ET.SubElement(ImageLoader, 'layoutAngles')
+    #     layoutAngles.text = '0'
+    #     imglib2container = ET.SubElement(ImageLoader, 'imglib2container')
+    #     imglib2container.text = 'ArrayImgFactory'
 
     ViewSetups = ET.SubElement(SequenceDescription, 'ViewSetups')
     ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
@@ -691,8 +691,8 @@ if __name__ == '__main__':
 
             if p.apply_trsf and p.trsf_type!='vectorfield':
                 apply_trsf(p)
-            # if p.do_bdv:
-            #     build_bdv(p)
+            if p.do_bdv:
+                build_bdv(p)
         except Exception as e:
             print('Failure of %s'%p.origin_file_name)
             print(e)
