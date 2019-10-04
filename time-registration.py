@@ -140,6 +140,8 @@ class trsf_parameters(object):
         self.sequential = True
         self.time_tag = 'TM'
         self.do_bdv = 1
+        self.bdv_voxel_size = None
+        self.bdv_unit = 'microns'
 
         self.param_dict = param_dict
 
@@ -361,6 +363,8 @@ def prepare_paths(p):
         p.bdv_im = p.A0
     if not hasattr(p, 'out_bdv') or p.out_bdv is None:
         p.out_bdv = os.path.join(p.trsf_folder, 'bdv.xml')
+    if p.bdv_voxel_size is None:
+        p.bdv_voxel_size = p.ref_voxel
 
 def lowess_filter(p, trsf_fmt):
     X_T = []
@@ -538,7 +542,7 @@ def prettify(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
 
-def do_viewSetup(ViewSetup, voxel, im_size, i):
+def do_viewSetup(ViewSetup, p, im_size, i):
     id_ = ET.SubElement(ViewSetup, 'id')
     id_.text = '%d'%i
     name = ET.SubElement(ViewSetup, 'name')
@@ -547,9 +551,9 @@ def do_viewSetup(ViewSetup, voxel, im_size, i):
     size.text = '%d %d %d'%tuple(im_size)
     voxelSize = ET.SubElement(ViewSetup, 'voxelSize')
     unit = ET.SubElement(voxelSize, 'unit')
-    unit.text = 'microns'
+    unit.text = p.bdv_unit
     size = ET.SubElement(voxelSize, 'size')
-    size.text = '%f %f %f'%voxel
+    size.text = '%f %f %f'%tuple(p.bdv_voxel_size)
     attributes = ET.SubElement(ViewSetup, 'attributes')
     illumination = ET.SubElement(attributes, 'illumination')
     illumination.text = '0'
@@ -628,7 +632,7 @@ def build_bdv(p):
         im_size = tuple(readheader(p.A0.format(t=p.ref_TP))['imagesize_tczyx'][-1:-4:-1])
     else:
         im_size = tuple(imread(p.A0.format(t=p.ref_TP)).shape)
-    do_viewSetup(ViewSetup, p.voxel_size, im_size, 0)
+    do_viewSetup(ViewSetup, p, im_size, 0)
 
     Attributes = ET.SubElement(ViewSetups, 'Attributes')
     Attributes.set('name', 'illumination')

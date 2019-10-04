@@ -84,6 +84,8 @@ class trsf_parameters(object):
         self.end =None
         self.trsf_types = []
         self.time_tag = 'TM'
+        self.bdv_unit = 'microns'
+        self.bdv_voxel_size = None
         self.do_bdv = 1
 
         self.__dict__.update(param_dict)
@@ -241,6 +243,8 @@ def prepare_paths(p):
         p.bdv_im = [p.ref_A] + p.flo_As
     if not hasattr(p, 'out_bdv') or p.out_bdv is None:
         p.out_bdv = os.path.join(p.trsf_paths[0], 'bdv.xml')
+    if p.bdv_voxel_size is None:
+        p.bdv_voxel_size = p.ref_voxel
 
 def build_init_trsf(trsf_type, axis, angle=None):
     trsf_mat = np.identity(4)
@@ -386,7 +390,7 @@ def prettify(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
 
-def do_viewSetup(ViewSetup, voxel, im_size, i):
+def do_viewSetup(ViewSetup, p, im_size, i):
     id_ = ET.SubElement(ViewSetup, 'id')
     id_.text = '%d'%i
     name = ET.SubElement(ViewSetup, 'name')
@@ -395,9 +399,9 @@ def do_viewSetup(ViewSetup, voxel, im_size, i):
     size.text = '%d %d %d'%tuple(im_size)
     voxelSize = ET.SubElement(ViewSetup, 'voxelSize')
     unit = ET.SubElement(voxelSize, 'unit')
-    unit.text = 'microns'
+    unit.text = p.bdv_unit
     size = ET.SubElement(voxelSize, 'size')
-    size.text = '%f %f %f'%voxel
+    size.text = '%f %f %f'%tuple(p.bdv_voxel_size)
     attributes = ET.SubElement(ViewSetup, 'attributes')
     illumination = ET.SubElement(attributes, 'illumination')
     illumination.text = '0'
@@ -455,10 +459,10 @@ def build_bdv(p):
     ViewSetups = ET.SubElement(SequenceDescription, 'ViewSetups')
     ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
     i = 0
-    do_viewSetup(ViewSetup, p.ref_voxel, p.ref_im_size, i)
+    do_viewSetup(ViewSetup, p, p.ref_im_size, i)
     for i, pi in enumerate(p.flo_voxels):
         ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
-        do_viewSetup(ViewSetup, pi, p.im_sizes[i], i+1)
+        do_viewSetup(ViewSetup, p, p.im_sizes[i], i+1)
 
     Attributes = ET.SubElement(ViewSetups, 'Attributes')
     Attributes.set('name', 'illumination')
