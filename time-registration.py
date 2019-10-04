@@ -596,35 +596,14 @@ def build_bdv(p):
     SequenceDescription = ET.SubElement(SpimData, 'SequenceDescription')
     
     ImageLoader = ET.SubElement(SequenceDescription, 'ImageLoader')
-    if p.im_ext == 'klb':
-        ImageLoader.set('format', p.im_ext)
-        Resolver = ET.SubElement(ImageLoader, 'Resolver')
-        Resolver.set('type', "org.janelia.simview.klb.bdv.KlbPartitionResolver")
-        ViewSetupTemplate = ET.SubElement(Resolver, 'ViewSetupTemplate')
-        template = ET.SubElement(ViewSetupTemplate, 'template')
-        template.text = p.bdv_im.format(t=p.to_register[0])
-        timeTag = ET.SubElement(ViewSetupTemplate, 'timeTag')
-        timeTag.text = p.time_tag
-    # else:
-    #     ImageLoader.set('format', 'spimreconstruction.stack.loci')
-    #     imagedirectory = ET.SubElement(ImageLoader, 'imagedirectory')
-    #     imagedirectory.set('type', 'relative')
-    #     imagedirectory.text = '.'
-    #     filePattern = ET.SubElement(ImageLoader, 'filePattern')
-    #     b = p.bdv_im.find('{t:')
-    #     e = b + p.bdv_im[b:].find('}')+1
-    #     t_pat = p.bdv_im[b:e]
-    #     filePattern.text = p.bdv_im.replace(t_pat, '{t}')
-    #     layoutTimepoints = ET.SubElement(ImageLoader, 'layoutTimepoints')
-    #     layoutTimepoints.text = '0'
-    #     layoutChannels = ET.SubElement(ImageLoader, 'layoutChannels')
-    #     layoutChannels.text = '0'
-    #     layoutIlluminations = ET.SubElement(ImageLoader, 'layoutIlluminations')
-    #     layoutIlluminations.text = '0'
-    #     layoutAngles = ET.SubElement(ImageLoader, 'layoutAngles')
-    #     layoutAngles.text = '0'
-    #     imglib2container = ET.SubElement(ImageLoader, 'imglib2container')
-    #     imglib2container.text = 'ArrayImgFactory'
+    ImageLoader.set('format', p.im_ext)
+    Resolver = ET.SubElement(ImageLoader, 'Resolver')
+    Resolver.set('type', "org.janelia.simview.klb.bdv.KlbPartitionResolver")
+    ViewSetupTemplate = ET.SubElement(Resolver, 'ViewSetupTemplate')
+    template = ET.SubElement(ViewSetupTemplate, 'template')
+    template.text = p.bdv_im.format(t=p.to_register[0])
+    timeTag = ET.SubElement(ViewSetupTemplate, 'timeTag')
+    timeTag.text = p.time_tag
 
     ViewSetups = ET.SubElement(SequenceDescription, 'ViewSetups')
     ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
