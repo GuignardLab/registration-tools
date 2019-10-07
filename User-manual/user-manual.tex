@@ -16,6 +16,7 @@
 \definecolor{light-gray}{gray}{0.95}
 %\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
 \newcommand{\option}[1]{{\texttt{'#1'}}}
+\newcommand{\T}[2]{T_{{#1}\leftarrow{#2}}}
 \newcommand\tab[1][.6cm]{\hspace*{#1}}
 \newcommand{\cmark}{\ding{51}}%
 \newcommand{\xmark}{\ding{55}}%
@@ -27,10 +28,22 @@
 \begin{document}
 \maketitle
 \tableofcontents
-\chapter{Installation}
+\chapter{Notes on this registration algorithm}
 \section{Purpose}
 \paragraph{}This repository has for purpose to wrap the set of tools provided by the \option{blockmatching} algorithm described in \citep{Ourselin:2000aa} and used in \citep{McDole:2018aa,Guignard:2017aa,Guignard:2014aa}.
 \paragraph{}Provided the \option{blockmatching} library installed (see \href{https://gitlab.inria.fr/greg/Klab-BlockMatching}{\underline{here}}) this wrapper allows to easily apply it to register in time or in space 3D+t movies.
+\section{Notations}
+\paragraph{}In this manual (as for the manual dedicated to the \option{blockmatching} algorithm and as often in the literature), we define an image as a function that maps nD coordinates (in our case 3D) onto a predefined subset (most likely finite) of $\mathbb{R}$ or $\mathbb{N}$, the dynamic range of the image.
+\paragraph{}Also, we refer to image transformations as functions that map 3D coordinates in a given space $S_1$ to 3D coordinates of a different space $S_2$. Such a transformation is named $\T{S_2}{S_1}$. Then, $\T{S_1}{S_2}=\T{S_2}{S_1}^{-1}$ is the transformation that maps the coordinates of the space $S_2$ onto the space $S_1$ and allows to register an image $I_1$ in $S_1$ into the space $S_2$ of an image $I_2$, building a new, registered, image $I_{1\rightarrow 2}$:
+\begin{equation*}
+\underbrace{I_{1\rightarrow 2}}_{I_1~\text{in}~I_2\text{~space}} = \underbrace{I_1}_{I_1~\text{in its original space}} \circ \underbrace{\T{S_1}{S_2}}_{\text{trsf from}~I_2~\text{space to}~I_1~\text{space}}
+\end{equation*}
+\section{Provided transformations}
+\paragraph{}In these scripts, let assume one wants to register a floating image $I_{flo}$ onto a reference image $I_{ref}$ to then create the registered floating image into the reference space (the image $I_{flo\rightarrow ref}$). Then the first output transformation provided is $\T{flo}{ref}$, sometimes the to help translation towards other softwares (such as BigDataViewer in Fiji for example), the inverse of the original transformation is provided. It is important to remember that the output transformation provided by these scripts is almost always (a few counter examples are specified later) in the units specified by the voxel size (and it is assumed that the unit provided is similar across all the images to register). This allows to simplify potential problems of difference of voxel size between the different images to co-register.
+\paragraph{}The fact that the transformations are provided in the unit specified by the user means that these scripts only compute the transformations from a given space to an other space. It does not take care of any potentially desired scaling. One can apply a scaling when specifying how to apply the transformations that have been computed (see later in this manual).
+\section{Talking to BigDataViewer, BigStitcher, ...}
+\paragraph{}The scripts provided here does not include any visualization means beside rewriting each images after transformation. 
+\chapter{Installation}
 \section{Requirements and installation, (tested on Linux, Ubuntu 18.04)}
 To install \option{blockmatching}, it is necessary to have cmake, a c/c++ compiler and zlib installed:
   \begin{code}{0.8}
