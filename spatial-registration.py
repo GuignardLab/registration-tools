@@ -145,10 +145,10 @@ def flip_matrix(axis, im_size):
         out[0,  0] = -1
         out[0, -1] = im_size[0]
     if axis == 'Y':
-        out[1,  0] = -1
+        out[1,  1] = -1
         out[1, -1] = im_size[2]
     if axis == 'Z':
-        out[2,  0] = -1
+        out[2,  2] = -1
         out[2, -1] = im_size[2]
     return out
 
@@ -238,7 +238,7 @@ def prepare_paths(p):
             e += 1
         p.begin = p.end = int(p.ref_A[s:e])
     if not hasattr(p, 'ref_im_size') or p.ref_im_size is None:
-        p.ref_im_size = p.im_sizes[0]
+        p.ref_im_size = p.flo_im_sizes[0]
     if not hasattr(p, 'bdv_im') or p.bdv_im is None:
         p.bdv_im = [p.ref_A] + p.flo_As
     if not hasattr(p, 'out_bdv') or p.out_bdv is None:
@@ -274,7 +274,7 @@ def compute_trsfs(p):
         if isinstance(init_trsf, list):
             i = 0
             trsfs = []
-            im_size = np.array(p.im_sizes[A_num], dtype=np.float)*flo_voxel
+            im_size = np.array(p.flo_im_sizes[A_num], dtype=np.float)*flo_voxel
             while i < len(init_trsf):
                 t_type = init_trsf[i]
                 i+=1
@@ -464,7 +464,7 @@ def build_bdv(p):
     do_viewSetup(ViewSetup, p, p.ref_im_size, i)
     for i, pi in enumerate(p.flo_voxels):
         ViewSetup = ET.SubElement(ViewSetups, 'ViewSetup')
-        do_viewSetup(ViewSetup, p, p.im_sizes[i], i+1)
+        do_viewSetup(ViewSetup, p, p.flo_im_sizes[i], i+1)
 
     Attributes = ET.SubElement(ViewSetups, 'Attributes')
     Attributes.set('name', 'illumination')

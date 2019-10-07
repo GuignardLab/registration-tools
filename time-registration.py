@@ -461,10 +461,12 @@ def compute_trsfs(p):
     try:
         run_produce_trsf(p, nb_cpu=1)
         if p.sequential:
-            compose_trsf(min(p.to_register), p.ref_TP,
-                         p.trsf_folder, list(p.to_register))
-            compose_trsf(max(p.to_register), p.ref_TP,
-                         p.trsf_folder, list(p.to_register))
+            if min(p.to_register) != p.ref_TP:
+                compose_trsf(min(p.to_register), p.ref_TP,
+                             p.trsf_folder, list(p.to_register))
+            if max(p.to_register) != p.ref_TP:
+                compose_trsf(max(p.to_register), p.ref_TP,
+                             p.trsf_folder, list(p.to_register))
         np.savetxt(('{:s}'+trsf_fmt).format(p.trsf_folder,
                                             flo=p.ref_TP,
                                             ref=p.ref_TP),
