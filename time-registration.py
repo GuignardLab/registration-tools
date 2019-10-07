@@ -364,7 +364,7 @@ def prepare_paths(p):
     if not hasattr(p, 'out_bdv') or p.out_bdv is None:
         p.out_bdv = os.path.join(p.trsf_folder, 'bdv.xml')
     if p.bdv_voxel_size is None:
-        p.bdv_voxel_size = p.ref_voxel
+        p.bdv_voxel_size = p.voxel_size
 
 def lowess_filter(p, trsf_fmt):
     X_T = []

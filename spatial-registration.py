@@ -290,6 +290,8 @@ def compute_trsfs(p):
             res = np.identity(4)
             for trsf in trsfs:
                 res = np.dot(res, trsf)
+            if not os.path.exists(trsf_path):
+                os.makedirs(trsf_path)
             init_trsf = os.path.join(trsf_path, 'A{:d}-init.trsf'.format(A_num+1))
             np.savetxt(init_trsf, res)
         elif not p.init_trsf_real_unit and init_trsf is not None:
