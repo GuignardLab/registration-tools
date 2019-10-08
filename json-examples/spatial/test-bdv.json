@@ -19,7 +19,7 @@
 		[1, 1, 15],
 		[1, 1, 15]
 	],
-	"im_sizes": [
+	"flo_im_sizes": [
 		[752, 2048, 79],
 		[752, 2048, 79],
 		[752, 2048, 79]
@@ -33,5 +33,7 @@
 		"W:\\SV3\\RC_15-07-09\\multiview-registration\\SPM00_TM000100_CM01_CHN00.klb",
 		"W:\\SV3\\RC_15-07-09\\multiview-registration\\SPM00_TM000100_CM02_CHN00.klb",
 		"W:\\SV3\\RC_15-07-09\\multiview-registration\\SPM00_TM000100_CM03_CHN00.klb"
-	]
+	],
+	"out_bdv": "/media/Y/Exchange/Leo/Test-spatial/bdv.xml",
+	"do_bdv": 1
 }

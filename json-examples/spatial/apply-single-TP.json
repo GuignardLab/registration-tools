@@ -1,5 +1,5 @@
 {
-	"path_to_data": "/media/W/SV3/RC_15-07-09/multiview-registration/",
+	"path_to_data": "/media/Y/Exchange/Leo/Test-spatial/TM000100/",
 	"ref_im": "SPM00_TM000100_CM00_CHN00.klb",
 	"flo_ims": [
 		"SPM00_TM000100_CM01_CHN00.klb",
@@ -8,9 +8,9 @@
 	],
 	"compute_trsf": 0,
 	"trsf_paths": [
-		"/media/W/SV3/RC_15-07-09/multiview-registration/A1-rigid.trsf",
-		"/media/W/SV3/RC_15-07-09/multiview-registration/A2-rigid.trsf",
-		"/media/W/SV3/RC_15-07-09/multiview-registration/A3-rigid.trsf"
+		"/media/Y/Exchange/Leo/TMP/spatialTrsf/A{a:d}-rigid.trsf",
+		"/media/Y/Exchange/Leo/TMP/spatialTrsf/A{a:d}-rigid.trsf",
+		"/media/Y/Exchange/Leo/TMP/spatialTrsf/A{a:d}-rigid.trsf"
 	],
 	"ref_voxel": [1, 1, 15],
 	"flo_voxels": [
