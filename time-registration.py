@@ -333,7 +333,7 @@ def prepare_paths(p):
 
     # Time points to work with
     p.time_points = np.array([i for i in np.arange(p.first, p.last + 1)
-                                  if not i in p.not_to_do])           
+                                  if not i in p.not_to_do])
     if p.check_TP:
         missing_time_points = []
         for t in p.time_points:

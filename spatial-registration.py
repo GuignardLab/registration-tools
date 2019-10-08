@@ -87,6 +87,7 @@ class trsf_parameters(object):
         self.bdv_unit = 'microns'
         self.bdv_voxel_size = None
         self.do_bdv = 0
+        self.flo_im_sizes = [None, None, None]
 
         self.__dict__.update(param_dict)
         self.ref_voxel = tuple(self.ref_voxel)
