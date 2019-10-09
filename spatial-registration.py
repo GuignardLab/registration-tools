@@ -10,6 +10,8 @@ import json
 from subprocess import call
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+if sys.version_info[0]<3:
+    from future.builtins import input
 
 class trsf_parameters(object):
     """docstring for trsf_parameters"""
