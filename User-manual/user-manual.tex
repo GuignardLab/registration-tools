@@ -367,6 +367,7 @@ Applying the transformations:
 \item[-] \texttt{image\_interpolation}, \texttt{str}, default value: \texttt{"linear"}, choose between \texttt{"nearest"} (for label images), \texttt{"linear"} and \texttt{"cspline"} (the \texttt{"cspline"} interpolation has undesirable border effects when the signal is too low)
 \item[-] \texttt{begin}, \texttt{int}, if the transformations should be applied to multiple time points one can specify the position of time information in \texttt{ref\_im} and \texttt{flo\_im} using the \texttt{.format} syntax (for example \texttt{\{t:06d\}}. Then this parameter \texttt{begin} will be the first time point to be processed
 \item[-] \texttt{end},  \texttt{int}, see \texttt{begin}, this is the last time point to be processed.
+\item[-] \texttt{copy\_ref}, \texttt{[ 1 | 0 ]}, default \texttt{0}, only useful when the output image has the same voxel size as the input image. In that case, it is possible to decide whether or not to copy the reference image. This can be useful to keep the same file name pattern across all the angles.
 \end{enumerate}
 BigDataViewer Output:
 \begin{enumerate}
