@@ -363,6 +363,8 @@ def apply_trsf(p, t=None):
         # call(p.path_to_bin +
         #     'copy %s %s'%(p.ref_A.format(t=t), p.ref_out.format(t=t)),
         #      shell=True)
+    else:
+        p.ref_out = p.ref_A
     for A_num, flo_A in enumerate(p.flo_As):
         out_voxel = p.out_voxel
         flo_voxel = p.flo_voxels[A_num]
