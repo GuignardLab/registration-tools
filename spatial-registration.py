@@ -18,6 +18,8 @@ class trsf_parameters(object):
     """docstring for trsf_parameters"""
     def check_parameters_consistancy(self):
         correct = True
+        if p.out_pattern == '':
+            print('The output pattern cannot be an empty string')
         return correct
 
     def __str__(self):
