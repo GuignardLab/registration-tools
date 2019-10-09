@@ -10,6 +10,7 @@ import json
 from subprocess import call
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from shutil import copyfile
 if sys.version_info[0]<3:
     from future.builtins import input
 
@@ -90,6 +91,7 @@ class trsf_parameters(object):
         self.bdv_voxel_size = None
         self.do_bdv = 0
         self.flo_im_sizes = [None, None, None]
+        self.copy_ref = False
 
         self.__dict__.update(param_dict)
         self.ref_voxel = tuple(self.ref_voxel)
@@ -356,10 +358,11 @@ def apply_trsf(p, t=None):
              ' -floating-voxel %f %f %f'%p.ref_voxel+
              ' -vs %f %f %f'%p.out_voxel,
              shell=True)
-    else:
-        call(p.path_to_bin +
-            'copy %s %s'%(p.ref_A.format(t=t), p.ref_out.format(t=t)),
-             shell=True)
+    elif p.copy_ref:
+        copyfile(p.ref_A.format(t=t), p.ref_out.format(t=t))
+        # call(p.path_to_bin +
+        #     'copy %s %s'%(p.ref_A.format(t=t), p.ref_out.format(t=t)),
+        #      shell=True)
     for A_num, flo_A in enumerate(p.flo_As):
         out_voxel = p.out_voxel
         flo_voxel = p.flo_voxels[A_num]
