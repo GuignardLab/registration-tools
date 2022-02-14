@@ -148,6 +148,9 @@ class trsf_parameters(object):
         if 'registration_depth' in param_dict:
             self.__dict__['registration_depth_start'] = 6
             self.__dict__['registration_depth_end'] = param_dict['registration_depth']
+        elif not 'registration_depth_start' in param_dict:
+            self.__dict__['registration_depth_start'] = 6
+            self.__dict__['registration_depth_end'] = 3
 
         self.__dict__.update(param_dict)
         self.voxel_size = tuple(self.voxel_size)
