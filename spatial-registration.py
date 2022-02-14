@@ -44,7 +44,8 @@ class trsf_parameters(object):
         tmp_just_len = len("init_trsfs".ljust(max_key, ' ') + ": ")
         already = tmp_just_len + 1
         for init_trsfs in self.init_trsfs:
-            output += (" "*(tmp_just_len-already)) + "{:s}\n".format(init_trsfs)
+            if init_trsfs is not None and 0<len(init_trsfs):
+                output += (" "*(tmp_just_len-already)) + "{:s}\n".format(init_trsfs)
             already = 0
 
         output += "trsf_types".ljust(max_key, ' ') + ": "
@@ -76,7 +77,7 @@ class trsf_parameters(object):
             f.close()
 
         # Default parameters
-        self.init_trsfs = [None, None, None]
+        self.init_trsfs = [[], [], []]
         self.param_dict = param_dict
         self.path_to_bin = ''
         self.registration_depth = 3
@@ -86,7 +87,7 @@ class trsf_parameters(object):
         self.compute_trsf = True
         self.test_init = False
         self.begin = None
-        self.end =None
+        self.end = None
         self.trsf_types = []
         self.time_tag = 'TM'
         self.bdv_unit = 'microns'
@@ -318,7 +319,8 @@ def compute_trsfs(p):
                 res_trsf = os.path.join(trsf_path, trsf_name.format(a=A_num+1,
                                                                     trsf=trsf_type))
                 call(p.path_to_bin +
-                     'blockmatching -ref ' + p.ref_A + ' -flo ' + flo_A + \
+                     'blockmatching -ref ' + p.ref_A.format(t=p.begin) + \
+                     ' -flo ' + flo_A.format(t=p.begin) + \
                      ' -reference-voxel %f %f %f'%p.ref_voxel + \
                      ' -floating-voxel %f %f %f'%flo_voxel + \
                      ' -trsf-type %s -py-hl 6 -py-ll %d'%(trsf_type, p.registration_depth) + \
@@ -337,7 +339,8 @@ def compute_trsfs(p):
                                         ('inv-' + trsf_name).format(a=A_num+1,
                                                                       trsf=trsf_type))
             call(p.path_to_bin +
-                 'blockmatching -ref ' + p.ref_A + ' -flo ' + flo_A + \
+                 'blockmatching -ref ' + p.ref_A.format(t=p.begin) + \
+                 ' -flo ' + flo_A.format(t=p.begin) + \
                  ' -reference-voxel %f %f %f'%p.ref_voxel + \
                  ' -floating-voxel %f %f %f'%flo_voxel + \
                  ' -trsf-type %s -py-hl 6 -py-ll %d'%(trsf_type, p.registration_depth) + \
