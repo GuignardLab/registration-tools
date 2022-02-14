@@ -105,8 +105,9 @@ class trsf_parameters(object):
             output += "recompute".ljust(max_key, ' ') + ": {:d}\n".format(self.recompute)
         output += "apply_trsf".ljust(max_key, ' ') + ": {:d}\n".format(self.apply_trsf)
         if self.apply_trsf:
-            output += ("projection_path".ljust(max_key, ' ') +
-                       ": {:s}\n".format(self.projection_path))
+            if self.projection_path is not None:
+                output += ("projection_path".ljust(max_key, ' ') +
+                           ": {:s}\n".format(self.projection_path))
             output += ("image_interpolation".ljust(max_key, ' ') +
                        ": {:s}\n".format(self.image_interpolation))
 
@@ -123,7 +124,6 @@ class trsf_parameters(object):
         self.not_to_do = []
         self.compute_trsf = True
         self.ref_path = None
-        self.registration_depth = 3
         self.padding = 1
         self.lowess = False
         self.window_size = 5
@@ -142,8 +142,12 @@ class trsf_parameters(object):
         self.do_bdv = 1
         self.bdv_voxel_size = None
         self.bdv_unit = 'microns'
+        self.projection_path = None
 
         self.param_dict = param_dict
+        if 'registration_depth' in param_dict:
+            self.__dict__['registration_depth_start'] = 6
+            self.__dict__['registration_depth_end'] = param_dict['registration_depth']
 
         self.__dict__.update(param_dict)
         self.voxel_size = tuple(self.voxel_size)
@@ -198,7 +202,9 @@ def produce_trsf(params):
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
-                 ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
+                 ' -trsf-type %s -py-hl %d -py-ll %d'%(p.trsf_type,
+                                                       p.registration_depth_start,
+                                                       p.registration_depth_end) + \
                  ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
                  shell=True)
         else:
@@ -214,7 +220,8 @@ def produce_trsf(params):
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
-                 ' -trsf-type affine -py-hl 6 -py-ll %d'%(p.registration_depth) + \
+                 ' -trsf-type affine -py-hl %d -py-ll %d'%(p.registration_depth_start,
+                                                           p.registration_depth_end) + \
                  ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
                  shell=True)
             call(p.path_to_bin +
@@ -224,7 +231,9 @@ def produce_trsf(params):
                  res + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
-                 ' -trsf-type %s -py-hl 6 -py-ll %d'%(p.trsf_type, p.registration_depth) + \
+                 ' -trsf-type %s -py-hl %d -py-ll %d'%(p.trsf_type,
+                                                       p.registration_depth_start,
+                                                       p.registration_depth_end) + \
                  res_trsf + \
                  (' -elastic-sigma {s:.1f} {s:.1f} {s:.1f} ' + \
                   ' -fluid-sigma {s:.1f} {s:.1f} {s:.1f}').format(s=p.sigma),
@@ -345,7 +354,7 @@ def prepare_paths(p):
             print("Aborting the process")
             exit()
     if not p.sequential:
-        p.ref_path = p.ref_path.format(t=p.ref_TP)
+        p.ref_path = p.A0.format(t=p.ref_TP)
     if p.apply_trsf:
         for i, t in enumerate(sorted(p.time_points)):
             folder_tmp = os.path.split(p.A0_out.format(t=t))[0]
@@ -515,9 +524,10 @@ def apply_trsf(p):
              ' -interpolation %s'%p.image_interpolation,
              shell=True)
         im = imread(p.A0_out.format(t=t))
-        xy_proj[:, :, i] = SpatialImage(np.max(im, axis=2))
-        xz_proj[:, :, i] = SpatialImage(np.max(im, axis=1))
-        yz_proj[:, :, i] = SpatialImage(np.max(im, axis=0))
+        if p.projection_path is not None:
+            xy_proj[:, :, i] = SpatialImage(np.max(im, axis=2))
+            xz_proj[:, :, i] = SpatialImage(np.max(im, axis=1))
+            yz_proj[:, :, i] = SpatialImage(np.max(im, axis=0))
     if p.projection_path is not None:
         if not os.path.exists(p.projection_path):
             os.makedirs(p.projection_path)
