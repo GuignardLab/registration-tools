@@ -282,7 +282,7 @@ def compute_trsfs(p):
         if isinstance(init_trsf, list):
             i = 0
             trsfs = []
-            im_size = np.array(p.flo_im_sizes[A_num], dtype=np.float)*flo_voxel
+            im_size = np.array(p.flo_im_sizes[A_num], dtype=float)*flo_voxel
             while i < len(init_trsf):
                 t_type = init_trsf[i]
                 i+=1
