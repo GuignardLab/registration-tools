@@ -139,7 +139,7 @@ class trsf_parameters(object):
         self.trsf_interpolation = False
         self.sequential = True
         self.time_tag = 'TM'
-        self.do_bdv = 1
+        self.do_bdv = 0
         self.bdv_voxel_size = None
         self.bdv_unit = 'microns'
 
@@ -527,11 +527,11 @@ def apply_trsf(p):
         f_name = p.file_name.replace(p.file_name[num_s:num_e], '')
         if not os.path.exists(p_to_data.format(t=-1)):
             os.makedirs(p_to_data.format(t=-1))
-        imsave((p_to_data + f_name.replace(p.im_ext, 'xyProjection.klb')),
+        imsave((p_to_data + f_name.replace(p.im_ext, 'xyProjection.tif')),
                SpatialImage(xy_proj))
-        imsave((p_to_data + f_name.replace(p.im_ext, 'xzProjection.klb')),
+        imsave((p_to_data + f_name.replace(p.im_ext, 'xzProjection.tif')),
                SpatialImage(xz_proj))
-        imsave((p_to_data + f_name.replace(p.im_ext, 'yzProjection.klb')),
+        imsave((p_to_data + f_name.replace(p.im_ext, 'yzProjection.tif')),
                SpatialImage(yz_proj))
 
 def inv_trsf(trsf):
