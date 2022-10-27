@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # This file is subject to the terms and conditions defined in
 # file 'LICENCE', which is part of this source code package.
-# Author: Leo Guignard (guignardl...@AT@...janelia.hhmi.org)
+# Author: Leo Guignard (leo.guignard...@AT@...univ-amu.fr)
 
 import numpy as np
 import os
@@ -13,10 +13,21 @@ from xml.dom import minidom
 from shutil import copyfile
 if sys.version_info[0]<3:
     from future.builtins import input
+from pathlib import Path
+from typing import Optional, Union, Dict, List, Tuple, Set
 
 class trsf_parameters(object):
-    """docstring for trsf_parameters"""
+    """
+    Read parameters for the registration function from a preformated json file
+    """
+
     def check_parameters_consistancy(self):
+        """
+        Function that should check parameter consistancy
+
+        @TODO:
+        write something that actually do check
+        """
         correct = True
         if self.out_pattern == '':
             print('The output pattern cannot be an empty string')
@@ -24,11 +35,7 @@ class trsf_parameters(object):
 
     def __str__(self):
         max_key = max([len(k) for k in self.__dict__.keys() if k!="param_dict"]) + 1
-        # max_tot = max([len(str(v)) else max([len(str(vi)) for vi in v])
-        #                for k, v in self.__dict__.items() 
-        #                if k!="param_dict"]) + 2 + max_key
         output  = 'The registration will run with the following arguments:\n'
-        # output += "\n" + " File format ".center(max_tot, '-') + "\n"
         output += "\n" + " File format \n"
         output += "path_to_data".ljust(max_key, ' ') + ": {:s}\n".format(self.path_to_data)
         output += "ref_im".ljust(max_key, ' ') + ": {:s}\n".format(self.ref_im)
@@ -71,7 +78,7 @@ class trsf_parameters(object):
         return output
 
 
-    def __init__(self, file_name):
+    def __init__(self, file_name: str):
         with open(file_name) as f:
             param_dict = json.load(f)
             f.close()
@@ -102,18 +109,23 @@ class trsf_parameters(object):
         self.out_voxel = tuple(self.out_voxel)
         self.origin_file_name = file_name
 
-def axis_rotation_matrix(axis, angle, min_space=None, max_space=None):
+def axis_rotation_matrix(axis: str, angle: float, min_space: Tuple[int, int, int]=None, max_space: Tuple[int, int, int]=None):
     """ Return the transformation matrix from the axis and angle necessary
-    axis : axis of rotation ("X", "Y" or "Z")
-    angle : angle of rotation (in degree)
-    min_space : coordinates of the bottom point (usually (0, 0, 0))
-    max_space : coordinates of the top point (usually im shape)
+
+    Args:
+        axis (str): axis of rotation ("X", "Y" or "Z")
+        angle (float) : angle of rotation (in degree)
+        min_space (tuple(int, int, int)): coordinates of the bottom point (usually (0, 0, 0))
+        max_space (tuple(int, int, int)): coordinates of the top point (usually im shape)
+
+    Returns:
+        (ndarray): 4x4 rotation matrix
     """
     import math
     I = np.linalg.inv
     D = np.dot
     if axis not in ["X", "Y", "Z"]:
-        raise Exception("Unknown axis : "+ str(axis))
+        raise Exception(f"Unknown axis: {axis}")
     rads = math.radians(angle)
     s = math.sin(rads)
     c = math.cos(rads)
@@ -147,22 +159,33 @@ def axis_rotation_matrix(axis, angle, min_space=None, max_space=None):
 
     return D(I(centering), D(rot, centering))
 
-def flip_matrix(axis, im_size):
+def flip_matrix(axis: str, im_size: tuple):
+    """
+    Build a matrix to flip an image according to a given axis
+
+    Args:
+        axis (str): axis along the flip is done ("X", "Y" or "Z")
+        im_size (tuple(int, int, int)): coordinates of the top point (usually im shape)
+
+    Returns:
+        (ndarray): 4x4 flipping matrix
+    """
     out = np.identity(4)
     if axis == 'X':
         out[0,  0] = -1
         out[0, -1] = im_size[0]
     if axis == 'Y':
         out[1,  1] = -1
-        out[1, -1] = im_size[2]
+        out[1, -1] = im_size[1]
     if axis == 'Z':
         out[2,  2] = -1
         out[2, -1] = im_size[2]
     return out
 
 def read_param_file():
-    ''' Asks for, reads and formats the parameter file
-    '''
+    """
+    Asks for, reads and formats the parameter file
+    """
     if len(sys.argv)<2:
         p_param = input('\nPlease inform the path to the json config file:\n')
     else:
@@ -190,11 +213,16 @@ def read_param_file():
         print('')
     return params
 
-def read_trsf(path):
-    ''' Read a transformation from a text file
-        Args:
-            path: string, path to a transformation
-    '''
+def read_trsf(path: Union[str, Path]):
+    """
+    Read a transformation from a text file
+
+    Args:
+        path (str | Path): path to a transformation
+
+    Returns:
+        (ndarray): 4x4 transformation matrix
+    """
     f = open(path)
     if f.read()[0] == '(':
         f.close()
@@ -206,7 +234,13 @@ def read_trsf(path):
         f.close()
         return np.loadtxt(path)
 
-def prepare_paths(p):
+def prepare_paths(p: trsf_parameters):
+    """
+    Prepare the paths in a format that is usable by the algorithm
+
+    Args:
+        p (trsf_parameters): path to a transformation
+    """
     p.ref_A = os.path.join(p.path_to_data, p.ref_im)
     p.flo_As = []
     for flo_im in p.flo_ims:
@@ -254,17 +288,23 @@ def prepare_paths(p):
     if p.bdv_voxel_size is None:
         p.bdv_voxel_size = p.ref_voxel
 
-def build_init_trsf(trsf_type, axis, angle=None):
-    trsf_mat = np.identity(4)
-    if trsf_type=='flip':
-        if axis.lower()=='x':
-            trsf_mat[0, 0]=-1
-            trsf_mat[0, -1]=-1
+def inv_trsf(trsf: Union[np.ndarray, List[List]]):
+    """
+    Inverse a given transformation
 
-def inv_trsf(trsf):
+    Args:
+        trsf (ndarray): 4x4 ndarray
+    """
     return np.linalg.lstsq(trsf, np.identity(4))[0]
 
-def vox_to_real(trsf, flo_vs, ref_vs):
+def vox_to_real(trsf: Union[np.ndarray, List[List]], ref_vs: List[float, float, float]):
+    """
+    Transform a transformation for voxel units to physical units
+
+    Args:
+        trsf (ndarray): 4x4 matrix
+        ref_vs (list(float, float, float)): initial voxel size in each dimension
+    """
     H_ref = [[ref_vs[0], 0        , 0        , 0],
              [0        , ref_vs[1], 0        , 0],
              [0        , 0        , ref_vs[2], 0],
@@ -272,13 +312,18 @@ def vox_to_real(trsf, flo_vs, ref_vs):
     H_ref_inv = inv_trsf(H_ref)
     return (np.dot(trsf, H_ref_inv))
 
-def compute_trsfs(p):
+def compute_trsfs(p: trsf_parameters):
+    """
+    Here is where the magic happens, give as an input the trsf_parameters object, get your transformations computed
+
+    Args:
+        p (trsf_parameters): parameters to compute the transformation
+    """
     for A_num, flo_A in enumerate(p.flo_As):
         flo_voxel = p.flo_voxels[A_num]
         init_trsf = p.init_trsfs[A_num]
         trsf_path = p.trsf_paths[A_num]
         trsf_name = p.trsf_names[A_num]
-        flo_out = p.flo_outs[A_num]
         if isinstance(init_trsf, list):
             i = 0
             trsfs = []
@@ -355,6 +400,12 @@ def compute_trsfs(p):
                  shell=True)
 
 def apply_trsf(p, t=None):
+    """
+    Apply the transformation according to `trsf_parameters`
+
+    Args:
+        p (trsf_parameters): parameters for the transformation
+    """
     if  p.out_voxel != p.ref_voxel:
         call(p.path_to_bin +
              'applyTrsf' +
@@ -365,13 +416,9 @@ def apply_trsf(p, t=None):
              shell=True)
     elif p.copy_ref:
         copyfile(p.ref_A.format(t=t), p.ref_out.format(t=t))
-        # call(p.path_to_bin +
-        #     'copy %s %s'%(p.ref_A.format(t=t), p.ref_out.format(t=t)),
-        #      shell=True)
     else:
         p.ref_out = p.ref_A
     for A_num, flo_A in enumerate(p.flo_As):
-        out_voxel = p.out_voxel
         flo_voxel = p.flo_voxels[A_num]
         trsf_path = p.trsf_paths[A_num]
         trsf_name = p.trsf_names[A_num]
@@ -398,14 +445,24 @@ def apply_trsf(p, t=None):
              ' -interpolation %s'%p.image_interpolation,
              shell=True)
 
-def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
+def prettify(elem: ET.Element):
+    """
+    Return a pretty-printed XML string for the Element.
+
+    Args:
+        elem (xml.etree.ElementTree.Element): xml element
+
+    Returns:
+        (str): a nice version of our xml file
     """
     rough_string = ET.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
 
 def do_viewSetup(ViewSetup, p, im_size, i):
+    """
+    Setup xml elements for BigDataViewer
+    """
     id_ = ET.SubElement(ViewSetup, 'id')
     id_.text = '%d'%i
     name = ET.SubElement(ViewSetup, 'name')
@@ -427,7 +484,11 @@ def do_viewSetup(ViewSetup, p, im_size, i):
     angle = ET.SubElement(attributes, 'angle')
     angle.text = '%d'%i
 
-def do_ViewRegistration(ViewRegistrations, p, t, a):
+def do_ViewRegistration(ViewRegistrations: ET.SubElement, p: trsf_parameters, t: int, a: int):
+    """
+    Write the view registration for BigDataViewer
+    """
+
     ViewRegistration = ET.SubElement(ViewRegistrations, 'ViewRegistration')
     ViewRegistration.set('timepoint', '%d'%t)
     ViewRegistration.set('setup', '%d'%a)
@@ -450,7 +511,10 @@ def do_ViewRegistration(ViewRegistrations, p, t, a):
         affine = ET.SubElement(ViewTransform, 'affine')
         affine.text = '%f 0.0 0.0 0.0 0.0 %f 0.0 0.0 0.0 0.0 %f 0.0'%p.ref_voxel
 
-def build_bdv(p):
+def build_bdv(p: trsf_parameters):
+    """
+    Build the BigDataViewer xml
+    """
     SpimData = ET.Element('SpimData')
     SpimData.set('version', "0.2")
 
