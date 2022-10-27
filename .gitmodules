@@ -1,3 +1,0 @@
-[submodule "src/IO"]
-	path = src/IO
-	url = https://github.com/GuignardLab/IO
