@@ -13,7 +13,9 @@ import numpy as np
 from IO import imread, imsave, SpatialImage
 try:
     from pyklb import readheader
+    pyklb_found = True
 except Exception as e:
+    pyklb_found = False
     print("pyklb library not found, klb files will not be generated")
 from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
@@ -218,10 +220,12 @@ def produce_trsf(params):
                 res = ' -res ' + p.A0_out.format(t=t_flo)
             else:
                 res = ''
-            if p.keep_vectorfield:
+            if p.keep_vectorfield and pyklb_found:
                 res_trsf = ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.klb'%(t_flo, t_ref)
             else:
                 res_trsf = ''
+                if p.keep_vectorfield:
+                    print('The vectorfield cannot be stored without pyklb being installed')
             call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
@@ -446,7 +450,14 @@ def pad_trsfs(p, trsf_fmt):
         im_shape = imread(p.A0.format(t=p.ref_TP)).shape
     im = SpatialImage(np.ones(im_shape), dtype=np.uint8)
     im.voxelsize = p.voxel_size
-    imsave(p.trsf_folder + 'tmp.klb', im)
+    if pyklb_found:
+        template = p.trsf_folder + 'tmp.klb'
+        res_t = 'template.klb'
+    else:
+        template = p.trsf_folder + 'tmp.tif'
+        res_t = 'template.tif'
+    
+    imsave(template, im)
     identity = np.identity(4)
    
     trsf_fmt_no_flo = trsf_fmt.replace('{flo:06d}', '%06d')
@@ -461,9 +472,9 @@ def pad_trsfs(p, trsf_fmt):
          ' -index-reference %d -first %d -last %d '%(p.ref_TP,
                                                      min(p.time_points),
                                                      max(p.time_points)) + \
-         ' -template ' + p.trsf_folder + 'tmp.klb ' + \
+         ' -template ' + p.trsf_folder + template + ' ' + \
          ' -res ' + p.trsf_folder + new_trsf_fmt_no_flo.format(ref=p.ref_TP) + \
-         ' -res-t ' + p.trsf_folder + 'template.klb ' + \
+         ' -res-t ' + p.trsf_folder + res_t + ' ' + \
          ' -trsf-type %s -vs %f %f %f'%((p.trsf_type,)+p.voxel_size),
          shell=True)
 
@@ -505,8 +516,12 @@ def apply_trsf(p):
         trsf_fmt = 't{flo:06d}-{ref:06d}-interpolated.txt'
     if p.padding:
         trsf_fmt = 't{flo:06d}-{ref:06d}-padded.txt'
-        X, Y, Z = readheader(p.trsf_folder + 'template.klb')['imagesize_tczyx'][-1:-4:-1]
-        template = p.trsf_folder + 'template.klb'
+        if pyklb_found:
+            template = p.trsf_folder + 'template.klb'
+            X, Y, Z = readheader(template)['imagesize_tczyx'][-1:-4:-1]
+        else:
+            template = p.trsf_folder + 'template.tif'
+            X, Y, Z = imread(template).shape
     elif p.A0.split('.')[-1] == 'klb':
         X, Y, Z = readheader(p.A0.format(t=p.ref_TP))['imagesize_tczyx'][-1:-4:-1]
         template = p.A0.format(t=p.ref_TP)
