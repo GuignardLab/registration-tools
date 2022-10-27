@@ -11,10 +11,8 @@ from subprocess import call
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from shutil import copyfile
-if sys.version_info[0]<3:
-    from future.builtins import input
 from pathlib import Path
-from typing import Optional, Union, Dict, List, Tuple, Set
+from typing import Union, List, Tuple
 
 class trsf_parameters(object):
     """

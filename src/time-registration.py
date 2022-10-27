@@ -11,7 +11,10 @@ from scipy import interpolate
 import json
 import numpy as np
 from IO import imread, imsave, SpatialImage
-from pyklb import readheader
+try:
+    from pyklb import readheader
+except Exception as e:
+    print("pyklb library not found, klb files will not be generated")
 from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
 if sys.version_info[0]<3:
