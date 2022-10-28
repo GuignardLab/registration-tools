@@ -37,7 +37,7 @@ Then, you can install the current library by either cloning/downloading the repo
 
 ## Usage
 
-Most of the description on how to use the two scripts is described in the [manual].
+Most of the description on how to use the two scripts is described in the [manual] (Note that the installation part is quite outdated, the remaining is ok).
 
 That being said, once installed, one can run either of the scripts from anywhere in a terminal by typing:
 

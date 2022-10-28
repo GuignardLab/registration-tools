@@ -148,6 +148,8 @@ class trsf_parameters(object):
         self.bdv_voxel_size = None
         self.bdv_unit = 'microns'
         self.projection_path = None
+        self.pre_2D = False
+        self.low_threshold = None
 
         self.param_dict = param_dict
         if 'registration_depth' in param_dict:
@@ -205,15 +207,34 @@ def produce_trsf(params):
         np.savetxt(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref), np.identity(4))
     elif t_flo !=  t_ref and (p.recompute or
           not os.path.exists(p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref))):
+        if p.low_threshold is not None:
+            th = '-ref-lt {lt:f} -flo-lt {lt:f} -no-norma'.format(p.low_threshold)
+        else:
+            th = ''
         if p.trsf_type != 'vectorfield':
+            if p.pre_2D:
+                call(p.path_to_bin +
+                    'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+                    ' -reference-voxel %f %f %f'%p.voxel_size + \
+                    ' -floating-voxel %f %f %f'%p.voxel_size + \
+                    ' -trsf-type rigid2D -py-hl %d -py-ll %d'%(p.registration_depth_start,
+                                                        p.registration_depth_end) + \
+                    ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
+                    th,
+                    shell=True)
+                pre_trsf = ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref)
+            else:
+                pre_trsf = ''
             call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
+                 pre_trsf + \
                  ' -reference-voxel %f %f %f'%p.voxel_size + \
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
                  ' -trsf-type %s -py-hl %d -py-ll %d'%(p.trsf_type,
                                                        p.registration_depth_start,
                                                        p.registration_depth_end) + \
-                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
+                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
+                 th,
                  shell=True)
         else:
             if p.apply_trsf:
@@ -232,7 +253,8 @@ def produce_trsf(params):
                  ' -floating-voxel %f %f %f'%p.voxel_size + \
                  ' -trsf-type affine -py-hl %d -py-ll %d'%(p.registration_depth_start,
                                                            p.registration_depth_end) + \
-                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref),
+                 ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
+                 th,
                  shell=True)
             call(p.path_to_bin +
                  'blockmatching -ref ' + p_im_ref + \
@@ -246,7 +268,8 @@ def produce_trsf(params):
                                                        p.registration_depth_end) + \
                  res_trsf + \
                  (' -elastic-sigma {s:.1f} {s:.1f} {s:.1f} ' + \
-                  ' -fluid-sigma {s:.1f} {s:.1f} {s:.1f}').format(s=p.sigma),
+                  ' -fluid-sigma {s:.1f} {s:.1f} {s:.1f}').format(s=p.sigma) + \
+                 th,
                  shell=True)
 
 def run_produce_trsf(p, nb_cpu=1):
