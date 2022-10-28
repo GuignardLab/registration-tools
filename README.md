@@ -49,6 +49,10 @@ or
 
 The location of the json files or folder containing the json files will be prompted and when provided the registration will start.
 
+### Example json files
+
+Few example json files are provided to help the potential users. You can find informations about what they do in the [manual].
+
 [S. Ourselin et al.]: http://www-sop.inria.fr/asclepios/Publications/Gregoire.Malandain/ourselin-miccai-2000.pdf
 [Team Morphem - inria]: https://team.inria.fr/morpheme/
 [conda]: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
