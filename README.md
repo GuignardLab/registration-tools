@@ -41,13 +41,38 @@ Most of the description on how to use the two scripts is described in the [manua
 
 That being said, once installed, one can run either of the scripts from anywhere in a terminal by typing:
 
-    time-regitration.py
+    time_registration.py
 
 or
 
-    spatial-registration.py
+    spatial_registration.py
 
 The location of the json files or folder containing the json files will be prompted and when provided the registration will start.
+
+It is also possible to run the registration from a script/notebook the following way:
+```python
+from registrationtools import TimeRegistration
+tr = TimeRegistration('path/to/param.json')
+tr.run_trsf()
+```
+
+or
+
+```python
+from registrationtools import TimeRegistration
+tr = TimeRegistration('path/to/folder/with/jsonfiles/')
+tr.run_trsf()
+```
+
+or
+
+```python
+from registrationtools import TimeRegistration
+tr = TimeRegistration()
+tr.run_trsf()
+```
+
+and a path will be asked to be inputed.
 
 ### Example json files
 
