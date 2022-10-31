@@ -3,6 +3,7 @@
 # file 'LICENCE', which is part of this source code package.
 # Author: Leo Guignard (leo.guignard...@AT@...univ-amu.fr)
 
+from pathlib import Path
 from time import time
 import os
 from subprocess import call
@@ -118,6 +119,11 @@ class trsf_parameters(object):
 
         return output
 
+    def add_path_prefix(self, prefix):
+        self.projection_path = prefix + '/' + self.projection_path
+        self.path_to_data = prefix + '/' + self.path_to_data
+        self.trsf_folder = prefix + '/' + self.trsf_folder
+        self.output_format = prefix + '/' + self.output_format
 
     def __init__(self, file_name):
         with open(file_name) as f:
@@ -215,7 +221,7 @@ class TimeRegistration:
                 th = ''
             if p.trsf_type != 'vectorfield':
                 if p.pre_2D:
-                    call(p.path_to_bin +
+                    call(self.path_to_bin +
                         'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                         ' -reference-voxel %f %f %f'%p.voxel_size + \
                         ' -floating-voxel %f %f %f'%p.voxel_size + \
@@ -227,7 +233,7 @@ class TimeRegistration:
                     pre_trsf = ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref)
                 else:
                     pre_trsf = ''
-                call(p.path_to_bin +
+                call(self.path_to_bin +
                     'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                     pre_trsf + \
                     ' -reference-voxel %f %f %f'%p.voxel_size + \
@@ -249,7 +255,7 @@ class TimeRegistration:
                     res_trsf = ''
                     if p.keep_vectorfield:
                         print('The vectorfield cannot be stored without pyklb being installed')
-                call(p.path_to_bin +
+                call(self.path_to_bin +
                     'blockmatching -ref ' + p_im_ref + ' -flo ' + p_im_flo + \
                     ' -reference-voxel %f %f %f'%p.voxel_size + \
                     ' -floating-voxel %f %f %f'%p.voxel_size + \
@@ -258,7 +264,7 @@ class TimeRegistration:
                     ' -res-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
                     th,
                     shell=True)
-                call(p.path_to_bin +
+                call(self.path_to_bin +
                     'blockmatching -ref ' + p_im_ref + \
                     ' -flo ' + p_im_flo + \
                     ' -init-trsf ' + p.trsf_folder + 't%06d-%06d.txt'%(t_flo, t_ref) + \
@@ -321,7 +327,7 @@ class TimeRegistration:
             # we need `T_{flo+1\leftarrow ref}` and `T_{flo\leftarrow ref-1}`
             trsf_1 = self.compose_trsf(flo_int, ref_t, trsf_p, tp_list)
             trsf_2 = self.compose_trsf(flo_t, flo_int, trsf_p, tp_list)
-            call(p.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1, shell=True)
+            call(self.path_to_bin + 'composeTrsf ' + out_trsf + ' -trsfs ' + trsf_2 + ' ' + trsf_1, shell=True)
         return out_trsf
 
     @staticmethod
@@ -341,7 +347,7 @@ class TimeRegistration:
                 p_param = input('\nPlease inform the path to the json config file:\n')
             else:
                 p_param = sys.argv[1]
-        stable = False
+        stable = False or isinstance(p_param, Path)
         while not stable:
             tmp = p_param.strip('"').strip("'").strip(' ')
             stable = tmp==p_param
@@ -503,7 +509,7 @@ class TimeRegistration:
             ' -index-reference %d -first %d -last %d '%(p.ref_TP,
                                                         min(p.time_points),
                                                         max(p.time_points)) + \
-            ' -template ' + p.trsf_folder + template + ' ' + \
+            ' -template ' + template + ' ' + \
             ' -res ' + p.trsf_folder + new_trsf_fmt_no_flo.format(ref=p.ref_TP) + \
             ' -res-t ' + p.trsf_folder + res_t + ' ' + \
             ' -trsf-type %s -vs %f %f %f'%((p.trsf_type,)+p.voxel_size),
@@ -516,7 +522,7 @@ class TimeRegistration:
 
         trsf_fmt = 't{flo:06d}-{ref:06d}.txt'
         try:
-            self.run_produce_trsf(p, nb_cpu=1)
+            self.run_produce_trsf(p)
             if p.sequential:
                 if min(p.to_register) != p.ref_TP:
                     self.compose_trsf(min(p.to_register), p.ref_TP,
@@ -751,10 +757,12 @@ class TimeRegistration:
     def __init__(self, params=None):
         if params is None:
             self.params = self.read_param_file()
-        elif isinstance(params, str):
+        elif isinstance(params, str) or isinstance(params, Path):
             self.params = TimeRegistration.read_param_file(params)
         else:
             self.params = params
+        if self.params is not None and 0<len(self.params):
+            self.path_to_bin = self.params[0].path_to_bin
         
 
 if __name__ == '__main__':
