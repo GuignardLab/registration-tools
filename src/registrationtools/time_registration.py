@@ -12,7 +12,7 @@ from scipy import interpolate
 import json
 import numpy as np
 from IO import imread, imsave, SpatialImage
-from typing import Union, List, Tuple
+from typing import List, Tuple
 
 try:
     from pyklb import readheader

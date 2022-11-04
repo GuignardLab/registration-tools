@@ -1,4 +1,5 @@
 from .time_registration import TimeRegistration
+from .spatial_registration import SpatialRegistration
 
 try:
     import importlib.resources as importlib_resources
@@ -10,4 +11,5 @@ except Exception as e:
     pkg = path("regsitrationtools", "data").args[0]
 
 image_path = pkg / "images"
-json_path = pkg / "JSON"
+json_path_spatial = pkg / "JSON_spatial"
+json_path_time = pkg / "JSON_time"

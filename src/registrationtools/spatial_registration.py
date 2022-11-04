@@ -30,6 +30,7 @@ class trsf_parameters(object):
         correct = True
         if self.out_pattern == "":
             print("The output pattern cannot be an empty string")
+            correct = False
         return correct
 
     def __str__(self):
@@ -92,6 +93,18 @@ class trsf_parameters(object):
         )
 
         return output
+
+    def add_path_prefix(self, prefix: str):
+        """
+        Add a prefix to all the relevant paths (this is mainly for the unitary tests)
+
+        Args:
+            prefix (str): The prefix to add in front of the path
+        """
+        self.path_to_data = str(Path(prefix) / self.path_to_data)
+        self.trsf_paths = [
+            str(Path(prefix) / trsf) for trsf in self.trsf_paths
+        ]
 
     def __init__(self, file_name: str):
         with open(file_name) as f:
@@ -349,7 +362,7 @@ class SpatialRegistration:
     def vox_to_real(
         self,
         trsf: Union[np.ndarray, List[List]],
-        ref_vs: List[float, float, float],
+        ref_vs: List[float],
     ):
         """
         Transform a transformation for voxel units to physical units
