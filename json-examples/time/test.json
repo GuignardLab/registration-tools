@@ -1,7 +1,7 @@
 {
-	"path_to_data": "",
+	"path_to_data": "src/registrationtools/data/images/",
 	"file_name": "t{t:d}.tiff",
-	"trsf_folder": "_trsf3/",
+	"trsf_folder": "_trsf3.1/",
 	"output_format": "_out/test3_t{t:d}.tiff",
 	"projection_path": "_proj3/",
 	"check_TP": 0,
