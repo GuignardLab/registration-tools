@@ -367,7 +367,7 @@ class TimeRegistration:
                     res = ""
                 if p.keep_vectorfield and pyklb_found:
                     res_trsf = (
-                        " -res-trsf "
+                        " -composition-with-initial -res-trsf "
                         + p.trsf_folder
                         + "t%06d-%06d.klb" % (t_flo, t_ref)
                     )
