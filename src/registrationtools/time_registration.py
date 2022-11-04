@@ -195,6 +195,7 @@ class trsf_parameters(object):
         self.projection_path = str(Path(prefix) / self.projection_path)
         self.path_to_data = str(Path(prefix) / self.path_to_data)
         self.trsf_folder = str(Path(prefix) / self.trsf_folder)
+        # print(self.trsf_folder)
         self.output_format = str(Path(prefix) / self.output_format)
 
     def __init__(self, file_name: str):
@@ -305,7 +306,7 @@ class TimeRegistration:
             )
         ):
             if p.low_threshold is not None or p.low_threshold<=0:
-                th = "-ref-lt {lt:f} -flo-lt {lt:f} -no-norma".format(
+                th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma".format(
                     p.low_threshold
                 )
             else:
