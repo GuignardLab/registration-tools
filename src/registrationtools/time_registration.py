@@ -13,6 +13,13 @@ import json
 import numpy as np
 from IO import imread, imsave, SpatialImage
 from typing import List, Tuple
+from statsmodels.nonparametric.smoothers_lowess import lowess
+import sys
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
+if sys.version_info[0] < 3:
+    from future.builtins import input
 
 try:
     from pyklb import readheader
@@ -21,13 +28,6 @@ try:
 except Exception as e:
     pyklb_found = False
     print("pyklb library not found, klb files will not be generated")
-from statsmodels.nonparametric.smoothers_lowess import lowess
-import sys
-
-if sys.version_info[0] < 3:
-    from future.builtins import input
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
 
 
 class trsf_parameters(object):
@@ -35,7 +35,7 @@ class trsf_parameters(object):
     Read parameters for the registration function from a preformated json file
     """
 
-    def check_parameters_consistancy(self):
+    def check_parameters_consistancy(self) -> bool:
         """
         Function that should check parameter consistancy
         """
@@ -93,7 +93,7 @@ class trsf_parameters(object):
             print("Should be an Integer between 1 and 5, you gave " + out)
         return correct
 
-    def __str__(self):
+    def __str__(self) -> str:
         max_key = (
             max([len(k) for k in self.__dict__.keys() if k != "param_dict"])
             + 1
@@ -246,12 +246,15 @@ class trsf_parameters(object):
 
 class TimeRegistration:
     @staticmethod
-    def read_trsf(path: str):
+    def read_trsf(path: str) -> np.ndarray:
         """
         Read a transformation from a text file
 
         Args:
             path (str): path to a transformation
+
+        Returns
+            (np.ndarray): 4x4 ndarray matrix
         """
         f = open(path)
         if f.read()[0] == "(":

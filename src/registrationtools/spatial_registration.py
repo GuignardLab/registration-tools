@@ -20,7 +20,7 @@ class trsf_parameters(object):
     Read parameters for the registration function from a preformated json file
     """
 
-    def check_parameters_consistancy(self):
+    def check_parameters_consistancy(self) -> bool:
         """
         Function that should check parameter consistancy
 
@@ -33,7 +33,7 @@ class trsf_parameters(object):
             correct = False
         return correct
 
-    def __str__(self):
+    def __str__(self) -> str:
         max_key = (
             max([len(k) for k in self.__dict__.keys() if k != "param_dict"])
             + 1
@@ -145,7 +145,7 @@ class SpatialRegistration:
         angle: float,
         min_space: Tuple[int, int, int] = None,
         max_space: Tuple[int, int, int] = None,
-    ):
+    ) -> np.ndarray:
         """Return the transformation matrix from the axis and angle necessary
 
         Args:
@@ -209,7 +209,7 @@ class SpatialRegistration:
         return D(I(centering), D(rot, centering))
 
     @staticmethod
-    def flip_matrix(axis: str, im_size: tuple):
+    def flip_matrix(axis: str, im_size: tuple) -> np.ndarray:
         """
         Build a matrix to flip an image according to a given axis
 
@@ -273,7 +273,7 @@ class SpatialRegistration:
         return params
 
     @staticmethod
-    def read_trsf(path: Union[str, Path]):
+    def read_trsf(path: Union[str, Path]) -> np.ndarray:
         """
         Read a transformation from a text file
 
@@ -350,12 +350,15 @@ class SpatialRegistration:
             p.bdv_voxel_size = p.ref_voxel
 
     @staticmethod
-    def inv_trsf(trsf: Union[np.ndarray, List[List]]):
+    def inv_trsf(trsf: Union[np.ndarray, List[List]]) -> np.ndarray:
         """
         Inverse a given transformation
 
         Args:
-            trsf (ndarray): 4x4 ndarray
+            trsf (np.ndarray): 4x4 ndarray
+        
+        Returns:
+            (np.ndarray): the 4x4 inverted matrix
         """
         return np.linalg.lstsq(trsf, np.identity(4))[0]
 
@@ -363,13 +366,16 @@ class SpatialRegistration:
         self,
         trsf: Union[np.ndarray, List[List]],
         ref_vs: List[float],
-    ):
+    ) -> np.ndarray:
         """
         Transform a transformation for voxel units to physical units
 
         Args:
             trsf (ndarray): 4x4 matrix
             ref_vs (list(float, float, float)): initial voxel size in each dimension
+
+        Returns:
+            (np.ndarray): new matrix in metric size
         """
         H_ref = [
             [ref_vs[0], 0, 0, 0],
