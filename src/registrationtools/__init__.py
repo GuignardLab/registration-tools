@@ -1,3 +1,5 @@
+__version__ = "0.0.1"
+
 from .time_registration import TimeRegistration
 from .spatial_registration import SpatialRegistration
 

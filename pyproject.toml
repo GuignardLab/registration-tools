@@ -10,7 +10,7 @@ profile = "black"
 line_length = 79
 
 [tool.bumpver]
-current_version = "0.3.2"
+current_version = "0.0.1"
 version_pattern = "MAJOR.MINOR.PATCH[-TAG]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
@@ -21,9 +21,9 @@ push = false
 "pyproject.toml" = [
     'current_version = "{version}"',
 ]
-"src/napari_turing/__init__.py" = [
+"src/registrationtools/__init__.py" = [
     '__version__ = "{version}"',
 ]
 "setup.cfg" = [
-    "version = {version}"
+    'version = {version}',
 ]
