@@ -531,7 +531,7 @@ class TimeRegistration:
             (list): list of `trsf_parameters` objects
         """
         if p_param is None:
-            if len(sys.argv) < 2:
+            if len(sys.argv) < 2 or sys.argv[1] == '-f':
                 p_param = input(
                     "\nPlease inform the path to the json config file:\n"
                 )
