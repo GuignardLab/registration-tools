@@ -192,11 +192,11 @@ class trsf_parameters(object):
         Args:
             prefix (str): The prefix to add in front of the path
         """
-        self.projection_path = str(Path(prefix) / self.projection_path)
-        self.path_to_data = str(Path(prefix) / self.path_to_data)
-        self.trsf_folder = str(Path(prefix) / self.trsf_folder)
-        print(self.trsf_folder)
-        self.output_format = str(Path(prefix) / self.output_format)
+        from os import path
+        self.projection_path = str(Path(prefix) / self.projection_path) + path.sep
+        self.path_to_data = str(Path(prefix) / self.path_to_data) + path.sep
+        self.trsf_folder = str(Path(prefix) / self.trsf_folder) + path.sep
+        self.output_format = str(Path(prefix) / self.output_format) + path.sep
 
     def __init__(self, file_name: str):
         with open(file_name) as f:
@@ -305,14 +305,30 @@ class TimeRegistration:
                 p.trsf_folder + "t%06d-%06d.txt" % (t_flo, t_ref)
             )
         ):
-            if p.low_threshold is not None and 0<p.low_threshold:
+            if p.low_th is not None and 0<p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
-                    p.low_threshold
+                    lt=p.low_th
                 )
             else:
                 th = ""
             if p.trsf_type != "vectorfield":
-                if p.pre_2D:
+                if p.pre_2D == 1:
+                    print(self.path_to_bin
+                        + "blockmatching -ref "
+                        + p_im_ref
+                        + " -flo "
+                        + p_im_flo
+                        + " -reference-voxel %f %f %f" % p.voxel_size
+                        + " -floating-voxel %f %f %f" % p.voxel_size
+                        + " -trsf-type rigid2D -py-hl %d -py-ll %d"
+                        % (
+                            p.registration_depth_start,
+                            p.registration_depth_end,
+                        )
+                        + " -res-trsf "
+                        + p.trsf_folder
+                        + "t%06d-%06d-tmp.txt" % (t_flo, t_ref)
+                        + th)
                     call(
                         self.path_to_bin
                         + "blockmatching -ref "
@@ -333,12 +349,32 @@ class TimeRegistration:
                         shell=True,
                     )
                     pre_trsf = (
-                        " -composition-with-initial -init-trsf "
+                        " -init-trsf "
                         + p.trsf_folder
                         + "t%06d-%06d-tmp.txt" % (t_flo, t_ref)
+                        + " -composition-with-initial "
                     )
                 else:
                     pre_trsf = ""
+                print(
+                    self.path_to_bin
+                    + "blockmatching -ref "
+                    + p_im_ref
+                    + " -flo "
+                    + p_im_flo
+                    + pre_trsf
+                    + " -reference-voxel %f %f %f" % p.voxel_size
+                    + " -floating-voxel %f %f %f" % p.voxel_size
+                    + " -trsf-type %s -py-hl %d -py-ll %d"
+                    % (
+                        p.trsf_type,
+                        p.registration_depth_start,
+                        p.registration_depth_end,
+                    )
+                    + " -res-trsf "
+                    + p.trsf_folder
+                    + "t%06d-%06d.txt" % (t_flo, t_ref)
+                    + th,)
                 call(
                     self.path_to_bin
                     + "blockmatching -ref "
