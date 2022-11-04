@@ -249,7 +249,7 @@ class TimeRegistration:
     def read_trsf(path: str):
         """
         Read a transformation from a text file
-        
+
         Args:
             path (str): path to a transformation
         """
@@ -269,7 +269,7 @@ class TimeRegistration:
         compute the transformation that registers together two consecutive in time images.
 
         Args:
-            params (tuple): a tuple with the parameter object, two consecutive time points 
+            params (tuple): a tuple with the parameter object, two consecutive time points
                 to register and a boolean to detemine wether to apply the trsf or not
         """
         (p, t1, t2, make) = params
@@ -278,9 +278,7 @@ class TimeRegistration:
             p_im_ref = p.ref_path
             t_ref = p.ref_TP
             t_flo = t2
-            if (
-                t1 == p.to_register[0]
-            ):
+            if t1 == p.to_register[0]:
                 self.__produce_trsf((p, t2, t1, make))
         else:
             if t1 < p.ref_TP:
@@ -422,7 +420,7 @@ class TimeRegistration:
         """
         Parallel processing of the transformations from t to t-1/t+1 to t (depending on t<r)
         The transformation is computed using blockmatching algorithm
-        
+
         Args:
             p (trsf_paraneters): a trsf_parameter object
         """
@@ -442,18 +440,20 @@ class TimeRegistration:
         hours = whole_time // 60
         print("%dh:%dmin:%ds" % (hours, mins, secs))
 
-    def compose_trsf(self, flo_t: int, ref_t: int, trsf_p: str, tp_list: List[int]) -> str:
+    def compose_trsf(
+        self, flo_t: int, ref_t: int, trsf_p: str, tp_list: List[int]
+    ) -> str:
         """
         Recusrively build the transformation that allows
         to register time `flo_t` onto the frame of time `ref_t`
         assuming that it exists the necessary intermediary transformations
-        
+
         Args:
             flo_t (int): time of the floating image
             ref_t (int): time of the reference image
             trsf_p (str): path to folder containing the transformations
             tp_list (list): list of time points that have been processed
-        
+
         Returns:
             out_trsf (str): path to the result composed transformation
         """
@@ -477,14 +477,16 @@ class TimeRegistration:
         return out_trsf
 
     @staticmethod
-    def __lowess_smooth(X: np.ndarray, T: np.ndarray, frac: float) -> np.ndarray:
+    def __lowess_smooth(
+        X: np.ndarray, T: np.ndarray, frac: float
+    ) -> np.ndarray:
         """
         Smooth a curve using the lowess algorithm.
         See:
             Cleveland, W.S. (1979)
             “Robust Locally Weighted Regression and Smoothing Scatterplots”.
             Journal of the American Statistical Association 74 (368): 829-836.
-        
+
         Args:
             X (np.ndarray): 1D array for the point positions
             T (np.ndarray): 1D array for the times corresponding to the `X` positions
@@ -496,7 +498,9 @@ class TimeRegistration:
         return lowess(X, T, frac=frac, is_sorted=True, return_sorted=False)
 
     @staticmethod
-    def interpolation(p: trsf_parameters, X: np.ndarray, T: np.ndarray) -> np.ndarray:
+    def interpolation(
+        p: trsf_parameters, X: np.ndarray, T: np.ndarray
+    ) -> np.ndarray:
         """
         Interpolate positional values between missing timepoints using spline interplolation
 
@@ -511,7 +515,7 @@ class TimeRegistration:
         return sp.interpolate.InterpolatedUnivariateSpline(T, X, k=p.spline)
 
     @classmethod
-    def read_param_file(clf, p_param: str=None) -> List[trsf_parameters]:
+    def read_param_file(clf, p_param: str = None) -> List[trsf_parameters]:
         """
         Asks for, reads and formats the parameter file
 
@@ -519,7 +523,7 @@ class TimeRegistration:
             p_params (str | None): path to the json parameter files.
                 It can either be a json or a folder containing json files.
                 If it is None (default), a path is asked to the user.
-        
+
         Returns:
             (list): list of `trsf_parameters` objects
         """
@@ -624,7 +628,7 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): parameter object
             trsf_fmt (srt): the string format for the initial transformations
-        
+
         Returns:
             (str): output transformation string
         """
@@ -656,7 +660,9 @@ class TimeRegistration:
             )
         return new_trsf_fmt
 
-    def interpolate(self, p: trsf_parameters, trsf_fmt: str, new_trsf_fmt: str=None) -> str:
+    def interpolate(
+        self, p: trsf_parameters, trsf_fmt: str, new_trsf_fmt: str = None
+    ) -> str:
         """
         Interpolate a set of ordered transformations (only works for translations).
         It does it from already computed transformations and write new transformations on disk.
@@ -666,7 +672,7 @@ class TimeRegistration:
             trsf_fmt (srt): the string format for the initial transformations
             new_trsf_fmt (str | None): path to the interpolated transformations. If None,
                 the format will be "t{flo:06d}-{ref:06d}-interpolated.txt"
-        
+
         Returns:
             (str): output transformation format
         """
@@ -910,7 +916,12 @@ class TimeRegistration:
         return reparsed.toprettyxml(indent="  ")
 
     @staticmethod
-    def do_viewSetup(ViewSetup: ET.SubElement, p: trsf_parameters, im_size: Tuple[int, int, int], i: int):
+    def do_viewSetup(
+        ViewSetup: ET.SubElement,
+        p: trsf_parameters,
+        im_size: Tuple[int, int, int],
+        i: int,
+    ):
         """
         Setup xml elements for BigDataViewer
 

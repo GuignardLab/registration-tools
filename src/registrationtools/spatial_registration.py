@@ -220,7 +220,9 @@ class SpatialRegistration:
         return out
 
     @classmethod
-    def read_param_file(clf, p_param: trsf_parameters=None) -> trsf_parameters:
+    def read_param_file(
+        clf, p_param: trsf_parameters = None
+    ) -> trsf_parameters:
         """
         Asks for, reads and formats the parameter file
         """
@@ -558,7 +560,12 @@ class SpatialRegistration:
         return reparsed.toprettyxml(indent="  ")
 
     @staticmethod
-    def do_viewSetup(ViewSetup: ET.SubElement, p: trsf_parameters, im_size: Tuple[int, int, int], i: int):
+    def do_viewSetup(
+        ViewSetup: ET.SubElement,
+        p: trsf_parameters,
+        im_size: Tuple[int, int, int],
+        i: int,
+    ):
         """
         Setup xml elements for BigDataViewer
 
