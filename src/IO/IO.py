@@ -1,32 +1,39 @@
-from os.path import exists, splitext, isdir, split as psplit, expanduser as expusr
+from os.path import (
+    exists,
+    splitext,
+    isdir,
+    split as psplit,
+    expanduser as expusr,
+)
 import os, fnmatch
 import warnings
-from struct import pack,unpack,calcsize
-from pickle import dumps,loads
+from struct import pack, unpack, calcsize
+from pickle import dumps, loads
 import numpy as np
 
 from .spatial_image import SpatialImage
 
 from .inrimage import read_inrimage, write_inrimage
+
 try:
     from .tif import read_tif, write_tif
 except Exception as e:
-    warnings.warn('pylibtiff library is not installed')
+    warnings.warn("pylibtiff library is not installed")
 
 try:
     from .h5 import read_h5, write_h5
 except Exception as e:
-    warnings.warn('h5py library is not installed')
+    warnings.warn("h5py library is not installed")
 
 try:
     from .klb import read_klb, write_klb
 except Exception as e:
-    warnings.warn('KLB library is not installed')
+    warnings.warn("KLB library is not installed")
 
 from .folder import read_folder
 
 
-def imread (filename, parallel = True, SP_im = True) :
+def imread(filename, parallel=True, SP_im=True):
     """Reads an image file completely into memory.
 
     It uses the file extension to determine how to read the file. It first tries
@@ -43,7 +50,7 @@ def imread (filename, parallel = True, SP_im = True) :
         |SpatialImage|
     """
     filename = expusr(filename)
-    if not exists(filename) :
+    if not exists(filename):
         raise IOError("The requested file do not exist: %s" % filename)
 
     root, ext = splitext(filename)
@@ -59,10 +66,11 @@ def imread (filename, parallel = True, SP_im = True) :
         return load(filename)
     elif ext in [".h5", ".hdf5"]:
         return read_h5(filename)
-    elif ext == '.klb':
+    elif ext == ".klb":
         return read_klb(filename, SP_im)
     elif isdir(filename):
         return read_folder(filename, parallel)
+
 
 def imsave(filename, img):
     """Save a |SpatialImage| to filename.
@@ -102,7 +110,7 @@ def imsave(filename, img):
         save(filename, img)
     elif ext in [".tiff", ".tif"]:
         write_tif(filename, img)
-    elif ext == '.klb':
+    elif ext == ".klb":
         write_klb(filename, img)
-    elif ext in ['.h5', '.hdf5']:
+    elif ext in [".h5", ".hdf5"]:
         write_h5(filename, img)

@@ -2,6 +2,7 @@ from registrationtools import TimeRegistration, image_path, json_path
 from pathlib import Path
 from shutil import rmtree
 
+
 def test_registration():
     tr = TimeRegistration(str(json_path))
     for p in tr.params:
