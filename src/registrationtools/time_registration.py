@@ -304,7 +304,7 @@ class TimeRegistration:
                 p.trsf_folder + "t%06d-%06d.txt" % (t_flo, t_ref)
             )
         ):
-            if p.low_threshold is not None:
+            if p.low_threshold is not None or p.low_threshold<=0:
                 th = "-ref-lt {lt:f} -flo-lt {lt:f} -no-norma".format(
                     p.low_threshold
                 )

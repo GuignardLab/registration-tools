@@ -41,7 +41,7 @@
 \section{Provided transformations}
 \paragraph{}In these scripts, let assume one wants to register a floating image $I_{flo}$ onto a reference image $I_{ref}$ to then create the registered floating image into the reference space (the image $I_{flo\rightarrow ref}$). Then the first output transformation provided is $\T{flo}{ref}$, sometimes to help the communication with other softwares (such as BigDataViewer in Fiji for example), the inverse of the original transformation is provided. It is important to remember that the output transformation provided by these scripts is almost always (a few counter examples are specified later) in the units specified by the voxel size (and it is assumed that the unit provided is similar across all the images to register). This allows to simplify potential problems of difference of voxel size between the different images to co-register.
 \paragraph{}The fact that the transformations are provided in the unit specified by the user means that these scripts only compute the transformations from a given space to an other space. It does not take care of any potentially desired scaling. One can apply a scaling when specifying how to apply the transformations that have been computed (see later in this manual).
-\section{Talking to BigDataViewer et al.}
+\section{Talking to BigDataViewer et al. (obsolete, maybe in a future version)}
 \paragraph{}The scripts provided here does not include any visualization means beside rewriting each images after transformation. While this can be useful to then build movies of maximum intensity projections or volumic rendering for example, it is sometimes better not to apply the transformations to the images. In that case, one can input the calculated transformations to the Fiji plugin BigDataViewer which is a great way to have a look at 3D+t data. BigDataViewer is also an entry point to other Fiji plugin such as MaMuT which allows you to manually and semi-automatically detect and track cells. Having registered data in time, in that context can be very useful.
 \paragraph{}In order to ease the transition from the output of these scripts to the input of BigDataViewer the scripts provided here can output an xml file that should be readable by BigDataViewer.
 \paragraph{}This feature is somewhat experimental and I do \textbf{not} guaranty that it will always work as intended. That being said it is good to be aware of what BigDataViewer expect, and what can be done to meet these expectations:
@@ -52,7 +52,27 @@
 \item[-] Since the transformations \textbf{have to} be in voxel unit (it is especially important when using plugins such as Multiview Reconstruction), the voxel physical size can be specified (though it will only be used to put in the meta data of the output image).
 \end{itemize}
 \chapter{Installation}
-\section{Requirements and installation, (tested on Linux, Ubuntu 18.04)}
+\section{Requirements and installation (tested on Linux)}
+We strongly advice to install this code in a separate environment using \underline{\href{https://conda.io/projects/conda/en/latest/user-guide/install/index.html}{conda}} for example.
+
+Once conda is installed, one can proceed the following way:
+\begin{code}{0.8}
+\$ conda create -n registration python=3.10\\
+\$ conda activate registration\\
+\$ conda install vt -c morpheme\\
+\$ git clone https://github.com/guignardlab/registration-tools.git\\
+\$ cd registration-tools\\
+\$ pip install .
+\end{code}
+To test whether your installation was successful or not, you can run the following commands:
+\begin{code}{0.8}
+\$ pip install '.[testing]'\\
+\$ pytest
+\end{code}
+You should maybe get warnings but no error.
+
+{\color{gray}
+\section{OLD, KEPT for posterity ... Requirements and installation (tested on Linux)}
 To install \option{blockmatching}, it is necessary to have cmake, a c/c++ compiler and zlib installed:
   \begin{code}{0.8}
     \$ sudo apt install cmake \\
@@ -119,7 +139,7 @@ Some Python libraries are also required:
 \item[-] pyklb (\url{https://github.com/bhoeckendorf/pyklb})
 \item[-] statsmodels (\url{https://www.statsmodels.org})
 \end{enumerate}
-Once everything is installed the python scripts are ready to run.
+Once everything is installed the python scripts are ready to run.}
 \chapter{Time Registration}
 \section{What time registration can do for you.}
 \paragraph{}This wrapper allows to do an intra-registration of a time-series in order to stabilize it in time. Intra stabilization is important for time-series in order to ease the extraction of quantitative features. Such features could be cell detection and tracking for images of nuclei where the tracking is harder is the image has artificial movement or the extraction of $\Delta F/F$ for functional imaging where, for the analysis, it is often assumed that that each voxel contains the same part of the brain throughout the movie. But it is mostly important to have nicer movies for presentations!
@@ -145,7 +165,7 @@ Non-linear & No & Yes & Really slow & \#voxels of the image & Correcting for pun
 \end{table}
 \subsection{Alignment scheme}
 \paragraph{}The transformations to stabilize a movie can be computed in multiple ways. The two that can be used with this wrapper are 1) by registering every single time point directly onto the reference time point and 2) by registering consecutive time points onto each others and build the composition of the transformation (see Tab. \ref{tab:scheme-prop}).
-\paragraph{}Moreover, when computing translations one can decide to only compute a subset of the time points and interpolate the translations in-between using a lowess interpolation \citep{Cleveland:1996aa}.
+\paragraph{}Moreover, when computing translations one can decide to only compute a subset of the time points and interpolate the translations in-between using a spline interpolation.%lowess interpolation \citep{Cleveland:1996aa}.
 \begin{table}
 \tabulinesep =_3mm^3mm
 \begin{tabu} to 1\textwidth {X[1,cm]|X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[1,cm] X[2,cm]}
@@ -162,25 +182,51 @@ $t_n$ onto $t_{ref}$& \cmark & \xmark & \xmark & \cmark\footnotemark[2] & \xmark
 \end{table}
 \footnotetext[1]{specific to this wrapper}
 \footnotetext[2]{for this wrapper, only if the transformation is a translation}
-\section{Running \option{time-registration.py}}
-To run the script \option{time-registration.py} one can run the following command from the folder containing it:
+\section{Running a time registration}
+Once installed, one can run a time registration either by running the script \option{time\_registration.py} from a terminal or by using the \option{TimeRegistration} Python class.\\
+\subsection{Running from the terminal as a script}
+To run the script \option{time\_registration.py} directly from the terminal, one can run the following command:
 \begin{code}{0.8}
-\$ python time-registration.py
+\$ time\_registration.py
 \end{code}
 The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples}.\\
-If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what specified the user in the json file).\\
+If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what was specified by the user in the json file).\\
 In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
 \begin{code}{0.8}
-\$ python time-registration.py /path/to/configuration/file.json
+\$ time\_registration.py /path/to/configuration/file.json
 \end{code}
+
+\subsection{Running from Python as a class}
+One can run a time registration directly from Python (in a notebook for example). It can be done the following way:
+\begin{code}{0.8}
+from registrationtools import TimeRegistration\\
+tr = TimeRegistration('path/to/param.json')\\
+tr.run\_trsf()
+\end{code}
+or
+\begin{code}{0.8}
+from registrationtools import TimeRegistration\\
+tr = TimeRegistration('path/to/json/folder')\\
+tr.run\_trsf()
+\end{code}
+or
+\begin{code}{0.8}
+from registrationtools import TimeRegistration\\
+tr = TimeRegistration()\\
+tr.run\_trsf()
+\end{code}
+In the last case, a path will be asked to the user.
+
+
+
 \section{Description of the configuration file}
 \paragraph{}Everything that the script will do is determined by the configuration file. The script being somewhat flexible, the configuration file has a significant number of possible parameters. Some of them are required, others have default values and some are optional depending on the chosen options. The parameter files are written in json (\url{https://www.json.org/}), please follow the standard format so your configuration files can be read correctly.
 \subsection{List of all parameters}
 Here is an exhaustive list of all the possible parameters:\\
 File path format:
 \begin{itemize}
-\item[-] \texttt{path\_to\_data}, \texttt{str}, mandatory, common path to the image data
-\item[-] \texttt{file\_name}, \texttt{str}, mandatory, image name pattern
+\item[-] \texttt{path\_to\_data} \texttt{str}, mandatory, common path to the image data
+\item[-] \texttt{file\_name}, \texttt{str}): mandatory, image name pattern
 \item[-] \texttt{trsf\_folder}, \texttt{str}, mandatory, output path for the transformations
 \item[-] \texttt{output\_format}, \texttt{str}, mandatory, how to write the ouput image. Can be a folder, in that case the original image name, \option{file\_name} is kept. Can be a file name, in that case it will be written in the original folder \option{path\_to\_data}. Can be a folder plus name pattern. Can be a short string (suffix), in that case the string will be appended to the original name, before the file extension.
 \item[-] \texttt{projection\_path}, \texttt{str}, default value: \texttt{None}, path to the output folder for the maximum intensity projection images. If not specified, the projection will not be performed.
@@ -209,6 +255,8 @@ Registration parameters:
 \item[-]\texttt{trsf\_interpolation}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, interpolate between transformations using univariate spline interpolation, so far only works with \texttt{"translations"}
 \item[-] \texttt{step\_size}, \texttt{int}, default value: \texttt{100}, if it is not necessary to compute all the time points, this is the step size between the computed times. To be used \texttt{trsf\_interpolation} has to be \texttt{1}
 \item[-] \texttt{spline}, $1\geq \texttt{int} \geq 5$, default value: \texttt{1}, degree of the smoothing spline, $1$ is piecewise linear interpolation.
+\item[-] \texttt{pre\_2D}, \texttt{[0 | 1]}, default value \texttt{0}, whether or not (if \texttt{1} it will do it) to do a pre alignment in 2D. For some more complex datasets it can help.
+\item[-] \texttt{low\_th}, \texttt{float}, default value \texttt{0}, an intensity threshold bellow which voxels will not be considered. If left at \texttt{0}, no threshold is applied.
 \item[-] \texttt{sigma}, \texttt{float}, default value: \texttt{2.0}, smoothing parameter for the non-linear registration
 \item[-] \texttt{keep\_vectorfield}, \texttt{[0 | 1]}, default value: \texttt{0}, if \texttt{1}, will write the transformation vector field (it will be large!)
 \end{itemize}~\\
@@ -326,17 +374,41 @@ Given $n$ images, provided a reference image ($I_0$), this wrapper allows you to
 As for the time registration you can choose to allow increasing degrees of freedom starting with translation to fully non linear. In the case of the spatial registration translation and rigid transformations are usually not enough due to potential small alignment of the optical system creating aberrations that require higher number of degrees of freedom to correct.
 \subsection{Alignment scheme}
 While multiple alignment can be developed and built, this wrapper only allows you to use one scheme, the simplest one: every image is registered onto a provided reference image using potential initial transformations.
-\section{Running \option{spatial-registration.py}}
-To run the script \option{spatial-registration.py} one can run the following command from the folder containing it:
+\section{Running a spatial registration}
+Once installed, one can run a time registration either by running the script \option{spatial\_registration.py} from a terminal or by using the \option{SpatialRegistration} Python class.\\
+\subsection{Running from the terminal as a script}
+To run the script \option{spatial\_registration.py} directly from the terminal, one can run the following command:
 \begin{code}{0.8}
-\$ python time-registration.py
+\$ spatial\_registration.py
 \end{code}
-The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples/spatial}.\\
-If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what specified the user in the json file).\\
+The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples}.\\
+If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what was specified by the user in the json file).\\
 In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
 \begin{code}{0.8}
-\$ python time-registration.py /path/to/configuration/file.json
+\$ spatial\_registration.py /path/to/configuration/file.json
 \end{code}
+
+\subsection{Running from Python as a class}
+One can run a time registration directly from Python (in a notebook for example). It can be done the following way:
+\begin{code}{0.8}
+from registrationtools import SpatialRegistration\\
+tr = SpatialRegistration('path/to/param.json')\\
+tr.run\_trsf()
+\end{code}
+or
+\begin{code}{0.8}
+from registrationtools import SpatialRegistration\\
+tr = SpatialRegistration('path/to/json/folder')\\
+tr.run\_trsf()
+\end{code}
+or
+\begin{code}{0.8}
+from registrationtools import SpatialRegistration\\
+tr = SpatialRegistration()\\
+tr.run\_trsf()
+\end{code}
+In the last case, a path will be asked to the user.
+
 \section{Description of the configuration file}
 \paragraph{}Everything that the script will do is determined by the configuration file. The script being somewhat flexible, the configuration file has a significant number of possible parameters. Some of them are required, others have default values and some are optional depending on the chosen options. The parameter files are written in json (\url{https://www.json.org/}), please follow the standard format so your configuration files can be read correctly.
 \subsection{List of all parameters}
