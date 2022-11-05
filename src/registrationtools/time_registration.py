@@ -228,7 +228,7 @@ class trsf_parameters(object):
         self.bdv_unit = "microns"
         self.projection_path = None
         self.pre_2D = False
-        self.low_threshold = None
+        self.low_th = None
 
         self.param_dict = param_dict
         if "registration_depth" in param_dict:
