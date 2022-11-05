@@ -1,0 +1,32 @@
+{
+	"path_to_data": "",
+	"ref_im": "t0.tiff",
+	"flo_ims": [
+		"t1.tiff",
+		"t2.tiff",
+		"t3.tiff"
+	],
+	"init_trsfs": [["flip", "X"], ["rot", "Y", 90], ["flip", "X", "rot", "Y", 90]],
+	"trsf_types": [
+		"rigid",
+		"affine"
+	],
+	"trsf_paths": [
+		"_trsf/a1.trsf",
+		"_trsf/a2.trsf",
+		"_trsf/a3.trsf"
+	],
+	"ref_voxel": [1, 1, 15],
+	"flo_voxels": [
+		[1, 1, 15],
+		[1, 1, 15],
+		[1, 1, 15]
+	],
+	"flo_im_sizes": [
+		[128, 111, 5],
+		[128, 111, 5],
+		[128, 111, 5]
+	],
+	"out_voxel": [5, 5, 5],
+	"out_pattern": "SpatialRegistration"
+}

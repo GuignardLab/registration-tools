@@ -1,0 +1,26 @@
+{
+	"path_to_data": "",
+	"file_name": "t{t:d}.tiff",
+	"trsf_folder": "_trsf2/",
+	"output_format": "_out/test2_t{t:d}.tiff",
+	"projection_path": "_proj2/",
+	"check_TP": 0,
+	"path_to_bin": "",
+
+	"voxel_size": [0.32, 0.32, 1],
+	"first": 1,
+	"last": 5,
+	"not_to_do": [],
+
+	"compute_trsf": 1,
+	"ref_TP": 1,
+	"trsf_type": "affine",
+	"padding": 1,
+	"recompute": 1,
+	"registration_depth_end": 1,
+
+	"apply_trsf": 1,
+	"time_tag": "t_",
+	"out_bdv": ""
+}
+
