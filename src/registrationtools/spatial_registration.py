@@ -57,7 +57,7 @@ class trsf_parameters(object):
         already = tmp_just_len + 1
         for init_trsfs in self.init_trsfs:
             if init_trsfs is not None and 0 < len(init_trsfs):
-                output += (" " * (tmp_just_len - already)) + "{:s}\n".format(
+                output += (" " * (tmp_just_len - already)) + "{}\n".format(
                     init_trsfs
                 )
             already = 0
