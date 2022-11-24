@@ -14,7 +14,7 @@ title: Registration toolbox Manual
 
 This repository has for purpose to wrap the set of tools provided by the
 `’blockmatching’` algorithm described in [@Ourselin:2000aa] and used in
-[@McDole:2018aa; @Guignard:2017aa; @Guignard:2014aa].
+[@McDole:2018aa; @Guignard:2020aa; @Guignard:2014aa].
 
 ##### 
 
@@ -72,7 +72,7 @@ potentially desired scaling. One can apply a scaling when specifying how
 to apply the transformations that have been computed (see later in this
 manual).
 
-## Talking to BigDataViewer et al.
+## Talking to BigDataViewer et al. (obsolete, maybe in a future version)
 
 ##### 
 
@@ -117,7 +117,42 @@ expectations:
 
 # Installation
 
-## Requirements and installation, (tested on Linux, Ubuntu 18.04)
+## Requirements and installation (tested on Linux)
+
+We strongly advice to install this code in a separate environment using
+[[conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)]{.underline}
+for example.
+
+Once conda is installed, one can proceed the following way:\
+
+> ` $ conda create -n registration python=3.10`\
+> `$ conda activate registration`\
+> `$ conda install vt -c morpheme`\
+> `$ pip install 3D-registration`\
+
+\
+
+To test whether your installation was successful or not, you can
+download the GitHub repository and run the tests the following way:\
+
+> ` $ git clone https://github.com/GuignardLab/registration-tools.git`\
+> `$ cd registration-tools`\
+> `$ pip install ’.[testing]’`\
+> `$ pytest`\
+
+\
+You should maybe get warnings but no error.
+
+##### 
+
+To install the latest version of the code you can install
+3D-registration directly from the git repository:\
+
+> ` $ pip install git+https://github.com/GuignardLab/registration-tools.git`\
+
+\
+
+## OLD, KEPT for posterity \... Requirements and installation (tested on Linux)
 
 To install `’blockmatching’`, it is necessary to have cmake, a c/c++
 compiler and zlib installed:\
@@ -197,7 +232,7 @@ Some Python libraries are also required:
 
 2.  Numpy (<https://numpy.org/>)
 
-3.  IO (<https://github.com/leoguignard/IO>)
+3.  IO (<https://github.com/GuignardLab/IO>)
 
     1.  h5py (<https://pypi.python.org/pypi/h5py>)
 
@@ -268,7 +303,7 @@ reference="tab:scheme-prop"}).
 
 Moreover, when computing translations one can decide to only compute a
 subset of the time points and interpolate the translations in-between
-using a lowess interpolation [@Cleveland:1996aa].
+using a spline interpolation.
 
 =\_3mm\^3mm
 
@@ -282,12 +317,18 @@ of time (Embryo development)\
 $t_n$ onto $t_{ref}$& & & & & & Fixed samples (Functional imaging)\
 :::
 
-## Running `’time-registration.py’`
+## Running a time registration
 
-To run the script `’time-registration.py’` one can run the following
-command from the folder containing it:\
+Once installed, one can run a time registration either by running the
+script `’time-registration.py’` from a terminal or by using the
+`’TimeRegistration’` Python class.\
 
-> ` $ python time-registration.py `
+### Running from the terminal as a script
+
+To run the script `’time-registration’` directly from the terminal, one
+can run the following command:\
+
+> ` $ time-registration `
 
 \
 The script then prompt the user to inform a path to the json
@@ -296,14 +337,40 @@ configuration file. Some examples are provided in the folder
 `’json-examples’`.\
 If the configuration file is correctly filled, the script will then
 compute the registrations and output the registered images (according to
-what specified the user in the json file).\
+what was specified by the user in the json file).\
 In order to skip entering the path to the configuration file(s) one can
 also run the script as previously appending the name of the
 configuration file to the command:\
 
-> ` $ python time-registration.py /path/to/configuration/file.json `
+> ` $ time-registration /path/to/configuration/file.json `
 
 \
+
+### Running from Python as a class
+
+One can run a time registration directly from Python (in a notebook for
+example). It can be done the following way:\
+
+> ` from registrationtools import TimeRegistration`\
+> `tr = TimeRegistration(’path/to/param.json’)`\
+> `tr.run_trsf() `
+
+\
+or\
+
+> ` from registrationtools import TimeRegistration`\
+> `tr = TimeRegistration(’path/to/json/folder’)`\
+> `tr.run_trsf() `
+
+\
+or\
+
+> ` from registrationtools import TimeRegistration`\
+> `tr = TimeRegistration()`\
+> `tr.run_trsf() `
+
+\
+In the last case, a path will be asked to the user.
 
 ## Description of the configuration file
 
@@ -322,9 +389,9 @@ configuration files can be read correctly.
 Here is an exhaustive list of all the possible parameters:\
 File path format:
 
--   `path_to_data`, `str`, mandatory, common path to the image data
+-   `path_to_data` `str`, mandatory, common path to the image data
 
--   `file_name`, `str`, mandatory, image name pattern
+-   `file_name`, `str`): mandatory, image name pattern
 
 -   `trsf_folder`, `str`, mandatory, output path for the transformations
 
@@ -412,6 +479,14 @@ Registration parameters:
 
 -   `spline`, $1\geq \texttt{int} \geq 5$, default value: `1`, degree of
     the smoothing spline, $1$ is piecewise linear interpolation.
+
+-   `pre_2D`, `[0 | 1]`, default value `0`, whether or not (if `1` it
+    will do it) to do a pre alignment in 2D. For some more complex
+    datasets it can help.
+
+-   `low_th`, `float`, default value `0`, an intensity threshold bellow
+    which voxels will not be considered. If left at `0`, no threshold is
+    applied.
 
 -   `sigma`, `float`, default value: `2.0`, smoothing parameter for the
     non-linear registration
@@ -671,28 +746,60 @@ allows you to use one scheme, the simplest one: every image is
 registered onto a provided reference image using potential initial
 transformations.
 
-## Running `’spatial-registration.py’`
+## Running a spatial registration
 
-To run the script `’spatial-registration.py’` one can run the following
-command from the folder containing it:\
+Once installed, one can run a time registration either by running the
+script `’spatial-registration’` from a terminal or by using the
+`’SpatialRegistration’` Python class.\
 
-> ` $ python time-registration.py `
+### Running from the terminal as a script
+
+To run the script `’spatial-registration’` directly from the terminal,
+one can run the following command:\
+
+> ` $ spatial-registration `
 
 \
 The script then prompt the user to inform a path to the json
 configuration files or to a folder containing at least one json
 configuration file. Some examples are provided in the folder
-`’json-examples/spatial’`.\
+`’json-examples’`.\
 If the configuration file is correctly filled, the script will then
 compute the registrations and output the registered images (according to
-what specified the user in the json file).\
+what was specified by the user in the json file).\
 In order to skip entering the path to the configuration file(s) one can
 also run the script as previously appending the name of the
 configuration file to the command:\
 
-> ` $ python time-registration.py /path/to/configuration/file.json `
+> ` $ spatial-registration /path/to/configuration/file.json `
 
 \
+
+### Running from Python as a class
+
+One can run a time registration directly from Python (in a notebook for
+example). It can be done the following way:\
+
+> ` from registrationtools import SpatialRegistration`\
+> `tr = SpatialRegistration(’path/to/param.json’)`\
+> `tr.run_trsf() `
+
+\
+or\
+
+> ` from registrationtools import SpatialRegistration`\
+> `tr = SpatialRegistration(’path/to/json/folder’)`\
+> `tr.run_trsf() `
+
+\
+or\
+
+> ` from registrationtools import SpatialRegistration`\
+> `tr = SpatialRegistration()`\
+> `tr.run_trsf() `
+
+\
+In the last case, a path will be asked to the user.
 
 ## Description of the configuration file
 

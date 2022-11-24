@@ -30,7 +30,7 @@
 \tableofcontents
 \chapter{Notes on this registration algorithm}
 \section{Purpose}
-\paragraph{}This repository has for purpose to wrap the set of tools provided by the \option{blockmatching} algorithm described in \citep{Ourselin:2000aa} and used in \citep{McDole:2018aa,Guignard:2017aa,Guignard:2014aa}.
+\paragraph{}This repository has for purpose to wrap the set of tools provided by the \option{blockmatching} algorithm described in \citep{Ourselin:2000aa} and used in \citep{McDole:2018aa,Guignard:2020aa,Guignard:2014aa}.
 \paragraph{}Provided the \option{blockmatching} library installed (see \href{https://gitlab.inria.fr/greg/Klab-BlockMatching}{\underline{here}}) this wrapper allows to easily apply it to register in time or in space 3D+t movies.
 \section{Notations}
 \paragraph{}In this manual (as for the manual dedicated to the \option{blockmatching} algorithm and as often in the literature), we define an image as a function that maps nD coordinates (in our case 3D) onto a predefined subset (most likely finite) of $\mathbb{R}$ or $\mathbb{N}$, the dynamic range of the image.
@@ -60,16 +60,23 @@ Once conda is installed, one can proceed the following way:
 \$ conda create -n registration python=3.10\\
 \$ conda activate registration\\
 \$ conda install vt -c morpheme\\
-\$ git clone https://github.com/guignardlab/registration-tools.git\\
-\$ cd registration-tools\\
-\$ pip install .
+\$ pip install 3D-registration\\
 \end{code}
-To test whether your installation was successful or not, you can run the following commands:
+
+To test whether your installation was successful or not, you can download the GitHub repository and run the tests the following way:
 \begin{code}{0.8}
+\$ git clone https://github.com/GuignardLab/registration-tools.git\\
+\$ cd registration-tools\\
 \$ pip install '.[testing]'\\
-\$ pytest
+\$ pytest\\
 \end{code}
 You should maybe get warnings but no error.
+
+
+\paragraph{}To install the latest version of the code you can install 3D-registration directly from the git repository:
+\begin{code}{0.8}
+\$ pip install git+https://github.com/GuignardLab/registration-tools.git\\
+\end{code}
 
 {\color{gray}
 \section{OLD, KEPT for posterity ... Requirements and installation (tested on Linux)}
@@ -131,7 +138,7 @@ Some Python libraries are also required:
 \begin{enumerate}
 \item[-] Scipy (\url{https://www.scipy.org/})
 \item[-] Numpy (\url{https://numpy.org/})
-\item[-] IO (\url{https://github.com/leoguignard/IO})
+\item[-] IO (\url{https://github.com/GuignardLab/IO})
 \begin{enumerate}
 \item[-] h5py (\url{https://pypi.python.org/pypi/h5py})
 \item[-] pylibtiff (\url{https://github.com/pearu/pylibtiff})
@@ -183,17 +190,17 @@ $t_n$ onto $t_{ref}$& \cmark & \xmark & \xmark & \cmark\footnotemark[2] & \xmark
 \footnotetext[1]{specific to this wrapper}
 \footnotetext[2]{for this wrapper, only if the transformation is a translation}
 \section{Running a time registration}
-Once installed, one can run a time registration either by running the script \option{time\_registration.py} from a terminal or by using the \option{TimeRegistration} Python class.\\
+Once installed, one can run a time registration either by running the script \option{time-registration.py} from a terminal or by using the \option{TimeRegistration} Python class.\\
 \subsection{Running from the terminal as a script}
-To run the script \option{time\_registration.py} directly from the terminal, one can run the following command:
+To run the script \option{time-registration} directly from the terminal, one can run the following command:
 \begin{code}{0.8}
-\$ time\_registration.py
+\$ time-registration
 \end{code}
 The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples}.\\
 If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what was specified by the user in the json file).\\
 In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
 \begin{code}{0.8}
-\$ time\_registration.py /path/to/configuration/file.json
+\$ time-registration /path/to/configuration/file.json
 \end{code}
 
 \subsection{Running from Python as a class}
@@ -375,17 +382,17 @@ As for the time registration you can choose to allow increasing degrees of freed
 \subsection{Alignment scheme}
 While multiple alignment can be developed and built, this wrapper only allows you to use one scheme, the simplest one: every image is registered onto a provided reference image using potential initial transformations.
 \section{Running a spatial registration}
-Once installed, one can run a time registration either by running the script \option{spatial\_registration.py} from a terminal or by using the \option{SpatialRegistration} Python class.\\
+Once installed, one can run a time registration either by running the script \option{spatial-registration} from a terminal or by using the \option{SpatialRegistration} Python class.\\
 \subsection{Running from the terminal as a script}
-To run the script \option{spatial\_registration.py} directly from the terminal, one can run the following command:
+To run the script \option{spatial-registration} directly from the terminal, one can run the following command:
 \begin{code}{0.8}
-\$ spatial\_registration.py
+\$ spatial-registration
 \end{code}
 The script then prompt the user to inform a path to the json configuration files or to a folder containing at least one json configuration file. Some examples are provided in the folder \option{json-examples}.\\
 If the configuration file is correctly filled, the script will then compute the registrations and output the registered images (according to what was specified by the user in the json file).\\
 In order to skip entering the path to the configuration file(s) one can also run the script as previously appending the name of the configuration file to the command:
 \begin{code}{0.8}
-\$ spatial\_registration.py /path/to/configuration/file.json
+\$ spatial-registration /path/to/configuration/file.json
 \end{code}
 
 \subsection{Running from Python as a class}
