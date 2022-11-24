@@ -781,6 +781,6 @@ class SpatialRegistration:
             self.path_to_bin = self.params[0].path_to_bin
 
 
-if __name__ == "__main__":
+def spatial_registration():
     reg = SpatialRegistration()
     reg.run_trsf()

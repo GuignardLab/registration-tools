@@ -29,11 +29,13 @@ Then, to install the whole thing, it is necessary to first install blockmatching
     
     conda install vt -c morpheme
 
-Then, you can install the current library by either cloning/downloading the repository and installing it from there. For example the following way:
+Then, you can install the 3D-registration library either directly via pip:
 
-    git clone https://github.com/leoguignard/registration-tools.git
-    cd registration-tools
-    pip install .
+    pip install 3D-registration
+
+Or, if you want the latest version, by specifying the git repository:
+
+    pip install git+https://github.com/leoguignard/registration-tools.git
 
 ## Usage
 
@@ -41,11 +43,11 @@ Most of the description on how to use the two scripts is described in the [manua
 
 That being said, once installed, one can run either of the scripts from anywhere in a terminal by typing:
 
-    time_registration.py
+    time-registration
 
 or
 
-    spatial_registration.py
+    spatial-registration
 
 The location of the json files or folder containing the json files will be prompted and when provided the registration will start.
 

@@ -1,7 +1,7 @@
 __version__ = "0.1.0"
 
-from .time_registration import TimeRegistration
-from .spatial_registration import SpatialRegistration
+from .time_registration import TimeRegistration, time_registration
+from .spatial_registration import SpatialRegistration, spatial_registration
 
 try:
     import importlib.resources as importlib_resources
