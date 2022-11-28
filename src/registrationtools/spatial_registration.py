@@ -13,6 +13,7 @@ from xml.dom import minidom
 from shutil import copyfile
 from pathlib import Path
 from typing import Union, List, Tuple
+from IO import imread
 
 
 class trsf_parameters(object):
@@ -128,7 +129,7 @@ class trsf_parameters(object):
         self.bdv_unit = "microns"
         self.bdv_voxel_size = None
         self.do_bdv = 0
-        self.flo_im_sizes = [None, None, None]
+        self.flo_im_sizes = None
         self.copy_ref = False
 
         self.__dict__.update(param_dict)
@@ -340,8 +341,14 @@ class SpatialRegistration:
             while p.ref_A[e].isdigit() and e < len(p.ref_A):
                 e += 1
             p.begin = p.end = int(p.ref_A[s:e])
-        if not hasattr(p, "ref_im_size") or p.ref_im_size is None:
+        if (not hasattr(p, "ref_im_size") or p.ref_im_size is None) and p.flo_im_sizes is not None:
             p.ref_im_size = p.flo_im_sizes[0]
+        else:
+            p.ref_im_size = imread(p.ref_A).shape
+        if p.flo_im_sizes is None:
+            p.flo_im_sizes = []
+            for im_p in p.flo_As:
+                p.flo_im_sizes.append(imread(im_p).shape)                
         if not hasattr(p, "bdv_im") or p.bdv_im is None:
             p.bdv_im = [p.ref_A] + p.flo_As
         if not hasattr(p, "out_bdv") or p.out_bdv is None:
