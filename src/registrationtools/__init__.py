@@ -2,12 +2,13 @@ __version__ = "0.1.1"
 
 from .time_registration import TimeRegistration, time_registration
 from .spatial_registration import SpatialRegistration, spatial_registration
+import sys
 
-try:
+if 8<sys.version_info.minor:
     import importlib.resources as importlib_resources
 
     pkg = importlib_resources.files("registrationtools") / "data"
-except Exception as e:
+else:
     from importlib_resources._legacy import path
 
     pkg = path("regsitrationtools", "data").args[0]
