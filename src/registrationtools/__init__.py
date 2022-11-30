@@ -11,7 +11,7 @@ if 8<sys.version_info.minor:
 else:
     from importlib_resources._legacy import path
 
-    pkg = path("regsitrationtools", "data").args[0]
+    pkg = path("registrationtools", "data").args[0]
 
 image_path = pkg / "images"
 json_path_spatial = pkg / "JSON_spatial"

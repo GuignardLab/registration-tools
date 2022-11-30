@@ -13,7 +13,7 @@ from xml.dom import minidom
 from shutil import copyfile
 from pathlib import Path
 from typing import Union, List, Tuple
-from IO import imread
+from IO import imread, imsave, SpatialImage
 
 
 class trsf_parameters(object):
@@ -131,6 +131,7 @@ class trsf_parameters(object):
         self.do_bdv = 0
         self.flo_im_sizes = None
         self.copy_ref = False
+        self.bbox_out = False
 
         self.__dict__.update(param_dict)
         self.ref_voxel = tuple(self.ref_voxel)
@@ -233,6 +234,27 @@ class SpatialRegistration:
             out[2, -1] = im_size[2]
         return out
 
+    @staticmethod
+    def translation_matrix(axis: str, tr: float) -> np.ndarray:
+        """
+        Build a matrix to flip an image according to a given axis
+
+        Args:
+            axis (str): axis along the flip is done ("X", "Y" or "Z")
+            tr (float): translation value
+
+        Returns:
+            (ndarray): 4x4 flipping matrix
+        """
+        out = np.identity(4)
+        if axis == "X":
+            out[0, -1] = tr
+        if axis == "Y":
+            out[1, -1] = tr
+        if axis == "Z":
+            out[2, -1] = tr
+        return out
+
     @classmethod
     def read_param_file(
         clf, p_param: trsf_parameters = None
@@ -322,7 +344,7 @@ class SpatialRegistration:
                 p.flo_outs += [os.path.join(p.out_pattern, flo)]
         if not hasattr(p, "trsf_paths"):
             p.trsf_paths = [os.path.split(pi)[0] for pi in p.flo_outs]
-            p.trsf_names = ["A{a:d}-{trsf:s}.trsf" for pi in p.flo_outs]
+            p.trsf_names = ["A{a:d}-{trsf:s}.trsf" for _ in p.flo_outs]
         else:
             formated_paths = []
             p.trsf_names = []
@@ -331,7 +353,12 @@ class SpatialRegistration:
                 if n == "":
                     n = "A{a:d}-{trsf:s}.trsf"
                 elif not "{a:" in n:
-                    n += "{a:d}.trsf"
+                    if not "{trsf:" in n:
+                        n += "{a:d}-{trsf:s}.trsf"
+                    else:
+                        n += "{a:d}.trsf"
+                elif not "{trsf:" in n:
+                    n += "{trsf:s}.trsf"
                 formated_paths += [path]
                 p.trsf_names += [n]
             p.trsf_paths = formated_paths
@@ -424,8 +451,16 @@ class SpatialRegistration:
                                 axis.upper(), angle, np.zeros(3), im_size
                             )
                         ]
-                    else:
+                    elif "flip" in t_type:
                         trsfs += [self.flip_matrix(axis.upper(), im_size)]
+                    elif "trans" in t_type:
+                        tr = init_trsf[i]
+                        i += 1
+                        trsfs += [
+                            self.translation_matrix(
+                                axis, tr
+                            )
+                        ]
                 res = np.identity(4)
                 for trsf in trsfs:
                     res = np.dot(res, trsf)
@@ -512,14 +547,77 @@ class SpatialRegistration:
                 )
 
     @staticmethod
-    def apply_trsf(p, t=None):
+    def pad_trsfs(p: trsf_parameters, t: int=None):
+        """
+        Pad transformations
+
+        Args:
+            p (trsf_parameters): parameter object
+            trsf_fmt (srt): the string format for the initial transformations
+        """
+
+        out_voxel = p.out_voxel
+        trsf_path = p.trsf_paths[0]
+        trsf_name = p.trsf_names[0]
+        trsf_type = p.trsf_types[-1]
+        
+        im_shape = imread(p.ref_A.format(t=t)).shape
+        im = SpatialImage(np.ones(im_shape, dtype=np.uint8))
+        im.voxelsize = p.ref_voxel
+        template = trsf_path + "tmp.tif"
+        res_t = "template.tif"
+
+        imsave(template, im)
+        identity = np.identity(4)
+
+        where_a = trsf_name.find('{a:d}')
+        no_a = (trsf_name[:where_a] + trsf_name[where_a+5:]).format(trsf=trsf_type)
+        trsf_name_only_a = no_a[:where_a] + '{a:d}' + no_a[where_a:]
+        trsf_fmt = os.path.join(
+            trsf_path, trsf_name_only_a
+        )
+
+        trsf_fmt_no_flo = trsf_fmt.replace("{a:d}", "%d")
+        new_trsf_fmt = '.'.join(trsf_fmt.split('.')[:-1]) + "-padded.txt"
+        new_trsf_fmt_no_flo = new_trsf_fmt.replace("{a:d}", "%d")
+        np.savetxt(
+            trsf_fmt.format(a=0, trsf=trsf_type), identity
+        )
+
+        call(
+            p.path_to_bin
+            + "changeMultipleTrsfs -trsf-format "
+            + trsf_fmt_no_flo
+            + " -index-reference %d -first %d -last %d "
+            % (0, 0, len(p.trsf_paths))
+            + " -template "
+            + template
+            + " "
+            + " -res "
+            + new_trsf_fmt_no_flo
+            + " -res-t "
+            + p.trsf_paths[0]
+            + res_t
+            + " "
+            + " -trsf-type %s -vs %f %f %f" % ((trsf_type,) + out_voxel),
+            shell=True,
+        )
+        template = p.trsf_paths[0] + res_t
+        return new_trsf_fmt, template
+
+    def apply_trsf(self, p, t=None):
         """
         Apply the transformation according to `trsf_parameters`
 
         Args:
             p (trsf_parameters): parameters for the transformation
         """
-        if p.out_voxel != p.ref_voxel:
+        if p.bbox_out:
+            trsf_fmt, template = self.pad_trsfs(p, t)
+            A0_trsf = " -trsf " + trsf_fmt.format(a=0) + " -template " + template
+        else:
+            A0_trsf = ""
+        if p.out_voxel != p.ref_voxel or p.bbox_out:
             call(
                 p.path_to_bin
                 + "applyTrsf"
@@ -528,7 +626,8 @@ class SpatialRegistration:
                 + " -res "
                 + p.ref_out.format(t=t)
                 + " -floating-voxel %f %f %f" % p.ref_voxel
-                + " -vs %f %f %f" % p.out_voxel,
+                + " -vs %f %f %f" % p.out_voxel
+                + A0_trsf,
                 shell=True,
             )
         elif p.copy_ref:
@@ -542,16 +641,18 @@ class SpatialRegistration:
             init_trsf = p.init_trsfs[A_num]
             if p.test_init:
                 if isinstance(init_trsf, list):
-                    trsf = os.path.join(
+                    trsf = " -trsf " + os.path.join(
                         trsf_path, "A{:d}-init.trsf".format(A_num + 1)
                     )
                 else:
-                    trsf = init_trsf
-            else:
+                    trsf = " -trsf " + init_trsf
+            elif not p.bbox_out:
                 t_type = "" if len(p.trsf_types) < 1 else p.trsf_types[-1]
-                trsf = os.path.join(
+                trsf = " -trsf " + os.path.join(
                     trsf_path, trsf_name.format(a=A_num + 1, trsf=t_type)
                 )
+            else:
+                trsf = " -trsf " + trsf_fmt.format(a=A_num + 1) + " -template " + template
             flo_out = p.flo_outs[A_num]
             call(
                 p.path_to_bin
@@ -564,7 +665,6 @@ class SpatialRegistration:
                 + " -ref "
                 + p.ref_out.format(t=t)
                 + " -reference-voxel %f %f %f" % p.out_voxel
-                + " -trsf "
                 + trsf
                 + " -interpolation %s" % p.image_interpolation,
                 shell=True,
