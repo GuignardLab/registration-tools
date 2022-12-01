@@ -108,13 +108,21 @@ class trsf_parameters(object):
         ]
 
     def __init__(self, file_name: str):
-        with open(file_name) as f:
-            param_dict = json.load(f)
-            f.close()
+        if not isinstance(file_name, dict):
+            with open(file_name) as f:
+                param_dict = json.load(f)
+                f.close()
+        else:
+            param_dict = {}
+            for k, v in file_name.items():
+                if isinstance(v, Path):
+                    param_dict[k] = str(v)
+                else:
+                    param_dict[k] = v
 
         # Default parameters
-        self.init_trsfs = [[], [], []]
         self.param_dict = param_dict
+        self.init_trsfs = [[], [], []]
         self.path_to_bin = ""
         self.registration_depth = 3
         self.init_trsf_real_unit = True
@@ -262,31 +270,34 @@ class SpatialRegistration:
         """
         Asks for, reads and formats the parameter file
         """
-        if p_param is None:
-            if len(sys.argv) < 2 or sys.argv[1] == '-f':
-                p_param = input(
-                    "\nPlease inform the path to the json config file:\n"
-                )
+        if not isinstance(p_param, dict):
+            if p_param is None:
+                if len(sys.argv) < 2 or sys.argv[1] == '-f':
+                    p_param = input(
+                        "\nPlease inform the path to the json config file:\n"
+                    )
+                else:
+                    p_param = sys.argv[1]
+            stable = False or isinstance(p_param, Path)
+            while not stable:
+                tmp = p_param.strip('"').strip("'").strip(" ")
+                stable = tmp == p_param
+                p_param = tmp
+            if os.path.isdir(p_param):
+                f_names = [
+                    os.path.join(p_param, f)
+                    for f in os.listdir(p_param)
+                    if ".json" in f and not "~" in f
+                ]
             else:
-                p_param = sys.argv[1]
-        stable = False or isinstance(p_param, Path)
-        while not stable:
-            tmp = p_param.strip('"').strip("'").strip(" ")
-            stable = tmp == p_param
-            p_param = tmp
-        if os.path.isdir(p_param):
-            f_names = [
-                os.path.join(p_param, f)
-                for f in os.listdir(p_param)
-                if ".json" in f and not "~" in f
-            ]
+                f_names = [p_param]
         else:
             f_names = [p_param]
-
         params = []
         for file_name in f_names:
-            print("")
-            print("Extraction of the parameters from file %s" % file_name)
+            if isinstance(file_name, str):
+                print("")
+                print("Extraction of the parameters from file %s" % file_name)
             p = trsf_parameters(file_name)
             if not p.check_parameters_consistancy():
                 print("\n%s Failed the consistancy check, it will be skipped")
@@ -368,14 +379,14 @@ class SpatialRegistration:
             while p.ref_A[e].isdigit() and e < len(p.ref_A):
                 e += 1
             p.begin = p.end = int(p.ref_A[s:e])
-        if (not hasattr(p, "ref_im_size") or p.ref_im_size is None) and p.flo_im_sizes is not None:
-            p.ref_im_size = p.flo_im_sizes[0]
-        else:
-            p.ref_im_size = imread(p.ref_A).shape
         if p.flo_im_sizes is None:
             p.flo_im_sizes = []
             for im_p in p.flo_As:
                 p.flo_im_sizes.append(imread(im_p).shape)                
+        if (not hasattr(p, "ref_im_size") or p.ref_im_size is None) and p.flo_im_sizes is not None:
+            p.ref_im_size = p.flo_im_sizes[0]
+        else:
+            p.ref_im_size = imread(p.ref_A).shape
         if not hasattr(p, "bdv_im") or p.bdv_im is None:
             p.bdv_im = [p.ref_A] + p.flo_As
         if not hasattr(p, "out_bdv") or p.out_bdv is None:
@@ -880,7 +891,11 @@ class SpatialRegistration:
     def __init__(self, params=None):
         if params is None:
             self.params = self.read_param_file()
-        elif isinstance(params, str) or isinstance(params, Path):
+        elif (
+            isinstance(params, str)
+            or isinstance(params, Path)
+            or isinstance(params, dict)
+        ):
             self.params = SpatialRegistration.read_param_file(params)
         else:
             self.params = params

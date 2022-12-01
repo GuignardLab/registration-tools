@@ -17,6 +17,8 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from transforms3d.affines import decompose
+from transforms3d.euler import mat2euler
 
 if sys.version_info[0] < 3:
     from future.builtins import input
@@ -237,6 +239,7 @@ class trsf_parameters(object):
         self.projection_path = None
         self.pre_2D = False
         self.low_th = None
+        self.plot_trsf = False
 
         self.param_dict = param_dict
         if "registration_depth" in param_dict:
@@ -1129,6 +1132,52 @@ class TimeRegistration:
             f.write(self.prettify(SpimData))
             f.close()
 
+    def plot_transformations(self, p: trsf_parameters):
+
+        trsf_fmt = "t{flo:06d}-{ref:06d}.txt"
+        if p.lowess:
+            trsf_fmt = "t{flo:06d}-{ref:06d}-filtered.txt"
+        if p.trsf_interpolation:
+            trsf_fmt = "t{flo:06d}-{ref:06d}-interpolated.txt"
+        if p.padding:
+            trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
+
+        import matplotlib.pyplot as plt
+        tX, tY, tZ = [], [], []
+        rX, rY, rZ = [], [], []
+        for t in sorted(p.time_points):
+            trsf = self.read_trsf(p.trsf_folder + trsf_fmt.format(flo=t, ref=p.ref_TP))
+            (tx, ty, tz), M, *_ = decompose(trsf)
+            rx, ry, rz = mat2euler(M)
+            tX.append(tx)
+            tY.append(ty)
+            tZ.append(tz)
+            rX.append(np.rad2deg(rx))
+            rY.append(np.rad2deg(ry))
+            rZ.append(np.rad2deg(rz))
+        fig, ax = plt.subplots(3, 1, figsize=(8, 5), sharex=True, sharey=True)
+        ax[0].plot(p.time_points, tX, 'o-')
+        ax[1].plot(p.time_points, tY, 'o-')
+        ax[2].plot(p.time_points, tZ, 'o-')
+        for axis, axi in zip(['X', 'Y', 'Z'], ax):
+            axi.set_ylabel(f'{axis} Translation [µm]')
+        ax[2].set_xlabel('Time')
+        fig.suptitle('Translations')
+        fig.tight_layout()
+
+        fig, ax = plt.subplots(3, 1, figsize=(8, 5), sharex=True, sharey=True)
+        ax[0].plot(p.time_points, rX, 'o-')
+        ax[1].plot(p.time_points, rY, 'o-')
+        ax[2].plot(p.time_points, rZ, 'o-')
+        for axis, axi in zip(['X', 'Y', 'Z'], ax):
+            axi.set_ylabel(f'{axis} Rotation\nin degree')
+        ax[2].set_xlabel('Time')
+        fig.suptitle('Rotations')
+        fig.tight_layout()
+
+        plt.show()
+
+        
     def run_trsf(self):
         """
         Start the Spatial registration after having informed the parameter files
@@ -1141,7 +1190,8 @@ class TimeRegistration:
 
                 if p.compute_trsf:
                     self.compute_trsfs(p)
-
+                if p.plot_trsf:
+                    self.plot_transformations(p)
                 if p.apply_trsf and p.trsf_type != "vectorfield":
                     self.apply_trsf(p)
                 if p.do_bdv:
@@ -1150,6 +1200,7 @@ class TimeRegistration:
                 print("Failure of %s" % p.origin_file_name)
                 print(e)
 
+
     def __init__(self, params=None):
         if params is None:
             self.params = self.read_param_file()
@@ -1157,7 +1208,7 @@ class TimeRegistration:
             isinstance(params, str)
             or isinstance(params, Path)
             or isinstance(params, dict)
-            ):
+        ):
             self.params = TimeRegistration.read_param_file(params)
         else:
             self.params = params

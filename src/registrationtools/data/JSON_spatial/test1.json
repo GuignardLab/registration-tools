@@ -28,5 +28,5 @@
 		[128, 111, 5]
 	],
 	"out_voxel": [5, 5, 5],
-	"out_pattern": "SpatialRegistration"
+	"output_format": "SpatialRegistration"
 }
