@@ -253,6 +253,10 @@ class trsf_parameters(object):
 
         self.__dict__.update(param_dict)
         self.voxel_size = tuple(self.voxel_size)
+        if not hasattr(self, "voxel_size_out"):
+            self.voxel_size_out = self.voxel_size
+        else:
+            self.voxel_size_out = tuple(self.voxel_size_out)
         self.origin_file_name = file_name
 
 
@@ -367,25 +371,6 @@ class TimeRegistration:
                     )
                 else:
                     pre_trsf = ""
-                print(
-                    self.path_to_bin
-                    + "blockmatching -ref "
-                    + p_im_ref
-                    + " -flo "
-                    + p_im_flo
-                    + pre_trsf
-                    + " -reference-voxel %f %f %f" % p.voxel_size
-                    + " -floating-voxel %f %f %f" % p.voxel_size
-                    + " -trsf-type %s -py-hl %d -py-ll %d"
-                    % (
-                        p.trsf_type,
-                        p.registration_depth_start,
-                        p.registration_depth_end,
-                    )
-                    + " -res-trsf "
-                    + p.trsf_folder
-                    + "t%06d-%06d.txt" % (t_flo, t_ref)
-                    + th,)
                 call(
                     self.path_to_bin
                     + "blockmatching -ref "
@@ -910,7 +895,7 @@ class TimeRegistration:
                 + " -template "
                 + template
                 + " -floating-voxel %f %f %f " % p.voxel_size
-                + " -reference-voxel %f %f %f " % p.voxel_size
+                + " -reference-voxel %f %f %f " % p.voxel_size_out
                 + " -interpolation %s" % p.image_interpolation,
                 shell=True,
             )
