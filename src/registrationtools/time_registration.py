@@ -337,21 +337,6 @@ class TimeRegistration:
                 th = ""
             if p.trsf_type != "vectorfield":
                 if p.pre_2D == 1:
-                    print(self.path_to_bin
-                        + "blockmatching -ref "
-                        + p_im_ref
-                        + " -flo "
-                        + p_im_flo
-                        + " -reference-voxel %f %f %f" % p.voxel_size
-                        + " -floating-voxel %f %f %f" % p.voxel_size
-                        + " -trsf-type rigid2D -py-hl %d -py-ll %d"
-                        % (
-                            p.registration_depth_start,
-                            p.registration_depth_end,
-                        )
-                        + " -res-trsf "
-                        + os.path.join(p.trsf_folder, "t%06d-%06d-tmp.txt" % (t_flo, t_ref))
-                        + th)
                     call(
                         self.path_to_bin
                         + "blockmatching -ref "
