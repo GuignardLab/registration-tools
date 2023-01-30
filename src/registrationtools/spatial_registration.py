@@ -29,7 +29,7 @@ class trsf_parameters(object):
         write something that actually do check
         """
         correct = True
-        if self.out_pattern == "":
+        if not (hasattr(self, "out_pattern") or hasattr(self, "output_format")):
             print("The output pattern cannot be an empty string")
             correct = False
         return correct
@@ -575,9 +575,8 @@ class SpatialRegistration:
         im_shape = imread(p.ref_A.format(t=t)).shape
         im = SpatialImage(np.ones(im_shape, dtype=np.uint8))
         im.voxelsize = p.ref_voxel
-        template = trsf_path + "tmp.tif"
+        template = os.path.join(trsf_path, "tmp.tif")
         res_t = "template.tif"
-
         imsave(template, im)
         identity = np.identity(4)
 
@@ -603,17 +602,15 @@ class SpatialRegistration:
             % (0, 0, len(p.trsf_paths))
             + " -template "
             + template
-            + " "
             + " -res "
             + new_trsf_fmt_no_flo
             + " -res-t "
-            + p.trsf_paths[0]
-            + res_t
+            + os.path.join(trsf_path, res_t)
             + " "
             + " -trsf-type %s -vs %f %f %f" % ((trsf_type,) + out_voxel),
             shell=True,
         )
-        template = p.trsf_paths[0] + res_t
+        template = os.path.join(trsf_path, res_t)
         return new_trsf_fmt, template
 
     def apply_trsf(self, p, t=None):
