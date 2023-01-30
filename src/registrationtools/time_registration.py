@@ -264,6 +264,10 @@ class trsf_parameters(object):
             self.path_to_data = self.path_to_data + os.path.sep
         if 0 < len(self.trsf_folder) and self.trsf_folder[-1] != os.path.sep:
             self.trsf_folder = self.trsf_folder + os.path.sep
+        self.path_to_bin = os.path.join(self.path_to_bin, "")
+        if 0<len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
+            print("Binary path could not be found, will try with global call")
+            self.path_to_bin = ""
 
 class TimeRegistration:
     @staticmethod

@@ -146,6 +146,10 @@ class trsf_parameters(object):
         self.flo_voxels = [tuple(vox) for vox in self.flo_voxels]
         self.out_voxel = tuple(self.out_voxel)
         self.origin_file_name = file_name
+        self.path_to_bin = os.path.join(self.path_to_bin, "")
+        if 0<len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
+            print("Binary path could not be found, will try with global call")
+            self.path_to_bin = ""
 
 
 class SpatialRegistration:
