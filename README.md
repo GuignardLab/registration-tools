@@ -27,7 +27,7 @@ For here onward we assume that you are running the commands from the `registrati
 
 Then, to install the whole thing, it is necessary to first install blockmatching. To do so you can run the following command:
     
-    conda install vt -c morpheme
+    conda install vt -c morpheme -c trcabel
 
 Then, you can install the 3D-registration library either directly via pip:
 
