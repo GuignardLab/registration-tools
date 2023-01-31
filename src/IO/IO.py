@@ -62,8 +62,6 @@ def imread(filename, parallel=True, SP_im=True):
         return read_inrimage(filename)
     elif ext in [".tif", ".tiff"]:
         return read_tif(filename)
-    elif ext in [".npz", ".npy"]:
-        return load(filename)
     elif ext in [".h5", ".hdf5"]:
         return read_h5(filename)
     elif ext == ".klb":
@@ -106,8 +104,6 @@ def imsave(filename, img):
         ext = ext.lower()
     if ext == ".inr":
         write_inrimage(filename, img)
-    elif ext in [".npz", ".npy"]:
-        save(filename, img)
     elif ext in [".tiff", ".tif"]:
         write_tif(filename, img)
     elif ext == ".klb":

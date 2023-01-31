@@ -609,7 +609,7 @@ class SpatialRegistration:
             + " -res-t "
             + os.path.join(trsf_path, res_t)
             + " "
-            + " -trsf-type %s -vs %f %f %f" % ((trsf_type,) + out_voxel),
+            + " -trsf-type %s" % (trsf_type),
             shell=True,
         )
         template = os.path.join(trsf_path, res_t)
@@ -624,6 +624,16 @@ class SpatialRegistration:
         """
         if p.bbox_out:
             trsf_fmt, template = self.pad_trsfs(p, t)
+            if p.out_voxel != p.ref_voxel:
+                before, after = os.path.splitext(template)
+                old_template = template
+                template = ''.join((before, ".final_template", after))
+                call(
+                    p.path_to_bin
+                    + f"applyTrsf {old_template} {template} " 
+                    + "-vs %f %f %f" % p.out_voxel,
+                    shell=True
+                )
             A0_trsf = (
                 " -trsf " + trsf_fmt.format(a=0) + " -template " + template
             )

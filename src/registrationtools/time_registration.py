@@ -269,10 +269,9 @@ class trsf_parameters(object):
             and self.projection_path[-1] != os.path.sep
         ):
             self.projection_path = self.projection_path + os.path.sep
-        if 0 < len(self.path_to_data) and self.path_to_data[-1] != os.path.sep:
-            self.path_to_data = self.path_to_data + os.path.sep
-        if 0 < len(self.trsf_folder) and self.trsf_folder[-1] != os.path.sep:
-            self.trsf_folder = self.trsf_folder + os.path.sep
+        
+        self.path_to_data = os.path.join(self.path_to_data, "")
+        self.trsf_folder = os.path.join(self.trsf_folder, "")
         self.path_to_bin = os.path.join(self.path_to_bin, "")
         if 0 < len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
             print("Binary path could not be found, will try with global call")
@@ -618,14 +617,17 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): parameter object
         """
+        image_formats = ['.tiff', '.tif', '.inr', '.gz', '.klb', '.h5', '.hdf5']
         ### Check the file names and folders:
         p.im_ext = p.file_name.split(".")[-1]  # Image type
         p.A0 = os.path.join(p.path_to_data, p.file_name)  # Image path
         # Output format
         if p.output_format is not None:
+            # If the output format is a file alone
             if os.path.split(p.output_format)[0] == "":
                 p.A0_out = os.path.join(p.path_to_data, p.output_format)
-            elif os.path.split(p.output_format)[1] == "":
+            # If the output format is a folder alone
+            elif not os.path.splitext(p.output_format)[-1] in image_formats:
                 p.A0_out = os.path.join(p.output_format, p.file_name)
             else:
                 p.A0_out = p.output_format
@@ -897,6 +899,18 @@ class TimeRegistration:
         else:
             X, Y, Z = imread(p.A0.format(t=p.ref_TP)).shape
             template = p.A0.format(t=p.ref_TP)
+        
+        if p.voxel_size != p.voxel_size_out:
+            before, after = os.path.splitext(template)
+            old_template = template
+            template = ''.join((before, ".final_template", after))
+            call(
+                p.path_to_bin
+                + f"applyTrsf {old_template} {template} " 
+                + "-vs %f %f %f" % p.voxel_size_out,
+                shell=True
+            )
+            X, Y, Z = imread(template).shape
 
         xy_proj = np.zeros((X, Y, len(p.time_points)), dtype=np.uint16)
         xz_proj = np.zeros((X, Z, len(p.time_points)), dtype=np.uint16)
@@ -1202,6 +1216,9 @@ class TimeRegistration:
                 print("Starting experiment")
                 print(p)
                 self.prepare_paths(p)
+                with open(f'{time()}.txt', 'w') as f:
+                    for k, v in p.__dict__.items():
+                        f.write(f"{k}: {v}\n")
 
                 if p.compute_trsf:
                     self.compute_trsfs(p)
