@@ -1216,10 +1216,6 @@ class TimeRegistration:
                 print("Starting experiment")
                 print(p)
                 self.prepare_paths(p)
-                with open(f'{time()}.txt', 'w') as f:
-                    for k, v in p.__dict__.items():
-                        f.write(f"{k}: {v}\n")
-
                 if p.compute_trsf:
                     self.compute_trsfs(p)
                 if p.plot_trsf:
