@@ -4,7 +4,7 @@ from .time_registration import TimeRegistration, time_registration
 from .spatial_registration import SpatialRegistration, spatial_registration
 import sys
 
-if 8<sys.version_info.minor:
+if 8 < sys.version_info.minor:
     import importlib.resources as importlib_resources
 
     pkg = importlib_resources.files("registrationtools") / "data"

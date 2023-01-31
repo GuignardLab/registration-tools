@@ -29,7 +29,9 @@ class trsf_parameters(object):
         write something that actually do check
         """
         correct = True
-        if not (hasattr(self, "out_pattern") or hasattr(self, "output_format")):
+        if not (
+            hasattr(self, "out_pattern") or hasattr(self, "output_format")
+        ):
             print("The output pattern cannot be an empty string")
             correct = False
         return correct
@@ -147,7 +149,7 @@ class trsf_parameters(object):
         self.out_voxel = tuple(self.out_voxel)
         self.origin_file_name = file_name
         self.path_to_bin = os.path.join(self.path_to_bin, "")
-        if 0<len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
+        if 0 < len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
             print("Binary path could not be found, will try with global call")
             self.path_to_bin = ""
 
@@ -276,7 +278,7 @@ class SpatialRegistration:
         """
         if not isinstance(p_param, dict):
             if p_param is None:
-                if len(sys.argv) < 2 or sys.argv[1] == '-f':
+                if len(sys.argv) < 2 or sys.argv[1] == "-f":
                     p_param = input(
                         "\nPlease inform the path to the json config file:\n"
                     )
@@ -386,8 +388,10 @@ class SpatialRegistration:
         if p.flo_im_sizes is None:
             p.flo_im_sizes = []
             for im_p in p.flo_As:
-                p.flo_im_sizes.append(imread(im_p).shape)                
-        if (not hasattr(p, "ref_im_size") or p.ref_im_size is None) and p.flo_im_sizes is not None:
+                p.flo_im_sizes.append(imread(im_p).shape)
+        if (
+            not hasattr(p, "ref_im_size") or p.ref_im_size is None
+        ) and p.flo_im_sizes is not None:
             p.ref_im_size = p.flo_im_sizes[0]
         else:
             p.ref_im_size = imread(p.ref_A).shape
@@ -405,7 +409,7 @@ class SpatialRegistration:
 
         Args:
             trsf (np.ndarray): 4x4 ndarray
-        
+
         Returns:
             (np.ndarray): the 4x4 inverted matrix
         """
@@ -471,11 +475,7 @@ class SpatialRegistration:
                     elif "trans" in t_type:
                         tr = init_trsf[i]
                         i += 1
-                        trsfs += [
-                            self.translation_matrix(
-                                axis, tr
-                            )
-                        ]
+                        trsfs += [self.translation_matrix(axis, tr)]
                 res = np.identity(4)
                 for trsf in trsfs:
                     res = np.dot(res, trsf)
@@ -562,7 +562,7 @@ class SpatialRegistration:
                 )
 
     @staticmethod
-    def pad_trsfs(p: trsf_parameters, t: int=None):
+    def pad_trsfs(p: trsf_parameters, t: int = None):
         """
         Pad transformations
 
@@ -575,7 +575,7 @@ class SpatialRegistration:
         trsf_path = p.trsf_paths[0]
         trsf_name = p.trsf_names[0]
         trsf_type = p.trsf_types[-1]
-        
+
         im_shape = imread(p.ref_A.format(t=t)).shape
         im = SpatialImage(np.ones(im_shape, dtype=np.uint8))
         im.voxelsize = p.ref_voxel
@@ -584,19 +584,17 @@ class SpatialRegistration:
         imsave(template, im)
         identity = np.identity(4)
 
-        where_a = trsf_name.find('{a:d}')
-        no_a = (trsf_name[:where_a] + trsf_name[where_a+5:]).format(trsf=trsf_type)
-        trsf_name_only_a = no_a[:where_a] + '{a:d}' + no_a[where_a:]
-        trsf_fmt = os.path.join(
-            trsf_path, trsf_name_only_a
+        where_a = trsf_name.find("{a:d}")
+        no_a = (trsf_name[:where_a] + trsf_name[where_a + 5 :]).format(
+            trsf=trsf_type
         )
+        trsf_name_only_a = no_a[:where_a] + "{a:d}" + no_a[where_a:]
+        trsf_fmt = os.path.join(trsf_path, trsf_name_only_a)
 
         trsf_fmt_no_flo = trsf_fmt.replace("{a:d}", "%d")
-        new_trsf_fmt = '.'.join(trsf_fmt.split('.')[:-1]) + "-padded.txt"
+        new_trsf_fmt = ".".join(trsf_fmt.split(".")[:-1]) + "-padded.txt"
         new_trsf_fmt_no_flo = new_trsf_fmt.replace("{a:d}", "%d")
-        np.savetxt(
-            trsf_fmt.format(a=0, trsf=trsf_type), identity
-        )
+        np.savetxt(trsf_fmt.format(a=0, trsf=trsf_type), identity)
 
         call(
             p.path_to_bin
@@ -626,7 +624,9 @@ class SpatialRegistration:
         """
         if p.bbox_out:
             trsf_fmt, template = self.pad_trsfs(p, t)
-            A0_trsf = " -trsf " + trsf_fmt.format(a=0) + " -template " + template
+            A0_trsf = (
+                " -trsf " + trsf_fmt.format(a=0) + " -template " + template
+            )
         else:
             A0_trsf = ""
         if p.out_voxel != p.ref_voxel or p.bbox_out:
@@ -664,7 +664,12 @@ class SpatialRegistration:
                     trsf_path, trsf_name.format(a=A_num + 1, trsf=t_type)
                 )
             else:
-                trsf = " -trsf " + trsf_fmt.format(a=A_num + 1) + " -template " + template
+                trsf = (
+                    " -trsf "
+                    + trsf_fmt.format(a=A_num + 1)
+                    + " -template "
+                    + template
+                )
             flo_out = p.flo_outs[A_num]
             call(
                 p.path_to_bin

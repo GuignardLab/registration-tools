@@ -194,10 +194,16 @@ class trsf_parameters(object):
         Args:
             prefix (str): The prefix to add in front of the path
         """
-        self.projection_path = os.path.join(prefix, self.projection_path) + os.path.sep
-        self.path_to_data = os.path.join(prefix, self.path_to_data) + os.path.sep
+        self.projection_path = (
+            os.path.join(prefix, self.projection_path) + os.path.sep
+        )
+        self.path_to_data = (
+            os.path.join(prefix, self.path_to_data) + os.path.sep
+        )
         self.trsf_folder = os.path.join(prefix, self.trsf_folder) + os.path.sep
-        self.output_format = os.path.join(prefix, self.output_format) + os.path.sep
+        self.output_format = (
+            os.path.join(prefix, self.output_format) + os.path.sep
+        )
 
     def __init__(self, file_name: str):
         if not isinstance(file_name, dict):
@@ -258,16 +264,20 @@ class trsf_parameters(object):
             self.voxel_size_out = tuple(self.voxel_size_out)
         self.origin_file_name = file_name
 
-        if 0 < len(self.projection_path) and self.projection_path[-1] != os.path.sep:
+        if (
+            0 < len(self.projection_path)
+            and self.projection_path[-1] != os.path.sep
+        ):
             self.projection_path = self.projection_path + os.path.sep
         if 0 < len(self.path_to_data) and self.path_to_data[-1] != os.path.sep:
             self.path_to_data = self.path_to_data + os.path.sep
         if 0 < len(self.trsf_folder) and self.trsf_folder[-1] != os.path.sep:
             self.trsf_folder = self.trsf_folder + os.path.sep
         self.path_to_bin = os.path.join(self.path_to_bin, "")
-        if 0<len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
+        if 0 < len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
             print("Binary path could not be found, will try with global call")
             self.path_to_bin = ""
+
 
 class TimeRegistration:
     @staticmethod
@@ -329,7 +339,7 @@ class TimeRegistration:
                 os.path.join(p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref))
             )
         ):
-            if p.low_th is not None and 0<p.low_th:
+            if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
                     lt=p.low_th
                 )
@@ -351,13 +361,19 @@ class TimeRegistration:
                             p.registration_depth_end,
                         )
                         + " -res-trsf "
-                        + os.path.join(p.trsf_folder, "t%06d-%06d-tmp.txt" % (t_flo, t_ref))
+                        + os.path.join(
+                            p.trsf_folder,
+                            "t%06d-%06d-tmp.txt" % (t_flo, t_ref),
+                        )
                         + th,
                         shell=True,
                     )
                     pre_trsf = (
                         " -init-trsf "
-                        + os.path.join(p.trsf_folder, "t%06d-%06d-tmp.txt" % (t_flo, t_ref))
+                        + os.path.join(
+                            p.trsf_folder,
+                            "t%06d-%06d-tmp.txt" % (t_flo, t_ref),
+                        )
                         + " -composition-with-initial "
                     )
                 else:
@@ -378,7 +394,9 @@ class TimeRegistration:
                         p.registration_depth_end,
                     )
                     + " -res-trsf "
-                    + os.path.join(p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref))
+                    + os.path.join(
+                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
+                    )
                     + th,
                     shell=True,
                 )
@@ -390,7 +408,9 @@ class TimeRegistration:
                 if p.keep_vectorfield and pyklb_found:
                     res_trsf = (
                         " -composition-with-initial -res-trsf "
-                        + os.path.join(p.trsf_folder, "t%06d-%06d.klb" % (t_flo, t_ref))
+                        + os.path.join(
+                            p.trsf_folder, "t%06d-%06d.klb" % (t_flo, t_ref)
+                        )
                     )
                 else:
                     res_trsf = ""
@@ -409,7 +429,9 @@ class TimeRegistration:
                     + " -trsf-type affine -py-hl %d -py-ll %d"
                     % (p.registration_depth_start, p.registration_depth_end)
                     + " -res-trsf "
-                    + os.path.join(p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref))
+                    + os.path.join(
+                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
+                    )
                     + th,
                     shell=True,
                 )
@@ -420,7 +442,9 @@ class TimeRegistration:
                     + " -flo "
                     + p_im_flo
                     + " -init-trsf "
-                    + os.path.join(p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref))
+                    + os.path.join(
+                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
+                    )
                     + res
                     + " -reference-voxel %f %f %f" % p.voxel_size
                     + " -floating-voxel %f %f %f" % p.voxel_size
@@ -552,7 +576,7 @@ class TimeRegistration:
         """
         if not isinstance(p_param, dict):
             if p_param is None:
-                if len(sys.argv) < 2 or sys.argv[1] == '-f':
+                if len(sys.argv) < 2 or sys.argv[1] == "-f":
                     p_param = input(
                         "\nPlease inform the path to the json config file:\n"
                     )
@@ -606,9 +630,10 @@ class TimeRegistration:
             else:
                 p.A0_out = p.output_format
         else:
-            p.A0_out = os.path.join(p.path_to_data, p.file_name.replace(
-                p.im_ext, p.suffix + "." + p.im_ext
-            ))
+            p.A0_out = os.path.join(
+                p.path_to_data,
+                p.file_name.replace(p.im_ext, p.suffix + "." + p.im_ext),
+            )
 
         # Time points to work with
         p.time_points = np.array(
@@ -709,7 +734,9 @@ class TimeRegistration:
         Z_T = []
         T = []
         for t in p.to_register:
-            trsf_p = os.path.join(p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP))
+            trsf_p = os.path.join(
+                p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+            )
             trsf = self.read_trsf(trsf_p)
             T += [t]
             X_T += [trsf[0, -1]]
@@ -725,7 +752,11 @@ class TimeRegistration:
             mat[1, -1] = Y_interp(t)
             mat[2, -1] = Z_interp(t)
             np.savetxt(
-                os.path.join(p.trsf_folder, new_trsf_fmt.format(flo=t, ref=p.ref_TP), mat)
+                os.path.join(
+                    p.trsf_folder,
+                    new_trsf_fmt.format(flo=t, ref=p.ref_TP),
+                    mat,
+                )
             )
         trsf_fmt = new_trsf_fmt
         return trsf_fmt
@@ -766,7 +797,11 @@ class TimeRegistration:
         new_trsf_fmt_no_flo = new_trsf_fmt.replace("{flo:06d}", "%06d")
         for t in p.not_to_do:
             np.savetxt(
-                os.path.join(p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP), identity)
+                os.path.join(
+                    p.trsf_folder,
+                    trsf_fmt.format(flo=t, ref=p.ref_TP),
+                    identity,
+                )
             )
 
         call(
@@ -778,7 +813,9 @@ class TimeRegistration:
             + " -template "
             + template
             + " -res "
-            + os.path.join(p.trsf_folder, new_trsf_fmt_no_flo.format(ref=p.ref_TP))
+            + os.path.join(
+                p.trsf_folder, new_trsf_fmt_no_flo.format(ref=p.ref_TP)
+            )
             + " -res-t "
             + os.path.join(p.trsf_folder, res_t)
             + " -trsf-type %s -vs %f %f %f" % ((p.trsf_type,) + p.voxel_size),
@@ -872,7 +909,9 @@ class TimeRegistration:
                 p.path_to_bin
                 + "applyTrsf '%s' '%s' -trsf "
                 % (p.A0.format(t=t), p.A0_out.format(t=t))
-                + os.path.join(p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP))
+                + os.path.join(
+                    p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+                )
                 + " -template "
                 + template
                 + " -floating-voxel %f %f %f " % p.voxel_size
@@ -895,15 +934,21 @@ class TimeRegistration:
             if not os.path.exists(p_to_data.format(t=-1)):
                 os.makedirs(p_to_data.format(t=-1))
             imsave(
-                os.path.join(p_to_data, f_name.replace(p.im_ext, "xyProjection.tif")),
+                os.path.join(
+                    p_to_data, f_name.replace(p.im_ext, "xyProjection.tif")
+                ),
                 SpatialImage(xy_proj),
             )
             imsave(
-                os.path.join(p_to_data, f_name.replace(p.im_ext, "xzProjection.tif")),
+                os.path.join(
+                    p_to_data, f_name.replace(p.im_ext, "xzProjection.tif")
+                ),
                 SpatialImage(xz_proj),
             )
             imsave(
-                os.path.join(p_to_data, f_name.replace(p.im_ext, "yzProjection.tif")),
+                os.path.join(
+                    p_to_data, f_name.replace(p.im_ext, "yzProjection.tif")
+                ),
                 SpatialImage(yz_proj),
             )
 
@@ -1109,10 +1154,15 @@ class TimeRegistration:
             trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
 
         import matplotlib.pyplot as plt
+
         tX, tY, tZ = [], [], []
         rX, rY, rZ = [], [], []
         for t in sorted(p.time_points):
-            trsf = self.read_trsf(os.path.join(p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)))
+            trsf = self.read_trsf(
+                os.path.join(
+                    p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+                )
+            )
             (tx, ty, tz), M, *_ = decompose(trsf)
             rx, ry, rz = mat2euler(M)
             tX.append(tx)
@@ -1122,28 +1172,27 @@ class TimeRegistration:
             rY.append(np.rad2deg(ry))
             rZ.append(np.rad2deg(rz))
         fig, ax = plt.subplots(3, 1, figsize=(8, 5), sharex=True, sharey=True)
-        ax[0].plot(p.time_points, tX, 'o-')
-        ax[1].plot(p.time_points, tY, 'o-')
-        ax[2].plot(p.time_points, tZ, 'o-')
-        for axis, axi in zip(['X', 'Y', 'Z'], ax):
-            axi.set_ylabel(f'{axis} Translation [µm]')
-        ax[2].set_xlabel('Time')
-        fig.suptitle('Translations')
+        ax[0].plot(p.time_points, tX, "o-")
+        ax[1].plot(p.time_points, tY, "o-")
+        ax[2].plot(p.time_points, tZ, "o-")
+        for axis, axi in zip(["X", "Y", "Z"], ax):
+            axi.set_ylabel(f"{axis} Translation [µm]")
+        ax[2].set_xlabel("Time")
+        fig.suptitle("Translations")
         fig.tight_layout()
 
         fig, ax = plt.subplots(3, 1, figsize=(8, 5), sharex=True, sharey=True)
-        ax[0].plot(p.time_points, rX, 'o-')
-        ax[1].plot(p.time_points, rY, 'o-')
-        ax[2].plot(p.time_points, rZ, 'o-')
-        for axis, axi in zip(['X', 'Y', 'Z'], ax):
-            axi.set_ylabel(f'{axis} Rotation\nin degree')
-        ax[2].set_xlabel('Time')
-        fig.suptitle('Rotations')
+        ax[0].plot(p.time_points, rX, "o-")
+        ax[1].plot(p.time_points, rY, "o-")
+        ax[2].plot(p.time_points, rZ, "o-")
+        for axis, axi in zip(["X", "Y", "Z"], ax):
+            axi.set_ylabel(f"{axis} Rotation\nin degree")
+        ax[2].set_xlabel("Time")
+        fig.suptitle("Rotations")
         fig.tight_layout()
 
         plt.show()
 
-        
     def run_trsf(self):
         """
         Start the Spatial registration after having informed the parameter files
@@ -1165,7 +1214,6 @@ class TimeRegistration:
             except Exception as e:
                 print("Failure of %s" % p.origin_file_name)
                 print(e)
-
 
     def __init__(self, params=None):
         if params is None:
