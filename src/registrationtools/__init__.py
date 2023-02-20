@@ -1,4 +1,4 @@
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 from .time_registration import TimeRegistration, time_registration
 from .spatial_registration import SpatialRegistration, spatial_registration
