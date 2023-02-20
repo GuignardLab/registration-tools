@@ -921,7 +921,7 @@ class TimeRegistration:
                 os.makedirs(folder_tmp)
             call(
                 p.path_to_bin
-                + "applyTrsf '%s' '%s' -trsf "
+                + "applyTrsf %s %s -trsf "
                 % (p.A0.format(t=t), p.A0_out.format(t=t))
                 + os.path.join(
                     p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
