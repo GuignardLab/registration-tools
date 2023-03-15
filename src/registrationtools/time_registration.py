@@ -936,6 +936,20 @@ class TimeRegistration:
             try:
                 im = imread(p.A0_out.format(t=t))
             except Exception as e:
+                call(
+                    p.path_to_bin
+                    + "applyTrsf %s %s -trsf "
+                    % (p.A0.format(t=t), p.A0_out.format(t=t))
+                    + os.path.join(
+                        p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+                    )
+                    + " -template "
+                    + template
+                    + " -floating-voxel %f %f %f " % p.voxel_size
+                    + " -reference-voxel %f %f %f " % p.voxel_size_out
+                    + " -interpolation %s" % p.image_interpolation,
+                    shell=True,
+                )
                 im = imread(p.A0_out.format(t=t))
             if p.projection_path is not None:
                 xy_proj[..., i] = SpatialImage(np.max(im, axis=2))
