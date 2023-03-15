@@ -933,7 +933,10 @@ class TimeRegistration:
                 + " -interpolation %s" % p.image_interpolation,
                 shell=True,
             )
-            im = imread(p.A0_out.format(t=t))
+            try:
+                im = imread(p.A0_out.format(t=t))
+            except Exception as e:
+                im = imread(p.A0_out.format(t=t))
             if p.projection_path is not None:
                 xy_proj[..., i] = SpatialImage(np.max(im, axis=2))
                 xz_proj[..., i] = SpatialImage(np.max(im, axis=1))
