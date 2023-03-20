@@ -98,3 +98,11 @@ User-Manual/*.synctex.gz
 User-Manual/*.toc
 
 Publication
+
+*.log
+*.aux
+*.fdb*
+*.fls
+*.out
+*.gz
+.DS_Store
