@@ -936,7 +936,7 @@ class TimeRegistration:
             try:
                 im = imread(p.A0_out.format(t=t))
             except Exception as e:
-                print("applyTrsf failde, retrying now")
+                print("applyTrsf failed at t=",str(t),", retrying now")
                 call(
                     p.path_to_bin
                     + "applyTrsf %s %s -trsf "
