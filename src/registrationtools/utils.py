@@ -11,18 +11,17 @@ def get_paths() :
 #Ask the user for the folder containing his data, find the movies is they are in tiff format and put them in a list after confirmation
     path_correct=False
     while path_correct==False :
-        path_folder = input('Path to the folder of the movie(s) (in tiff format only) : ')
+        path_folder = input('Path to the folder of the movie(s) (in tiff format only) : \n ')
         paths_movies = sorted(glob(rf'{path_folder}/*.tif')) 
         if len(paths_movies) > 0 :
-            print('You have',len(paths_movies),'movie(s), which is (are) :')
+            print('You have',len(paths_movies),'movie(s), which is (are) : ')
             for path_movie in paths_movies :
-                print(Path(path_movie).stem)
-                path_correct = int(input('Correct ? (1 for yes, 0 for no) '))
+                print('',Path(path_movie).stem) #the empty str at the begining is to align the answers one space after the questions, for readability
+                path_correct = int(input('Correct ? (1 for yes, 0 for no) \n '))
         else :
-            print('There is no tiff file in the folder')
+            print('There is no tiff file in the folder. \n')
 
     return (paths_movies)
-
 
 def dimensions(list_paths:list) :
     # Take the path to the data and returns its size in the dimensions CTZXY. Raise error if the other movies do not have the same C ot T dimensions.
@@ -30,8 +29,8 @@ def dimensions(list_paths:list) :
     name_movie = Path(list_paths[0]).stem
     dim_correct = False
     while dim_correct == False :
-        print('\nThe dimensions of ',name_movie, 'are ',movie.shape,'.')
-        dimensions=input('What is the order of the dimensions (for example TZCYX or XYZT) ? T stands for Time, C for channels if your image has multiple channels, Z for depth (or number or plans) and XY is your field of view ? ')
+        print('\nThe dimensions of ',name_movie, 'are ',movie.shape,'. \n')
+        dimensions=input('What is the order of the dimensions (for example TZCYX or XYZT) ? T stands for Time, C for channels if your image has multiple channels, Z for depth (or number or plans) and XY is your field of view. \n ')
         sorted_axes = sorted(dimensions)
         if ''.join(sorted_axes) == "CTXYZ":
             number_channels = movie.shape[dimensions.find('C')]
@@ -40,10 +39,10 @@ def dimensions(list_paths:list) :
             number_channels = 1
             dim_correct=True
         elif len(sorted_axes) != len(movie.shape) :
-            print('Error : Number of dimensions is incorrect')
+            print('Error : Number of dimensions is incorrect. \n')
             dim_correct = False 
         else:
-            print('The letters you choose has to be among these letters : X,Y,Z,C,T, with XYZT mandatory, and no other letters are allowed. \nEvery letter can be included only once.')
+            print(' \n The letters you choose has to be among these letters : X,Y,Z,C,T, with XYZT mandatory, and no other letters are allowed. \nEvery letter can be included only once. \n')
 
         number_timepoints = movie.shape[dimensions.find('T')]
 
@@ -57,15 +56,15 @@ def dimensions(list_paths:list) :
             size_X = movie.shape[dimensions.find('X')]
             size_Y = movie.shape[dimensions.find('Y')]
 
-            print('So',name_movie, 'has',number_channels,'channels, ',number_timepoints,'timepoints, the depth in z is',depth,'pixels and the XY plane measures ',size_X,'x',size_Y,'pixels')
-            dim_correct = int(input('Correct ? (1 for yes, 0 for no) '))
+            print('\nSo',name_movie, 'has',number_channels,'channels, ',number_timepoints,'timepoints, the depth in z is',depth,'pixels and the XY plane measures ',size_X,'x',size_Y,'pixels.')
+            dim_correct = int(input('Correct ? (1 for yes, 0 for no) \n '))
 
     #checking if the movies have the same dimensions in C and T, otherwise the registration cannot be computed.
     if 'C' in dimensions :    #have to check beforehand if multichannels, otherwise, dimensions.find('C') will return -1 and mov.shape[dimensions.find('C')] will probably return the dimension of the X axis
         for path in list_paths : 
             mov = tifffile.imread(path)
-            check(mov.shape[dimensions.find('T')]).equals(number_timepoints).or_raise(Exception, 'These movies do not all have the same number of timepoints.')
-            check(mov.shape[dimensions.find('C')]).equals(number_channels).or_raise(Exception, 'These movies do not all have the same number of channels.')
+            check(mov.shape[dimensions.find('T')]).equals(number_timepoints).or_raise(Exception, 'These movies do not all have the same number of timepoints. \n')
+            check(mov.shape[dimensions.find('C')]).equals(number_channels).or_raise(Exception, 'These movies do not all have the same number of channels. \n')
             #if XYZ are not the same thats ok ?
     return(number_channels,number_timepoints,depth,size_X,size_Y)
 
@@ -74,11 +73,11 @@ def get_channels_name(number_channels:int) :
 #Ask for the name of the channels, return a list of str containing all the channels
     channels=[]
     if number_channels == 1:
-        ch = str(input('Name of the channel : '))
+        ch = str(input('Name of the channel : \n '))
         channels.append(ch)
     else : #if multichannels
         for n in range(number_channels) :
-            ch = str(input('Name of channel n°'+str(n+1) +' : '))
+            ch = str(input('Name of channel n°'+str(n+1) +' : \n '))
             channels.append(ch)
     return(channels)
 
@@ -88,9 +87,9 @@ def reference_channel(channels:list) :
         ch_ref=channels[0]
     else :
         channel_correct=False
-        print('\n Among the channels'+ str(channels)+', you need a reference channel to compute the registration. A good option is generally a marker that is uniformly expressed')
+        print('\nAmong the channels'+ str(channels)+', you need a reference channel to compute the registration. A good option is generally a marker that is expressed ubiquitously\n')
         while channel_correct==False :
-            ch_ref = input('Name of the reference channel :')
+            ch_ref = input('Name of the reference channel : \n ')
             if ch_ref not in channels :
                 print('The reference channel is not in', channels,'(do not put any other character than the name itself)')
                 channel_correct=False
@@ -121,7 +120,8 @@ def cut_timesequence (path_to_movie:str, directory:str, ind_current_channel:int,
     position_t = np.argwhere(np.array(movie.shape)==number_timepoints)[0][0]
     movie=np.moveaxis(movie,source=position_t,destination=0) #i did not test this
     path_to_data=os.path.dirname(path_to_movie)
-
+    path_dir = rf'{path_to_data}\{directory}'
+    check(os.path.isdir(path_dir)).is_(False).or_raise(Exception,"Please delete the folder "+directory+" and run again.")
     os.mkdir(os.path.join(path_to_data,directory))
     os.mkdir(os.path.join(path_to_data+'/'+directory,"trsf"))
     os.mkdir(os.path.join(path_to_data+'/'+directory,"output"))
@@ -139,21 +139,19 @@ def cut_timesequence (path_to_movie:str, directory:str, ind_current_channel:int,
             stack = movie[t,:,:,:]
             tifffile.imwrite(path_to_data+'/'+directory+"/stackseq/movie_t"+str(format(t,'03d')+'.tif'),stack)
 
-
-
 def get_voxel_sizes() :
 #ask the user for the voxel size of his input and what voxel size does he want in output. Returns 2 tuples for this values.
-    print('\nTo register properly, you need to specify the voxel size of your input image. This can be found in Fiji, Image>Show Info. You can choose to have another voxel size on the registered image , for example to have an isotropic output image (voxel size [1,1,1]), Or you can also choose to keep the same voxel size')
-    print('Voxel size of your original image (XYZ successively) :')
+    print('\nTo register properly, you need to specify the voxel size of your input image. This can be found in Fiji, Image>Show Info. ')
+    print('Voxel size of your original image (XYZ successively) :\n ')
     x= float(input('X :'))
     y= float(input('Y :'))
     z= float(input('Z :'))
     voxel_size_input = [x,y,z]
     print('Initial voxel size =',voxel_size_input)
 
-    change_voxel_size = int(input('Do you want to change the voxel size of your movies ? (1 for yes, 0 for no) : '))
+    change_voxel_size = int(input(' \nYou can choose to have another voxel size on the registered image , for example to have an isotropic output image (voxel size [1,1,1]), Or you can also choose to keep the same voxel size. \nDo you want to change the voxel size of your movies ? (1 for yes, 0 for no) : \n '))
     if change_voxel_size==1 :
-        print('\nVoxel size of your image after transformation (XYZ):')
+        print('\nVoxel size of your image after transformation (XYZ): \n ')
         x= float(input('X :'))
         y= float(input('Y :'))
         z= float(input('Z :'))
@@ -168,10 +166,10 @@ def get_voxel_sizes() :
 def get_trsf_type() :
 #Ask for what transformation the user want and return a string
     list_trsf_types = ['rigid2D','rigid3D','translation2D','translation3D'] #needs to be completed
-    print('You can choose to apply different transformation types depending on your data : ',list_trsf_types)
+    print('\nYou can choose to apply different transformation types depending on your data : ',list_trsf_types)
     trsf_correct = False
     while trsf_correct == False :
-        trsf_type = str(input('Which one do you want to use ? (please enter the name of the transformation only, no other character)'))
+        trsf_type = str(input('\nWhich one do you want to use ? (please enter the name of the transformation only, no other character) \n '))
         if trsf_type in list_trsf_types :
             trsf_correct = True  
         else :
