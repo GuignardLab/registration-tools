@@ -90,9 +90,11 @@ notebooks
 build_model.py
 
 src/*/data/_*
-User-Manual/*.aux
-User-Manual/*.bbl
-User-Manual/*.blg
-User-Manual/*.out
-User-Manual/*.synctex.gz
-User-Manual/*.toc
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.toc
+*.fls
+*fdb_latexmk
