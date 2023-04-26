@@ -340,7 +340,7 @@ class TimeRegistration:
         ):
             if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
-                    lt=p.low_th
+                    lt = p.low_th
                 )
             else:
                 th = ""
