@@ -126,7 +126,8 @@ class trsf_parameters(object):
         self.param_dict = param_dict
         self.init_trsfs = [[], [], []]
         self.path_to_bin = ""
-        self.registration_depth = 3
+        self.registration_depth_start = 6
+        self.registration_depth_end = 3
         self.init_trsf_real_unit = True
         self.image_interpolation = "linear"
         self.apply_trsf = True
@@ -142,6 +143,17 @@ class trsf_parameters(object):
         self.flo_im_sizes = None
         self.copy_ref = False
         self.bbox_out = False
+
+        if "registration_depth" in param_dict:
+            print('1')
+            self.__dict__["registration_depth_start"] = 6
+            self.__dict__["registration_depth_end"] = param_dict[
+                "registration_depth"
+            ]
+        elif not "registration_depth_start" in param_dict:
+            print('2')
+            self.__dict__["registration_depth_start"] = 6
+            self.__dict__["registration_depth_end"] = 3
 
         self.__dict__.update(param_dict)
         self.ref_voxel = tuple(self.ref_voxel)
@@ -367,6 +379,9 @@ class SpatialRegistration:
             p.trsf_names = []
             for pi in p.trsf_paths:
                 path, n = os.path.split(pi)
+                if os.path.splitext(n)[-1] == "":
+                    n = ""
+                    path = pi
                 if n == "":
                     n = "A{a:d}-{trsf:s}.trsf"
                 elif not "{a:" in n:
@@ -517,8 +532,8 @@ class SpatialRegistration:
                         + flo_A.format(t=p.begin)
                         + " -reference-voxel %f %f %f" % p.ref_voxel
                         + " -floating-voxel %f %f %f" % flo_voxel
-                        + " -trsf-type %s -py-hl 6 -py-ll %d"
-                        % (trsf_type, p.registration_depth)
+                        + " -trsf-type %s -py-hl %d -py-ll %d"
+                        % (trsf_type, p.registration_depth_start, p.registration_depth_end)
                         + init_trsf_command
                         + " -res-trsf "
                         + res_trsf
@@ -546,8 +561,8 @@ class SpatialRegistration:
                     + flo_A.format(t=p.begin)
                     + " -reference-voxel %f %f %f" % p.ref_voxel
                     + " -floating-voxel %f %f %f" % flo_voxel
-                    + " -trsf-type %s -py-hl 6 -py-ll %d"
-                    % (trsf_type, p.registration_depth)
+                    + " -trsf-type %s -py-hl %d -py-ll %d"
+                    % (trsf_type, p.registration_depth_start, p.registration_depth_end)
                     + init_trsf_command
                     + " -res-trsf "
                     + res_trsf
