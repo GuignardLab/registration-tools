@@ -181,7 +181,7 @@ class trsf_parameters(object):
             self.voxel_size_out = self.voxel_size
         else:
             self.voxel_size_out = tuple(self.voxel_size_out)
-        self.origin_file_name = file_name        
+        self.origin_file_name = file_name
         self.path_to_data = os.path.join(self.path_to_data, "")
         self.trsf_folder = os.path.join(self.trsf_folder, "")
         self.path_to_bin = os.path.join(self.path_to_bin, "")
@@ -238,7 +238,7 @@ class VectorFlow:
         ):
             if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
-                    lt = p.low_th
+                    lt=p.low_th
                 )
             else:
                 th = ""
@@ -380,7 +380,15 @@ class VectorFlow:
         Args:
             p (trsf_parameters): parameter object
         """
-        image_formats = ['.tiff', '.tif', '.inr', '.gz', '.klb', '.h5', '.hdf5']
+        image_formats = [
+            ".tiff",
+            ".tif",
+            ".inr",
+            ".gz",
+            ".klb",
+            ".h5",
+            ".hdf5",
+        ]
         ### Check the file names and folders:
         p.im_ext = p.file_name.split(".")[-1]  # Image type
         p.A0 = os.path.join(p.path_to_data, p.file_name)  # Image path

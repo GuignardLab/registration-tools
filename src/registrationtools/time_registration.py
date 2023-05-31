@@ -269,7 +269,7 @@ class trsf_parameters(object):
             and self.projection_path[-1] != os.path.sep
         ):
             self.projection_path = self.projection_path + os.path.sep
-        
+
         self.path_to_data = os.path.join(self.path_to_data, "")
         self.trsf_folder = os.path.join(self.trsf_folder, "")
         self.path_to_bin = os.path.join(self.path_to_bin, "")
@@ -340,7 +340,7 @@ class TimeRegistration:
         ):
             if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
-                    lt = p.low_th
+                    lt=p.low_th
                 )
             else:
                 th = ""
@@ -617,7 +617,15 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): parameter object
         """
-        image_formats = ['.tiff', '.tif', '.inr', '.gz', '.klb', '.h5', '.hdf5']
+        image_formats = [
+            ".tiff",
+            ".tif",
+            ".inr",
+            ".gz",
+            ".klb",
+            ".h5",
+            ".hdf5",
+        ]
         ### Check the file names and folders:
         p.im_ext = p.file_name.split(".")[-1]  # Image type
         p.A0 = os.path.join(p.path_to_data, p.file_name)  # Image path
@@ -899,16 +907,16 @@ class TimeRegistration:
         else:
             X, Y, Z = imread(p.A0.format(t=p.ref_TP)).shape
             template = p.A0.format(t=p.ref_TP)
-        
+
         if p.voxel_size != p.voxel_size_out:
             before, after = os.path.splitext(template)
             old_template = template
-            template = ''.join((before, ".final_template", after))
+            template = "".join((before, ".final_template", after))
             call(
                 p.path_to_bin
-                + f"applyTrsf {old_template} {template} " 
+                + f"applyTrsf {old_template} {template} "
                 + "-vs %f %f %f" % p.voxel_size_out,
-                shell=True
+                shell=True,
             )
             X, Y, Z = imread(template).shape
 
@@ -936,7 +944,7 @@ class TimeRegistration:
             try:
                 im = imread(p.A0_out.format(t=t))
             except Exception as e:
-                #print("applyTrsf failed at t=",str(t),", retrying now")
+                # print("applyTrsf failed at t=",str(t),", retrying now")
                 call(
                     p.path_to_bin
                     + "applyTrsf %s %s -trsf "

@@ -531,7 +531,11 @@ class SpatialRegistration:
                         + " -reference-voxel %f %f %f" % p.ref_voxel
                         + " -floating-voxel %f %f %f" % flo_voxel
                         + " -trsf-type %s -py-hl %d -py-ll %d"
-                        % (trsf_type, p.registration_depth_start, p.registration_depth_end)
+                        % (
+                            trsf_type,
+                            p.registration_depth_start,
+                            p.registration_depth_end,
+                        )
                         + init_trsf_command
                         + " -res-trsf "
                         + res_trsf
@@ -560,7 +564,11 @@ class SpatialRegistration:
                     + " -reference-voxel %f %f %f" % p.ref_voxel
                     + " -floating-voxel %f %f %f" % flo_voxel
                     + " -trsf-type %s -py-hl %d -py-ll %d"
-                    % (trsf_type, p.registration_depth_start, p.registration_depth_end)
+                    % (
+                        trsf_type,
+                        p.registration_depth_start,
+                        p.registration_depth_end,
+                    )
                     + init_trsf_command
                     + " -res-trsf "
                     + res_trsf
@@ -640,12 +648,12 @@ class SpatialRegistration:
             if p.out_voxel != p.ref_voxel:
                 before, after = os.path.splitext(template)
                 old_template = template
-                template = ''.join((before, ".final_template", after))
+                template = "".join((before, ".final_template", after))
                 call(
                     p.path_to_bin
-                    + f"applyTrsf {old_template} {template} " 
+                    + f"applyTrsf {old_template} {template} "
                     + "-vs %f %f %f" % p.out_voxel,
-                    shell=True
+                    shell=True,
                 )
             A0_trsf = (
                 " -trsf " + trsf_fmt.format(a=0) + " -template " + template

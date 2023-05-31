@@ -5,6 +5,7 @@ from .spatial_registration import SpatialRegistration, spatial_registration
 from .vectorflow import VectorFlow, vectorflow
 from .utils import *
 import sys
+
 if 8 < sys.version_info.minor:
     import importlib.resources as importlib_resources
 
@@ -19,7 +20,10 @@ json_path_spatial = pkg / "JSON_spatial"
 json_path_time = pkg / "JSON_time"
 
 __all__ = (
-    TimeRegistration, time_registration,
-    SpatialRegistration, spatial_registration,
-    VectorFlow, vectorflow
+    TimeRegistration,
+    time_registration,
+    SpatialRegistration,
+    spatial_registration,
+    VectorFlow,
+    vectorflow,
 )
