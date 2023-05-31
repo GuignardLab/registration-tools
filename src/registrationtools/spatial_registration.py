@@ -145,13 +145,11 @@ class trsf_parameters(object):
         self.bbox_out = False
 
         if "registration_depth" in param_dict:
-            print('1')
             self.__dict__["registration_depth_start"] = 6
             self.__dict__["registration_depth_end"] = param_dict[
                 "registration_depth"
             ]
         elif not "registration_depth_start" in param_dict:
-            print('2')
             self.__dict__["registration_depth_start"] = 6
             self.__dict__["registration_depth_end"] = 3
 
