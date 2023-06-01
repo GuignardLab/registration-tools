@@ -143,27 +143,19 @@ class trsf_parameters(object):
         self.not_to_do = []
         self.compute_trsf = True
         self.ref_path = None
-        self.padding = 1
         self.lowess = False
-        self.window_size = 5
-        self.step_size = 100
+        self.step = 1
         self.recompute = True
         self.apply_trsf = True
         self.sigma = 2.0
-        self.keep_vectorfield = False
-        self.trsf_type = "rigid"
+        self.keep_vectorfield = True
+        self.pre_registration = True
+        self.trsf_type = "vectorfield"
         self.image_interpolation = "linear"
         self.path_to_bin = ""
         self.spline = 1
-        self.trsf_interpolation = False
-        self.sequential = True
-        self.time_tag = "TM"
-        self.do_bdv = 0
-        self.bdv_voxel_size = None
-        self.bdv_unit = "microns"
-        self.pre_2D = False
+        self.forward = True
         self.low_th = None
-        self.plot_trsf = False
 
         self.param_dict = param_dict
         if "registration_depth" in param_dict:
@@ -221,19 +213,27 @@ class VectorFlow:
             params (tuple): a tuple with the parameter object, two consecutive time points
                 to register and a boolean to detemine wether to apply the trsf or not
         """
-        (p, t1, t2, make) = params
+        (p, t1, t2) = params
+        # Assuming t1<t2.
+        # Forward requires to write the vectorfield that registers t2 onto t1
+        # The shape of the vectorfield with be that of t1, and the arrows will point
+        # towards t2 to satisfy the following equation:
+        # I_{t2 -> t1}(x) = I_{t2} o T_{t2 <- t1}(x)
+        # x is expressed in the domain of t1 so T is in the domain of t1
+        # then any position in t1 is map to the position in t2, there you go 
+        # counter intuitive but that's that (I hope ...)
         if p.forward:
-            t_ref = max(t1, t2)
-            t_flo = min(t1, t2)
-        else:
             t_ref = min(t1, t2)
             t_flo = max(t1, t2)
+        else:
+            t_ref = max(t1, t2)
+            t_flo = min(t1, t2)
         p_im_ref = p.A0.format(t=t_ref)
         p_im_flo = p.A0.format(t=t_flo)
         if t_flo != t_ref and (
             p.recompute
             or not os.path.exists(
-                os.path.join(p.trsf_folder, "t%06d-%06d.tif" % (t_flo, t_ref))
+                os.path.join(p.trsf_folder, "t%06d-%06d.tif" % (t_ref, t_flo))
             )
         ):
             if p.low_th is not None and 0 < p.low_th:
@@ -250,7 +250,7 @@ class VectorFlow:
                 res_trsf = (
                     " -no-composition-with-left -res-trsf "
                     + os.path.join(
-                        p.trsf_folder, "t%06d-%06d.tif" % (t_flo, t_ref)
+                        p.trsf_folder, "t%06d-%06d.tif" % (t_ref, t_flo)
                     )
                 )
             if p.pre_registration:
@@ -266,13 +266,13 @@ class VectorFlow:
                     % (p.registration_depth_start, p.registration_depth_end)
                     + " -res-trsf "
                     + os.path.join(
-                        p.trsf_folder, "init-t%06d-%06d.txt" % (t_flo, t_ref)
+                        p.trsf_folder, "init-t%06d-%06d.txt" % (t_ref, t_flo)
                     )
                     + th,
                     shell=True,
                 )
                 init_trsf = " -init-trsf " + os.path.join(
-                    p.trsf_folder, "init-t%06d-%06d.txt" % (t_flo, t_ref)
+                    p.trsf_folder, "init-t%06d-%06d.txt" % (t_ref, t_flo)
                 )
             else:
                 init_trsf = ""
@@ -309,8 +309,8 @@ class VectorFlow:
             p (trsf_paraneters): a trsf_parameter object
         """
         mapping = [
-            (p, t1, t2, not (t1 in p.not_to_do or t2 in p.not_to_do))
-            for t1, t2 in zip(p.to_register[:-1], p.to_register[1:])
+            (p, t1, t2)
+            for t1, t2 in zip(p.to_register[:-p.step], p.to_register[p.step:])
         ]
         tic = time()
         for mi in mapping:
@@ -420,8 +420,6 @@ class VectorFlow:
 
         max_t = max(p.time_points)
         p.to_register = p.time_points
-        if p.bdv_voxel_size is None:
-            p.bdv_voxel_size = p.voxel_size
 
     def compute_trsfs(self, p: trsf_parameters):
         """
