@@ -69,8 +69,8 @@ def read_tif(filename, channel=0):
             info_dict = {}
 
         if "XResolution" in tif.pages[0].tags:
+            vx = tif.pages[0].tags["XResolution"].value
             if vx[0]!=0:
-                vx = tif.pages[0].tags["XResolution"].value
                 vx = vx[1] / vx[0]
                 if isinstance(vx, list):
                     vx = vx[1] / vx[0]
@@ -80,8 +80,8 @@ def read_tif(filename, channel=0):
             vx = 1.0
 
         if "YResolution" in tif.pages[0].tags:
+            vy = tif.pages[0].tags["YResolution"].value
             if vy[0]!=0:
-                vy = tif.pages[0].tags["YResolution"].value
                 vy = vy[1] / vy[0]
                 if isinstance(vy, list):
                     vy = vy[1] / vy[0]
@@ -91,8 +91,8 @@ def read_tif(filename, channel=0):
             vy = 1.0
 
         if "ZResolution" in tif.pages[0].tags:
+            vz = tif.pages[0].tags["ZResolution"].value
             if vz[0]!=0:
-                vz = tif.pages[0].tags["ZResolution"].value
                 if isinstance(vz, list):
                     vz = vz[1] / vz[0]
             else:
