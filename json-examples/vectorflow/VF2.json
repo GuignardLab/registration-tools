@@ -5,7 +5,7 @@
     "output_format": "/Users/leo.guignard/tmp/registered/",
     "check_TP": 0,
 
-    "voxel_size": [0.5, 0.5, 2],
+    "voxel_size": [1, 1, 1],
     "first": 0,
     "last": 2,
     
