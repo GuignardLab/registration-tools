@@ -90,6 +90,8 @@ def read_tif(filename, channel=0):
         else:
             vy = 1.0
 
+
+asdtesert
         if "ZResolution" in tif.pages[0].tags:
             if vz[0]!=0:
                 vz = tif.pages[0].tags["ZResolution"].value
