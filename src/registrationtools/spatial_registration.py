@@ -562,8 +562,8 @@ class SpatialRegistration:
                     + res_trsf
                     +  # ' -res-voxel-trsf ' + res_voxel_trsf + \
                     # ' -res ' + flo_out +\
-                    " -composition-with-initial"
-                    +th,
+                    #" -composition-with-initial"
+                    th, 
                     shell=True,
                 )
                 call(
@@ -662,6 +662,7 @@ class SpatialRegistration:
                 + A0_trsf,
                 shell=True,
             )
+
         elif p.copy_ref:
             copyfile(p.ref_A.format(t=t), p.ref_out.format(t=t))
         else:
