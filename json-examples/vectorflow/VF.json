@@ -12,7 +12,7 @@
     "compute_trsf": 1,
     "apply_trsf": 1,
     "registration_depth_start": 6,
-    "registration_depth_end": 1,
+    "registration_depth_end": 0,
     
     "keep_vectorfield": 1,
     "pre_registration": 1,
