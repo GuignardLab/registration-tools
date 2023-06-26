@@ -29,11 +29,6 @@ __all__ = []
 
 import decimal
 
-# import libtiff
-# from libtiff import TIFFfile
-# from libtiff.tiff_image import TIFFimage, TIFFentry
-# from libtiff import tif_lzw
-# from libtiff.utils import bytes2str, VERBOSE
 import numpy as np
 from tifffile import TiffFile, imread, imwrite
 import os, os.path, sys, time
