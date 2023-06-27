@@ -143,6 +143,8 @@ class trsf_parameters(object):
         self.flo_im_sizes = None
         self.copy_ref = False
         self.bbox_out = False
+        self.low_th = None
+        self.high_th = None
 
         if "registration_depth" in param_dict:
             self.__dict__["registration_depth_start"] = 6
@@ -517,6 +519,12 @@ class SpatialRegistration:
                 init_trsf_command = ""
             i = 0
             if not p.test_init:
+                if p.low_th is not None and 0 < p.low_th:
+                    th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
+                    lt=p.low_th
+                )
+                else:
+                    th = ""
                 for i, trsf_type in enumerate(p.trsf_types[:-1]):
                     if i != 0:
                         init_trsf_command = " -init-trsf {:s}".format(
@@ -543,7 +551,8 @@ class SpatialRegistration:
                         + init_trsf_command
                         + " -res-trsf "
                         + res_trsf
-                        + " -composition-with-initial",
+                        + " -composition-with-initial"
+                        +th,
                         shell=True,
                     )
                 trsf_type = p.trsf_types[-1]
@@ -578,11 +587,12 @@ class SpatialRegistration:
                     + res_trsf
                     +  # ' -res-voxel-trsf ' + res_voxel_trsf + \
                     # ' -res ' + flo_out +\
-                    " -composition-with-initial",
+                    #" -composition-with-initial"
+                    th, 
                     shell=True,
                 )
                 call(
-                    p.path_to_bin + "invTrsf %s %s" % (res_trsf, res_inv_trsf),
+                    p.path_to_bin + "invTrsf %s %s" % (res_trsf, res_inv_trsf) +th,
                     shell=True,
                 )
 
@@ -680,6 +690,7 @@ class SpatialRegistration:
                 + A0_trsf,
                 shell=True,
             )
+
         elif p.copy_ref:
             copyfile(p.ref_A.format(t=t), p.ref_out.format(t=t))
         else:
