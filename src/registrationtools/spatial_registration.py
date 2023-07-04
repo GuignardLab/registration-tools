@@ -3,6 +3,7 @@
 # file 'LICENCE', which is part of this source code package.
 # Author: Leo Guignard (leo.guignard...@AT@...univ-amu.fr)
 
+import warnings
 import numpy as np
 import os
 import sys
@@ -163,6 +164,9 @@ class trsf_parameters(object):
         if 0 < len(self.path_to_bin) and not os.path.exists(self.path_to_bin):
             print("Binary path could not be found, will try with global call")
             self.path_to_bin = ""
+        if not self.compute_trsf:
+            self.test_init = False
+            warnings.warn("Testing initial transformations cannot be done when `compute_trsf` is False/0. It will not be done then")
 
 
 class SpatialRegistration:
