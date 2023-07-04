@@ -4,6 +4,7 @@
 # Author: Leo Guignard (leo.guignard...@AT@...univ-amu.fr)
 
 from pathlib import Path
+from shutil import rmtree
 from time import time
 import os
 from subprocess import call
@@ -680,6 +681,11 @@ class TimeRegistration:
             p.out_bdv = os.path.join(p.trsf_folder, "bdv.xml")
         if p.bdv_voxel_size is None:
             p.bdv_voxel_size = p.voxel_size
+        # Create the output folder for the transfomrations
+        if p.compute_trsf and p.recompute and os.path.exists(p.trsf_folder):
+            rmtree(p.trsf_folder)
+        if not os.path.exists(p.trsf_folder):
+            os.makedirs(p.trsf_folder)
 
     def lowess_filter(self, p: trsf_parameters, trsf_fmt: str) -> str:
         """
@@ -839,10 +845,6 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): Parameter object
         """
-        # Create the output folder for the transfomrations
-        if not os.path.exists(p.trsf_folder):
-            os.makedirs(p.trsf_folder)
-
         trsf_fmt = "t{flo:06d}-{ref:06d}.txt"
         try:
             self.run_produce_trsf(p)

@@ -10,7 +10,7 @@ import json
 from subprocess import call
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from pathlib import Path
 from typing import Union, List, Tuple
 from IO import imread, imsave, SpatialImage
@@ -143,6 +143,7 @@ class trsf_parameters(object):
         self.flo_im_sizes = None
         self.copy_ref = False
         self.bbox_out = False
+        self.recompute = True
 
         if "registration_depth" in param_dict:
             self.__dict__["registration_depth_start"] = 6
@@ -380,6 +381,8 @@ class SpatialRegistration:
                 if os.path.splitext(n)[-1] == "":
                     n = ""
                     path = pi
+                    if p.compute_trsf and p.recompute and os.path.exists(path):
+                        rmtree(path)
                     if not os.path.exists(path):
                         os.makedirs(path)
                 if n == "":
