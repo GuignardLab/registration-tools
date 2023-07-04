@@ -7,18 +7,10 @@ from pathlib import Path
 from time import time
 import os
 from subprocess import call
-import scipy as sp
-from scipy import interpolate
 import json
 import numpy as np
-from IO import imread, imsave, SpatialImage
 from typing import List, Tuple
-from statsmodels.nonparametric.smoothers_lowess import lowess
 import sys
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
-from transforms3d.affines import decompose
-from transforms3d.euler import mat2euler
 
 if sys.version_info[0] < 3:
     from future.builtins import input
