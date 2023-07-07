@@ -425,6 +425,8 @@ class SpatialRegistration:
             p.out_bdv = os.path.join(p.trsf_paths[0], "bdv.xml")
         if p.bdv_voxel_size is None:
             p.bdv_voxel_size = p.ref_voxel
+        if p.test_init:
+            p.bbox_out = False
 
     @staticmethod
     def inv_trsf(trsf: Union[np.ndarray, List[List]]) -> np.ndarray:
@@ -476,11 +478,15 @@ class SpatialRegistration:
             trsf_path = p.trsf_paths[A_num]
             trsf_name = p.trsf_names[A_num]
             if isinstance(init_trsf, list):
-                i = 0
-                trsfs = []
                 im_size = (
                     np.array(p.flo_im_sizes[A_num], dtype=float) * flo_voxel
                 )
+                trsfs_dict = {
+                    "flip": {},
+                    "trans": {},
+                    "rot": {}
+                }
+                i = 0
                 while i < len(init_trsf):
                     t_type = init_trsf[i]
                     i += 1
@@ -489,17 +495,21 @@ class SpatialRegistration:
                     if "rot" in t_type:
                         angle = init_trsf[i]
                         i += 1
-                        trsfs += [
-                            self.axis_rotation_matrix(
-                                axis.upper(), angle, np.zeros(3), im_size
-                            )
-                        ]
+                        trsf = self.axis_rotation_matrix(
+                            axis.upper(), angle, np.zeros(3), im_size
+                        )
                     elif "flip" in t_type:
-                        trsfs += [self.flip_matrix(axis.upper(), im_size)]
+                        trsf = self.flip_matrix(axis.upper(), im_size)
                     elif "trans" in t_type:
                         tr = init_trsf[i]
                         i += 1
-                        trsfs += [self.translation_matrix(axis, tr)]
+                        trsf = self.translation_matrix(axis.upper(), tr)
+                    trsfs_dict[t_type][axis.upper()] = trsf
+                trsfs = []
+                for t_type in ["flip", "rot", "trans"]:
+                    for axis in ["X", "Y", "Z"]:
+                        if axis in trsfs_dict[t_type]:
+                            trsfs.append(trsfs_dict[t_type][axis])
                 res = np.identity(4)
                 for trsf in trsfs:
                     res = np.dot(res, trsf)
@@ -522,7 +532,6 @@ class SpatialRegistration:
                 init_trsf_command = " -init-trsf {:s}".format(init_trsf)
             else:
                 init_trsf_command = ""
-            i = 0
             if not p.test_init:
                 for i, trsf_type in enumerate(p.trsf_types[:-1]):
                     if i != 0:
