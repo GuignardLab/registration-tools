@@ -808,6 +808,7 @@ class TimeRegistration:
         imsave(template, im)
         identity = np.identity(4)
 
+
         trsf_fmt_no_flo = trsf_fmt.replace("{flo:06d}", "%06d")
         new_trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
         new_trsf_fmt_no_flo = new_trsf_fmt.replace("{flo:06d}", "%06d")
@@ -816,8 +817,8 @@ class TimeRegistration:
                 os.path.join(
                     p.trsf_folder,
                     trsf_fmt.format(flo=t, ref=p.ref_TP),
-                    identity,
-                )
+                ),
+                identity,
             )
 
         call(
