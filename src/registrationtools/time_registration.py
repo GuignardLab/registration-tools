@@ -4,6 +4,7 @@
 # Author: Leo Guignard (leo.guignard...@AT@...univ-amu.fr)
 
 from pathlib import Path
+from shutil import rmtree
 from time import time
 import os
 from subprocess import call
@@ -269,7 +270,7 @@ class trsf_parameters(object):
             and self.projection_path[-1] != os.path.sep
         ):
             self.projection_path = self.projection_path + os.path.sep
-        
+
         self.path_to_data = os.path.join(self.path_to_data, "")
         self.trsf_folder = os.path.join(self.trsf_folder, "")
         self.path_to_bin = os.path.join(self.path_to_bin, "")
@@ -340,7 +341,7 @@ class TimeRegistration:
         ):
             if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
-                    lt = p.low_th
+                    lt=p.low_th
                 )
             else:
                 th = ""
@@ -617,7 +618,15 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): parameter object
         """
-        image_formats = ['.tiff', '.tif', '.inr', '.gz', '.klb', '.h5', '.hdf5']
+        image_formats = [
+            ".tiff",
+            ".tif",
+            ".inr",
+            ".gz",
+            ".klb",
+            ".h5",
+            ".hdf5",
+        ]
         ### Check the file names and folders:
         p.im_ext = p.file_name.split(".")[-1]  # Image type
         p.A0 = os.path.join(p.path_to_data, p.file_name)  # Image path
@@ -672,6 +681,11 @@ class TimeRegistration:
             p.out_bdv = os.path.join(p.trsf_folder, "bdv.xml")
         if p.bdv_voxel_size is None:
             p.bdv_voxel_size = p.voxel_size
+        # Create the output folder for the transfomrations
+        if p.compute_trsf and p.recompute and os.path.exists(p.trsf_folder):
+            rmtree(p.trsf_folder)
+        if not os.path.exists(p.trsf_folder):
+            os.makedirs(p.trsf_folder)
 
     def lowess_filter(self, p: trsf_parameters, trsf_fmt: str) -> str:
         """
@@ -794,6 +808,7 @@ class TimeRegistration:
         imsave(template, im)
         identity = np.identity(4)
 
+
         trsf_fmt_no_flo = trsf_fmt.replace("{flo:06d}", "%06d")
         new_trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
         new_trsf_fmt_no_flo = new_trsf_fmt.replace("{flo:06d}", "%06d")
@@ -802,8 +817,8 @@ class TimeRegistration:
                 os.path.join(
                     p.trsf_folder,
                     trsf_fmt.format(flo=t, ref=p.ref_TP),
-                    identity,
-                )
+                ),
+                identity,
             )
 
         call(
@@ -831,10 +846,6 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): Parameter object
         """
-        # Create the output folder for the transfomrations
-        if not os.path.exists(p.trsf_folder):
-            os.makedirs(p.trsf_folder)
-
         trsf_fmt = "t{flo:06d}-{ref:06d}.txt"
         try:
             self.run_produce_trsf(p)
@@ -899,16 +910,16 @@ class TimeRegistration:
         else:
             X, Y, Z = imread(p.A0.format(t=p.ref_TP)).shape
             template = p.A0.format(t=p.ref_TP)
-        
+
         if p.voxel_size != p.voxel_size_out:
             before, after = os.path.splitext(template)
             old_template = template
-            template = ''.join((before, ".final_template", after))
+            template = "".join((before, ".final_template", after))
             call(
                 p.path_to_bin
-                + f"applyTrsf {old_template} {template} " 
+                + f"applyTrsf {old_template} {template} "
                 + "-vs %f %f %f" % p.voxel_size_out,
-                shell=True
+                shell=True,
             )
             X, Y, Z = imread(template).shape
 
@@ -936,7 +947,7 @@ class TimeRegistration:
             try:
                 im = imread(p.A0_out.format(t=t))
             except Exception as e:
-                #print("applyTrsf failed at t=",str(t),", retrying now")
+                # print("applyTrsf failed at t=",str(t),", retrying now")
                 call(
                     p.path_to_bin
                     + "applyTrsf %s %s -trsf "
@@ -1176,7 +1187,6 @@ class TimeRegistration:
             f.close()
 
     def plot_transformations(self, p: trsf_parameters):
-
         trsf_fmt = "t{flo:06d}-{ref:06d}.txt"
         if p.lowess:
             trsf_fmt = "t{flo:06d}-{ref:06d}-filtered.txt"

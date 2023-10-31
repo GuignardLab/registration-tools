@@ -1,9 +1,10 @@
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 from .time_registration import TimeRegistration, time_registration
 from .spatial_registration import SpatialRegistration, spatial_registration
 from .utils import *
 import sys
+
 if 8 < sys.version_info.minor:
     import importlib.resources as importlib_resources
 
