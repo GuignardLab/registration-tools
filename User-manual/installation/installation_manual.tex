@@ -1,82 +1,57 @@
-\documentclass[10pt,a4paper]{book}
-\usepackage[utf8]{inputenc}
+\documentclass[11pt]{article}
+\usepackage{bm}
+\usepackage{overpic}
+\usepackage{color}
 \usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
-\usepackage{pifont}
-\usepackage{graphicx}
-\usepackage[left=2cm,right=2cm,top=2cm,bottom=1.5cm]{geometry}
-\usepackage{xcolor}
-\usepackage[square,sectionbib]{natbib}
-\usepackage{hyperref}
-\usepackage{tabu}
-\usepackage{threeparttable}
-\usepackage{graphicx}
+\usepackage{background}
+\usepackage{lipsum}
+\usepackage{empheq}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}%
+\usepackage[type={CC},modifier={by},version={4.0}]{doclicense}
+\usepackage[margin=1in]{geometry}
+\usepackage{SIunits}
+\usepackage{multirow}
+\DeclareMathOperator{\atantwo}{atan2}
+\renewcommand{\d}{\mathrm{d}}
+\renewcommand{\v}{\mathrm{v}}
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+\SetBgColor{black!40}  
+\SetBgScale{1}
+\SetBgAngle{0}
+\SetBgPosition{current page.north east}
+\SetBgHshift{-3cm}
+\SetBgVshift{-1cm}
 
-\definecolor{light-gray}{gray}{0.95}
-%\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
-\newcommand{\option}[1]{{\texttt{'#1'}}}
-\newcommand{\T}[2]{T_{{#1}\leftarrow{#2}}}
-\newcommand\tab[1][.6cm]{\hspace*{#1}}
-\newcommand{\cmark}{\ding{51}}%
-\newcommand{\xmark}{\ding{55}}%
-\newenvironment{code}[1]{\mbox{}\\[1ex]\hspace*{-#1cm}\begin{minipage}{150mm}\begin{quote}\tt}{\end{quote}\end{minipage}\mbox{}\\[1ex]}
 
 \begin{document}
+\begin{center}
+\large
+\textbf{User manual to install the registration tools}
 
-\chapter{How to install and run the tools}
+\vspace{0.2cm}
+\end{center}
 
-\paragraph{}You have 3 options to run the code. Number 1) is to use the Napari plugin, this is recommended if you need a graphic interface/easy visualization, or if you need to test the registration parameter. This option does not allow to run the algo on a big batch of data. Number 2) is to run the notebooks in Python, if you need to run on multiple images or movies, and option 3) is to use the command line interface, its a faster option that the notebooks but you need to know the parameters beforehand.
+You have 3 options to run the code. Number 1) is to use the Napari plugin, this is recommended if you need a graphic interface/easy visualization, or if you need to test the registration parameter. This option does not allow you to run the code on a big batch of data. \\
+Number 2) is to run the notebooks in Python, if you need to run on multiple images or movies (the code is user friendly but you does not provide any graphical interface), and option 3) is to use the command line interface, its the faster option but you need to know the parameters beforehand
 
 \section{Installation}
 \begin{itemize}
 \item[-] You need to have anaconda installed, follow the procedure here : \url{https://www.anaconda.com/products/distribution}
-\item[-]In the research bar (windows icon, bottom left of the screen), search for 1naconda prompt. Selecting it opens a conda terminal. To install the tools, write in this terminal :
-\begin{code}{0.8}
-\$ (base) C:/Users/username> conda create -n registration python=3.10 \\
-\$ (base) C:/Users/username> conda activate registration \\
-\$ (registration) C:/Users/username> conda install -c trcabel -c morpheme vt \\
-\end{code}
-\subsection{If you are using the napari plugin}
-To be able to run the plugin, you have to install napari (for troubleshooting, see the \href{https:/napari.org/stable/}{napari page}):
-\begin{code}{0.8}
-\$ (registration) C:/Users/username>python -m pip install "napari[all]"
-\end{code}
-Then to download the plugin, you can write :
-\begin{code}{0.8}
-\$ (registration) C:/Users/username>pip install napari-3D-registration
-\end{code}
-Or if you want the last version:
-\begin{code}{0.8}
-\$ (registration) C:/Users/username>pip install git+https://github.com/GuignardLab/napari-3D-registration.git
-\end{code}
-Or directly in the software. For that, open napari:
-\begin{code}{0.8}
-\$ (registration) C:/Users/username> napari
-\end{code}
-and  go to Plugin/Install or Uninstall Plugins, look for napari-3D-registration, install it. \\
+\item[-]In the research bar (windows icon, bottom left of the screen), search for Anaconda Prompt. Selecting it opens a conda terminal. To install the tools, write in this terminal :
+\begin{verbatim}
+(base) C:/Users/username> conda create -n registration python=3.10
+(base) C:/Users/username> conda activate registration
+(registration) C:/Users/username> conda install -c trcabel -c morpheme vt
+\end{verbatim}
 
-\subsection{If you are using the notebooks}
-To be able to run the notebooks, you should install the code itself in your environement :
-\begin{code}{0.8}
-\$ (registration) C:/Users/username> pip install git+https://github.com/GuignardLab/registration-tools.git
-\end{code}
-Or
-\begin{code}{0.8}
-\$ (registration) C:/Users/username> pip install 3D-registration
-\end{code}
-And then, to run the notebooks, we recommend to use jupyter notebook. To install it :
-\begin{code}{0.8}
-\$ (registration) C:/Users/username> pip install jupyter \\
-\end{code}
-
-\subsection{If you are using the command line}
-Run in command line ? \\
-
-For every installation, you still need too follow the end of this procedure :
+If you are on Windows, you still need too follow this procedure (Mac ?):
+\begin{sloppypar}
 \item[-]Open this link : \url{https://www.pconlife.com/download/otherfile/185413/9ec519368844bffd89ed4ff61342b98d/}
+\end{sloppypar}
+\begin{sloppypar}
 Complete the captcha, download pthreadvse2.dll using the green button, and put the resulting file in the folder (with your actual username) : C:/Users/username/Anaconda3/envs/registration/Library/bin \\
-
+\end{sloppypar}
 \item[-]Write applyTrsf in your terminal. If you get :
 Usage: applyTrsf [[-floating|-flo] image-in] [[-result|-res] image-out]
  [-transformation |-trsf %s|identity|fovcenter]
@@ -84,19 +59,63 @@ Usage: applyTrsf [[-floating|-flo] image-in] [[-result|-res] image-out]
 …. \\
 Then the installation is successful.
 
+
+\subsection{If you are using the napari plugin}
+
+To be able to run the plugin, you have to install napari (for troubleshooting, see the \href{https:/napari.org/stable/}{napari page}):
+
+\begin{verbatim}
+(registration) C:/Users/username>python -m pip install "napari[all]"
+\end{verbatim}
+Then to download the plugin, you can write :
+\begin{verbatim}
+(registration) C:/Users/username>pip install napari-3D-registration
+\end{verbatim}
+Or if you want the last version:
+
+\begin{Verbatim}[breaklines=true]
+(registration) C:/Users/username>pip install git+https://github.com/GuignardLab/napari-3D-registration.git
+\end{Verbatim}
+Or directly in the software. For that, open napari:
+\begin{verbatim}
+(registration) C:/Users/username> napari
+\end{verbatim}
+and  go to Plugin/Install or Uninstall Plugins, look for napari-3D-registration, install it. \\
+
+\subsection{If you are using the notebooks}
+To be able to run the notebooks, you should install the code itself in your environement :
+\begin{Verbatim}[breaklines=true]
+(registration) C:/Users/username> pip install git+https://github.com/GuignardLab/registration-tools.git
+\end{Verbatim}
+Or
+\begin{verbatim}
+(registration) C:/Users/username> pip install 3D-registration
+\end{verbatim}
+And then, to run the notebooks, we recommend to use jupyter notebook. To install it :
+\begin{verbatim}
+(registration) C:/Users/username> pip install jupyter
+\end{verbatim}
+
+\subsection{If you are using the command line}
+In the righ environment, write
+\begin{verbatim}
+(registration) C:/Users/username> time-registration
+\end{verbatim}
+and then drop the json file with the registration parameters you want. Parameters are found in the Usage manual and you can find an example of a json file in ...
+
 \paragraph{}Troubleshooting
 \item[-]When you use conda, if it shows "Conda SSL Error : OpenSSL appears to be unavailable on this matching" : Go to \path{C:/Users/username/Anaconda3/Library/bin},
 copy the files \path{libcrypto-1_1-x64} and \path{libssl-1_1-x64} and paste them into \path{C:/Users/username/Anaconda3/DLLs}
 % (https://github.com/conda/conda/issues/11795)
 \item[-]When you write “conda install vt -c morpheme -c trcabel”, if you have error messages on compatibilities, then you have to deactivate your environnement and delete it in the following way :
-\begin{code}{0.8}
-\$ (registration) C:/Users/username> conda deactivate \\
-\$ (base) C:/Users/username>conda env remove -n registration-env
-\end{code}
+\begin{verbatim}
+(registration) C:/Users/username> conda deactivate
+(base) C:/Users/username>conda env remove -n registration-env
+\end{verbatim}
 Then write :
-\begin{code}{0.8}
-\$ (base) C:/Users/username>conda config --add channels conda-forge \\
- \end{code}
+\begin{verbatim}
+(base) C:/Users/username>conda config --add channels conda-forge
+ \end{verbatim}
 And start the installation again, from conda create.
 \item[-]When running ApplyTrsf, if you get an error like “applyTrsf.exe - System Error. Executing the code is impossible because pthreadVSE2.dll cannot be found.”, it could mean you dropped the pthreadvse2.dll file in the wrong folder.
 \end{itemize}
@@ -104,20 +123,20 @@ And start the installation again, from conda create.
 \section{Using the registration tools}
 \subsection{If you are using the napari plugin}
 To open Napari :
-\begin{code}{0.8}
-\$ (base) C:/Users/username>conda activate registration \\
-\$ (registration) C:/Users/username>napari
-\end{code}
+\begin{verbatim}
+(base) C:/Users/username>conda activate registration
+(registration) C:/Users/username>napari
+\end{verbatim}
 And then you can click on Plugin/3D-registration to start the napari plugin. 
 You can select an example json file, select ‘Run !’  and then go through the different parameters to adapt them to your case.
 For more precisions, consult the \href{https://github.com/GuignardLab/napari-3D-registration}{user manual}.
 
 \subsection{If you are using the notebooks}
 The notebooks will ask you step by step the parameters of your registration, run the registration, and save the registered movies. If you have multiple movies with the same set of parameters, you can register all of them at the same time. To run the notebooks, open an Anaconda Prompt window and write :
-\begin{code}{0.8}
-\$ (base) C:/Users/username>conda activate registration \\
-\$ (registration) C:/Users/username>jupyter notebook
-\end{code}
+\begin{verbatim}
+(base) C:/Users/username>conda activate registration
+(registration) C:/Users/username>jupyter notebook
+\end{verbatim}
 
 And it will open the jupyter notebook interface on a navigator.
 Here you have to navigate to the folder where the notebook has been saved.
@@ -133,8 +152,12 @@ For more info about the parameters, check the \href{https:/github.com/GuignardLa
 \end{itemize}
 \subsection{If you are using the command line}
 To use the command line interface. It is running the json file directly in the terminal. There are examples of json files in the ?. You can open this type of file in any sort of code editor, modify it with your own paths and parameters. To run a json file, follow the procedure : In the research bar (windows icon, bottom left of the screen), search for Anaconda prompt. Selecting it opens a conda terminal. Write in this terminal :
-\begin{code}{0.8}
-\$ (base) C:/Users/username>conda activate registration \\
-\$ (registration) C:/Users/username>time-registration
-\end{code}
+\begin{verbatim}
+(base) C:/Users/username>conda activate registration
+(registration) C:/Users/username>time-registration
+\end{verbatim}
+\end{document}
+
+\section{Introduction}
+
 \end{document}
