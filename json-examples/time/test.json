@@ -23,6 +23,7 @@
 
 	"apply_trsf": 1,
 	"time_tag": "t_",
-	"out_bdv": ""
+	"out_bdv": "",
+	"image_interpolation": "nearest"
 }
 
