@@ -675,7 +675,8 @@ class SpatialRegistration:
                 call(
                     p.path_to_bin
                     + f"applyTrsf {old_template} {template} "
-                    + "-vs %f %f %f" % p.out_voxel,
+                    + "-vs %f %f %f" % p.out_voxel
+                    + " -interpolation %s" % p.image_interpolation,
                     shell=True,
                 )
             A0_trsf = (
@@ -693,7 +694,8 @@ class SpatialRegistration:
                 + p.ref_out.format(t=t)
                 + " -floating-voxel %f %f %f" % p.ref_voxel
                 + " -vs %f %f %f" % p.out_voxel
-                + A0_trsf,
+                + A0_trsf
+                + " -interpolation %s" % p.image_interpolation,
                 shell=True,
             )
         elif p.copy_ref:
