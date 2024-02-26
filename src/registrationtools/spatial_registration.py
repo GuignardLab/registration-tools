@@ -714,6 +714,8 @@ class SpatialRegistration:
                     )
                 else:
                     trsf = " -trsf " + init_trsf
+                if p.bbox_out:
+                    trsf += " -template " + template
             elif not p.bbox_out:
                 t_type = "" if len(p.trsf_types) < 1 else p.trsf_types[-1]
                 trsf = " -trsf " + os.path.join(
