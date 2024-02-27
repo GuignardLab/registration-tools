@@ -5,7 +5,7 @@ from multiprocessing import Pool
 
 
 def populate_im(parameters):
-    from .IO import imread, SpatialImage
+    from .IO import imread
 
     path, pos = parameters
     return imread(path)[:, :, 0]
@@ -15,7 +15,6 @@ def read_folder(folder, parallel):
     from .IO import imread, SpatialImage
 
     data_files = sorted(os.listdir(folder))
-    nb_images = len(data_files)
     first_image = imread(path.join(folder, data_files[0]))
     to_read = []
     for i, p in enumerate(data_files):

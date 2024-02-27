@@ -28,7 +28,7 @@ try:
     from pyklb import readheader
 
     pyklb_found = True
-except Exception as e:
+except Exception:
     pyklb_found = False
     print("pyklb library not found, klb files will not be generated")
 
@@ -44,25 +44,25 @@ class trsf_parameters(object):
         """
 
         correct = True
-        if not "path_to_data" in self.__dict__:
+        if "path_to_data" not in self.__dict__:
             print('\n\t"path_to_data" is required')
             correct = False
-        if not "file_name" in self.__dict__:
+        if "file_name" not in self.__dict__:
             print('\n\t"file_name" is required')
             correct = False
-        if not "trsf_folder" in self.__dict__:
+        if "trsf_folder" not in self.__dict__:
             print('\n\t"trsf_folder" is required')
             correct = False
-        if not "voxel_size" in self.__dict__:
+        if "voxel_size" not in self.__dict__:
             print('\n\t"voxel_size" is required')
             correct = False
-        if not "ref_TP" in self.__dict__:
+        if "ref_TP" not in self.__dict__:
             print('\n\t"ref_TP" is required')
             correct = False
-        if not "projection_path" in self.__dict__:
+        if "projection_path" not in self.__dict__:
             print('\n\t"projection_path" is required')
             correct = False
-        if self.apply_trsf and not "output_format" in self.__dict__:
+        if self.apply_trsf and "output_format" not in self.__dict__:
             print('\n\t"output_format" is required')
             correct = False
         if self.trsf_type != "translation" and (
@@ -71,10 +71,10 @@ class trsf_parameters(object):
             print("\n\tLowess or transformation interplolation")
             print("\tonly work with translation")
             correct = False
-        if self.lowess and not "window_size" in self.param_dict:
+        if self.lowess and "window_size" not in self.param_dict:
             print('\n\tLowess smoothing "window_size" is missing')
             print("\tdefault value of 5 will be used\n")
-        if self.trsf_interpolation and not "step_size" in self.param_dict:
+        if self.trsf_interpolation and "step_size" not in self.param_dict:
             print('\n\tTransformation interpolation "step_size" is missing')
             print("\tdefault value of 100 will be used\n")
         if self.trsf_type == "vectorfield" and self.ref_path is None:
@@ -253,7 +253,7 @@ class trsf_parameters(object):
             self.__dict__["registration_depth_end"] = param_dict[
                 "registration_depth"
             ]
-        elif not "registration_depth_start" in param_dict:
+        elif "registration_depth_start" not in param_dict:
             self.__dict__["registration_depth_start"] = 6
             self.__dict__["registration_depth_end"] = 3
 
@@ -297,7 +297,9 @@ class TimeRegistration:
             f = open(path)
             lines = f.readlines()[2:-1]
             f.close()
-            return np.array([[float(v) for v in l.split()] for l in lines])
+            return np.array(
+                [[float(v) for v in line.split()] for line in lines]
+            )
         f.close()
         return np.loadtxt(path)
 
@@ -591,7 +593,7 @@ class TimeRegistration:
                 f_names = [
                     os.path.join(p_param, f)
                     for f in os.listdir(p_param)
-                    if ".json" in f and not "~" in f
+                    if ".json" in f and "~" not in f
                 ]
             else:
                 f_names = [p_param]
@@ -636,7 +638,7 @@ class TimeRegistration:
             if os.path.split(p.output_format)[0] == "":
                 p.A0_out = os.path.join(p.path_to_data, p.output_format)
             # If the output format is a folder alone
-            elif not os.path.splitext(p.output_format)[-1] in image_formats:
+            elif os.path.splitext(p.output_format)[-1] not in image_formats:
                 p.A0_out = os.path.join(p.output_format, p.file_name)
             else:
                 p.A0_out = p.output_format
@@ -648,7 +650,7 @@ class TimeRegistration:
 
         # Time points to work with
         p.time_points = np.array(
-            [i for i in np.arange(p.first, p.last + 1) if not i in p.not_to_do]
+            [i for i in np.arange(p.first, p.last + 1) if i not in p.not_to_do]
         )
         if p.check_TP:
             missing_time_points = []
@@ -671,7 +673,7 @@ class TimeRegistration:
         max_t = max(p.time_points)
         if p.trsf_interpolation:
             p.to_register = sorted(p.time_points)[:: p.step_size]
-            if not max_t in p.to_register:
+            if max_t not in p.to_register:
                 p.to_register += [max_t]
         else:
             p.to_register = p.time_points
@@ -807,7 +809,6 @@ class TimeRegistration:
 
         imsave(template, im)
         identity = np.identity(4)
-
 
         trsf_fmt_no_flo = trsf_fmt.replace("{flo:06d}", "%06d")
         new_trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
@@ -946,7 +947,7 @@ class TimeRegistration:
             )
             try:
                 im = imread(p.A0_out.format(t=t))
-            except Exception as e:
+            except Exception:
                 # print("applyTrsf failed at t=",str(t),", retrying now")
                 call(
                     p.path_to_bin
@@ -1101,7 +1102,7 @@ class TimeRegistration:
         Args:
             p (trsf_parameters): Parameter object
         """
-        if not p.im_ext in ["klb"]:  # ['tif', 'klb', 'tiff']:
+        if p.im_ext not in ["klb"]:  # ['tif', 'klb', 'tiff']:
             print("Image format not adapted for BigDataViewer")
             return
         SpimData = ET.Element("SpimData")

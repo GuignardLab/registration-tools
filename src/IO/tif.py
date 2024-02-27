@@ -29,9 +29,7 @@ __all__ = []
 
 import decimal
 
-import numpy as np
-from tifffile import TiffFile, imread, imwrite
-import os, os.path, sys, time
+from tifffile import TiffFile, imwrite
 
 __all__ += ["read_tif", "write_tif", "mantissa"]
 
@@ -46,7 +44,7 @@ def read_tif(filename, channel=0):
     def format_digit(v):
         try:
             v = eval(v)
-        except Exception as e:
+        except Exception:
             pass
         return v
 
@@ -149,9 +147,9 @@ def write_tif(filename, obj):
     extra_info = {
         "XResolution": res[0],
         "YResolution": res[1],
-        "spacing": spacing
-        if is3D
-        else None,  # : no way to save the spacing (no specific tag)
+        "spacing": (
+            spacing if is3D else None
+        ),  # : no way to save the spacing (no specific tag)
     }
     print(extra_info)
 

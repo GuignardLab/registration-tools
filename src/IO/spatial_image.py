@@ -21,7 +21,6 @@ __revision__ = " $Id: $ "
 
 import numpy as np
 from scipy import ndimage
-import copy as cp
 
 # -- deprecation messages --
 # import warnings, exceptions

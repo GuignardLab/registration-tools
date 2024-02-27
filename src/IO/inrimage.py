@@ -24,7 +24,6 @@ __revision__ = " $Id$ "
 import os
 from os import path
 import numpy as np
-from struct import calcsize, pack, unpack
 import gzip
 from io import BytesIO
 from .spatial_image import SpatialImage

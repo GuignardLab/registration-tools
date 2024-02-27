@@ -145,13 +145,14 @@ class trsf_parameters(object):
         self.copy_ref = False
         self.bbox_out = False
         self.recompute = True
+        self.ordered_init_trsfs = False
 
         if "registration_depth" in param_dict:
             self.__dict__["registration_depth_start"] = 6
             self.__dict__["registration_depth_end"] = param_dict[
                 "registration_depth"
             ]
-        elif not "registration_depth_start" in param_dict:
+        elif "registration_depth_start" not in param_dict:
             self.__dict__["registration_depth_start"] = 6
             self.__dict__["registration_depth_end"] = 3
 
@@ -166,7 +167,9 @@ class trsf_parameters(object):
             self.path_to_bin = ""
         if not self.compute_trsf:
             self.test_init = False
-            warnings.warn("Testing initial transformations cannot be done when `compute_trsf` is False/0. It will not be done then")
+            warnings.warn(
+                "Testing initial transformations cannot be done when `compute_trsf` is False/0. It will not be done then"
+            )
 
 
 class SpatialRegistration:
@@ -190,8 +193,6 @@ class SpatialRegistration:
         """
         import math
 
-        I = np.linalg.inv
-        D = np.dot
         if axis not in ["X", "Y", "Z"]:
             raise Exception(f"Unknown axis: {axis}")
         rads = math.radians(angle)
@@ -237,7 +238,7 @@ class SpatialRegistration:
                 ]
             )
 
-        return D(I(centering), D(rot, centering))
+        return np.dot(np.linalg.inv(centering), np.dot(rot, centering))
 
     @staticmethod
     def flip_matrix(axis: str, im_size: tuple) -> np.ndarray:
@@ -308,7 +309,7 @@ class SpatialRegistration:
                 f_names = [
                     os.path.join(p_param, f)
                     for f in os.listdir(p_param)
-                    if ".json" in f and not "~" in f
+                    if ".json" in f and "~" not in f
                 ]
             else:
                 f_names = [p_param]
@@ -344,7 +345,9 @@ class SpatialRegistration:
             f = open(path)
             lines = f.readlines()[2:-1]
             f.close()
-            return np.array([[float(v) for v in l.split()] for l in lines])
+            return np.array(
+                [[float(v) for v in line.split()] for line in lines]
+            )
         else:
             f.close()
             return np.loadtxt(path)
@@ -391,12 +394,12 @@ class SpatialRegistration:
                         os.makedirs(path)
                 if n == "":
                     n = "A{a:d}-{trsf:s}.trsf"
-                elif not "{a:" in n:
-                    if not "{trsf:" in n:
+                elif "{a:" not in n:
+                    if "{trsf:" not in n:
                         n += "{a:d}-{trsf:s}.trsf"
                     else:
                         n += "{a:d}.trsf"
-                elif not "{trsf:" in n:
+                elif "{trsf:" not in n:
                     n += "{trsf:s}.trsf"
                 formated_paths += [path]
                 p.trsf_names += [n]
@@ -465,6 +468,81 @@ class SpatialRegistration:
         H_ref_inv = self.inv_trsf(H_ref)
         return np.dot(trsf, H_ref_inv)
 
+    def write_init_trsf(
+        self,
+        init_trsf: list,
+        A_num: int,
+        flo_voxel: list,
+        trsf_path: str,
+        p: trsf_parameters,
+    ):
+        """
+        Get the initial transformation
+
+        Args:
+            p (trsf_parameters): parameters for the transformation
+        """
+        if p.ordered_init_trsfs:
+            i = 0
+            trsfs = []
+            im_size = np.array(p.flo_im_sizes[A_num], dtype=float) * flo_voxel
+            while i < len(init_trsf):
+                t_type = init_trsf[i]
+                i += 1
+                axis = init_trsf[i]
+                i += 1
+                if "rot" in t_type:
+                    angle = init_trsf[i]
+                    i += 1
+                    trsfs += [
+                        self.axis_rotation_matrix(
+                            axis.upper(), angle, np.zeros(3), im_size
+                        )
+                    ]
+                elif "flip" in t_type:
+                    trsfs += [self.flip_matrix(axis.upper(), im_size)]
+                elif "trans" in t_type:
+                    tr = init_trsf[i]
+                    i += 1
+                    trsfs += [self.translation_matrix(axis, tr)]
+        else:
+            im_size = np.array(p.flo_im_sizes[A_num], dtype=float) * flo_voxel
+            trsfs_dict = {"flip": {}, "trans": {}, "rot": {}}
+            i = 0
+            while i < len(init_trsf):
+                t_type = init_trsf[i]
+                i += 1
+                axis = init_trsf[i]
+                i += 1
+                if "rot" in t_type:
+                    angle = init_trsf[i]
+                    i += 1
+                    trsf = self.axis_rotation_matrix(
+                        axis.upper(), angle, np.zeros(3), im_size
+                    )
+                elif "flip" in t_type:
+                    trsf = self.flip_matrix(axis.upper(), im_size)
+                elif "trans" in t_type:
+                    tr = init_trsf[i]
+                    i += 1
+                    trsf = self.translation_matrix(axis.upper(), tr)
+                trsfs_dict[t_type][axis.upper()] = trsf
+            trsfs = []
+            for t_type in ["flip", "rot", "trans"]:
+                for axis in ["X", "Y", "Z"]:
+                    if axis in trsfs_dict[t_type]:
+                        trsfs.append(trsfs_dict[t_type][axis])
+        res = np.identity(4)
+        for trsf in trsfs:
+            res = np.dot(res, trsf)
+        if not os.path.exists(trsf_path):
+            os.makedirs(trsf_path)
+        init_trsf = os.path.join(
+            trsf_path, "A{:d}-init.trsf".format(A_num + 1)
+        )
+        np.savetxt(init_trsf, res)
+        return init_trsf
+
     def compute_trsfs(self, p: trsf_parameters):
         """
         Here is where the magic happens, give as an input the trsf_parameters object, get your transformations computed
@@ -478,47 +556,9 @@ class SpatialRegistration:
             trsf_path = p.trsf_paths[A_num]
             trsf_name = p.trsf_names[A_num]
             if isinstance(init_trsf, list):
-                im_size = (
-                    np.array(p.flo_im_sizes[A_num], dtype=float) * flo_voxel
+                init_trsf = self.write_init_trsf(
+                    init_trsf, A_num, flo_voxel, trsf_path, p
                 )
-                trsfs_dict = {
-                    "flip": {},
-                    "trans": {},
-                    "rot": {}
-                }
-                i = 0
-                while i < len(init_trsf):
-                    t_type = init_trsf[i]
-                    i += 1
-                    axis = init_trsf[i]
-                    i += 1
-                    if "rot" in t_type:
-                        angle = init_trsf[i]
-                        i += 1
-                        trsf = self.axis_rotation_matrix(
-                            axis.upper(), angle, np.zeros(3), im_size
-                        )
-                    elif "flip" in t_type:
-                        trsf = self.flip_matrix(axis.upper(), im_size)
-                    elif "trans" in t_type:
-                        tr = init_trsf[i]
-                        i += 1
-                        trsf = self.translation_matrix(axis.upper(), tr)
-                    trsfs_dict[t_type][axis.upper()] = trsf
-                trsfs = []
-                for t_type in ["flip", "rot", "trans"]:
-                    for axis in ["X", "Y", "Z"]:
-                        if axis in trsfs_dict[t_type]:
-                            trsfs.append(trsfs_dict[t_type][axis])
-                res = np.identity(4)
-                for trsf in trsfs:
-                    res = np.dot(res, trsf)
-                if not os.path.exists(trsf_path):
-                    os.makedirs(trsf_path)
-                init_trsf = os.path.join(
-                    trsf_path, "A{:d}-init.trsf".format(A_num + 1)
-                )
-                np.savetxt(init_trsf, res)
             elif not p.init_trsf_real_unit and init_trsf is not None:
                 tmp = self.vox_to_real(
                     self.inv_trsf(self.read_trsf(init_trsf)),
@@ -612,7 +652,6 @@ class SpatialRegistration:
             trsf_fmt (srt): the string format for the initial transformations
         """
 
-        out_voxel = p.out_voxel
         trsf_path = p.trsf_paths[0]
         trsf_name = p.trsf_names[0]
         trsf_type = p.trsf_types[-1]
@@ -714,8 +753,6 @@ class SpatialRegistration:
                     )
                 else:
                     trsf = " -trsf " + init_trsf
-                if p.bbox_out:
-                    trsf += " -template " + template
             elif not p.bbox_out:
                 t_type = "" if len(p.trsf_types) < 1 else p.trsf_types[-1]
                 trsf = " -trsf " + os.path.join(
@@ -934,23 +971,23 @@ class SpatialRegistration:
         Start the Spatial registration after having informed the parameter files
         """
         for p in self.params:
-            try:
-                print("Starting experiment")
-                print(p)
-                self.prepare_paths(p)
-                if p.compute_trsf or p.test_init:
-                    self.compute_trsfs(p)
-                if p.apply_trsf or p.test_init:
-                    if not (p.begin is None and p.end is None):
-                        for t in range(p.begin, p.end + 1):
-                            self.apply_trsf(p, t)
-                    else:
-                        self.apply_trsf(p)
-                if p.do_bdv:
-                    self.build_bdv(p)
-            except Exception as e:
-                print("Failure of %s" % p.origin_file_name)
-                print(e)
+            # try:
+            print("Starting experiment")
+            print(p)
+            self.prepare_paths(p)
+            if p.compute_trsf or p.test_init:
+                self.compute_trsfs(p)
+            if p.apply_trsf or p.test_init:
+                if not (p.begin is None and p.end is None):
+                    for t in range(p.begin, p.end + 1):
+                        self.apply_trsf(p, t)
+                else:
+                    self.apply_trsf(p)
+            if p.do_bdv:
+                self.build_bdv(p)
+            # except Exception as e:
+            #     print("Failure of %s" % p.origin_file_name)
+            #     print(e)
 
     def __init__(self, params=None):
         if params is None:

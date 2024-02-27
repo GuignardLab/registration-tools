@@ -23,5 +23,5 @@ def write_h5(filename, im):
      - `im` SpatialImage - image to write
     """
     f = File(filename, mode="w")
-    dset = f.create_dataset("Data", data=im.transpose(2, 1, 0), chunks=True)
+    f.create_dataset("Data", data=im.transpose(2, 1, 0), chunks=True)
     f.close()

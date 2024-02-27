@@ -5,29 +5,24 @@ from os.path import (
     split as psplit,
     expanduser as expusr,
 )
-import os, fnmatch
 import warnings
-from struct import pack, unpack, calcsize
-from pickle import dumps, loads
-import numpy as np
 
-from .spatial_image import SpatialImage
 
 from .inrimage import read_inrimage, write_inrimage
 
 try:
     from .tif import read_tif, write_tif
-except Exception as e:
+except Exception:
     warnings.warn("pylibtiff library is not installed")
 
 try:
     from .h5 import read_h5, write_h5
-except Exception as e:
+except Exception:
     warnings.warn("h5py library is not installed")
 
 try:
     from .klb import read_klb, write_klb
-except Exception as e:
+except Exception:
     warnings.warn("KLB library is not installed")
 
 from .folder import read_folder
