@@ -407,9 +407,9 @@ def save_sequences_as_stacks(
                     rf"{path_to_data}/{directory}/output/movie_t{format(t,'03d')}.tif"
                 )
                 # we take each stack in a given timepoint
-                registered_movie[t, :, ind_c, :, :] = (
-                    stack  # and put it in a new hyperstack
-                )
+                registered_movie[
+                    t, :, ind_c, :, :
+                ] = stack  # and put it in a new hyperstack
         tifffile.imwrite(
             path_to_data + rf"/{name_movie}_registered.tif",
             registered_movie.astype(np.float32),

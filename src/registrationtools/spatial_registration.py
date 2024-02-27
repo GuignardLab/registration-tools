@@ -1004,6 +1004,6 @@ class SpatialRegistration:
             self.path_to_bin = self.params[0].path_to_bin
 
 
-def spatial_registration():
+def spatial_registration_run():
     reg = SpatialRegistration()
     reg.run_trsf()

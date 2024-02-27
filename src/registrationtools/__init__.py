@@ -1,5 +1,8 @@
 __version__ = "0.4.5"
 
+from .spatial_registration import SpatialRegistration, spatial_registration_run
+from .time_registration import TimeRegistration, time_registration_run
+
 from .utils import (
     get_paths,
     dimensions,
@@ -45,4 +48,6 @@ __all__ = [
     "image_path",
     "json_path_spatial",
     "json_path_time",
+    "time_registration_run",
+    "spatial_registration_run",
 ]

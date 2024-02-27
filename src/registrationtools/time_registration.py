@@ -1272,6 +1272,6 @@ class TimeRegistration:
             self.path_to_bin = self.params[0].path_to_bin
 
 
-def time_registration():
+def time_registration_run():
     reg = TimeRegistration()
     reg.run_trsf()
