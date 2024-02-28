@@ -8,7 +8,7 @@ import numpy as np
 import os
 import sys
 import json
-from subprocess import call
+from subprocess import call, DEVNULL
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from shutil import copyfile, rmtree
@@ -125,7 +125,6 @@ class trsf_parameters(object):
 
         # Default parameters
         self.param_dict = param_dict
-        self.init_trsfs = [[], [], []]
         self.path_to_bin = ""
         self.registration_depth_start = 6
         self.registration_depth_end = 3
@@ -170,6 +169,8 @@ class trsf_parameters(object):
             warnings.warn(
                 "Testing initial transformations cannot be done when `compute_trsf` is False/0. It will not be done then"
             )
+        if not hasattr(self, "init_trsfs") or self.init_trsfs is None:
+            self.init_trsfs = [None for _ in self.flo_voxels]
 
 
 class SpatialRegistration:
@@ -319,13 +320,12 @@ class SpatialRegistration:
         for file_name in f_names:
             if isinstance(file_name, str):
                 print("")
-                print("Extraction of the parameters from file %s" % file_name)
+                print("Extraction of the parameters from file %s" % file_name, end="\n\n")
             p = trsf_parameters(file_name)
             if not p.check_parameters_consistancy():
                 print("\n%s Failed the consistancy check, it will be skipped")
             else:
                 params += [p]
-            print("")
         return params
 
     @staticmethod
@@ -363,8 +363,11 @@ class SpatialRegistration:
         p.ref_A = os.path.join(p.path_to_data, p.ref_im)
         p.flo_As = []
         for flo_im in p.flo_ims:
-            p.flo_As += [os.path.join(p.path_to_data, flo_im)]
-        if os.path.split(p.out_pattern)[0] == "":
+            if os.path.dirname(flo_im) == "":
+                p.flo_As += [os.path.join(p.path_to_data, flo_im)]
+            else:
+                p.flo_As += [flo_im]
+        if os.path.dirname(p.out_pattern) == "":
             ext = p.ref_im.split(".")[-1]
             p.ref_out = p.ref_A.replace(ext, p.out_pattern + "." + ext)
             p.flo_outs = []
@@ -601,6 +604,8 @@ class SpatialRegistration:
                         + res_trsf
                         + " -composition-with-initial",
                         shell=True,
+                        stdout=self.exec_out,
+                        stderr=self.exec_out,
                     )
                 trsf_type = p.trsf_types[-1]
                 i = len(p.trsf_types) - 1
@@ -636,10 +641,15 @@ class SpatialRegistration:
                     # ' -res ' + flo_out +\
                     " -composition-with-initial",
                     shell=True,
+                    stdout=self.exec_out,
+                    stderr=self.exec_out,
                 )
+                self.applied_trsfs.append(res_trsf)
                 call(
                     p.path_to_bin + "invTrsf %s %s" % (res_trsf, res_inv_trsf),
                     shell=True,
+                    stdout=self.exec_out,
+                    stderr=self.exec_out,
                 )
 
     @staticmethod
@@ -717,6 +727,8 @@ class SpatialRegistration:
                     + "-vs %f %f %f" % p.out_voxel
                     + " -interpolation %s" % p.image_interpolation,
                     shell=True,
+                    stdout=self.exec_out,
+                    stderr=self.exec_out,
                 )
             A0_trsf = (
                 " -trsf " + trsf_fmt.format(a=0) + " -template " + template
@@ -736,7 +748,10 @@ class SpatialRegistration:
                 + A0_trsf
                 + " -interpolation %s" % p.image_interpolation,
                 shell=True,
+                stdout=self.exec_out,
+                stderr=self.exec_out,
             )
+
         elif p.copy_ref:
             copyfile(p.ref_A.format(t=t), p.ref_out.format(t=t))
         else:
@@ -780,6 +795,8 @@ class SpatialRegistration:
                 + trsf
                 + " -interpolation %s" % p.image_interpolation,
                 shell=True,
+                stdout=self.exec_out,
+                stderr=self.exec_out,
             )
 
     @staticmethod
@@ -971,25 +988,32 @@ class SpatialRegistration:
         Start the Spatial registration after having informed the parameter files
         """
         for p in self.params:
-            # try:
-            print("Starting experiment")
-            print(p)
-            self.prepare_paths(p)
-            if p.compute_trsf or p.test_init:
-                self.compute_trsfs(p)
-            if p.apply_trsf or p.test_init:
-                if not (p.begin is None and p.end is None):
-                    for t in range(p.begin, p.end + 1):
-                        self.apply_trsf(p, t)
-                else:
-                    self.apply_trsf(p)
-            if p.do_bdv:
-                self.build_bdv(p)
-            # except Exception as e:
-            #     print("Failure of %s" % p.origin_file_name)
-            #     print(e)
+            try:
+                if not self.quiet:
+                    print("Starting experiment")
+                    print(p)
+                self.prepare_paths(p)
+                if p.compute_trsf or p.test_init:
+                    self.compute_trsfs(p)
+                if p.apply_trsf or p.test_init:
+                    if not (p.begin is None and p.end is None):
+                        for t in range(p.begin, p.end + 1):
+                            self.apply_trsf(p, t)
+                    else:
+                        self.apply_trsf(p)
+                if p.do_bdv:
+                    self.build_bdv(p)
+            except Exception as e:
+                print("Failure of %s" % p.origin_file_name)
+                print(e)
 
-    def __init__(self, params=None):
+    def __init__(self, params=None, quiet=False):
+        self.quiet = quiet
+        if quiet:
+            self.exec_out = DEVNULL
+        else:
+            self.exec_out = None
+        self.applied_trsfs = []
         if params is None:
             self.params = self.read_param_file()
         elif (
