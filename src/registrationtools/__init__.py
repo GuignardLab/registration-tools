@@ -1,4 +1,4 @@
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 from .spatial_registration import SpatialRegistration, spatial_registration_run
 from .time_registration import TimeRegistration, time_registration_run
