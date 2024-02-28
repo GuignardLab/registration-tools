@@ -988,7 +988,26 @@ class SpatialRegistration:
         Start the Spatial registration after having informed the parameter files
         """
         for p in self.params:
-            try:
+            if self.force_compute:
+                try:
+                    if not self.quiet:
+                        print("Starting experiment")
+                        print(p)
+                    self.prepare_paths(p)
+                    if p.compute_trsf or p.test_init:
+                        self.compute_trsfs(p)
+                    if p.apply_trsf or p.test_init:
+                        if not (p.begin is None and p.end is None):
+                            for t in range(p.begin, p.end + 1):
+                                self.apply_trsf(p, t)
+                        else:
+                            self.apply_trsf(p)
+                    if p.do_bdv:
+                        self.build_bdv(p)
+                except Exception as e:
+                    print("Failure of %s" % p.origin_file_name)
+                    print(e)
+            else:
                 if not self.quiet:
                     print("Starting experiment")
                     print(p)
@@ -1003,11 +1022,10 @@ class SpatialRegistration:
                         self.apply_trsf(p)
                 if p.do_bdv:
                     self.build_bdv(p)
-            except Exception as e:
-                print("Failure of %s" % p.origin_file_name)
-                print(e)
 
-    def __init__(self, params=None, quiet=False):
+
+    def __init__(self, params=None, quiet=False, force_compute=True):
+        self.force_compute = force_compute
         self.quiet = quiet
         if quiet:
             self.exec_out = DEVNULL
