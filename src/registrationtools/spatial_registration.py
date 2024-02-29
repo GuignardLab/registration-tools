@@ -513,6 +513,7 @@ class SpatialRegistration:
             trsfs_dict = {"flip": {}, "trans": {}, "rot": {}}
             i = 0
             while i < len(init_trsf):
+                print(init_trsf)
                 t_type = init_trsf[i]
                 i += 1
                 axis = init_trsf[i]
