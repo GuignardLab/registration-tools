@@ -1,7 +1,5 @@
 # Registration tools
 
-__Before everything else, the current status of the whole thing here is that it only works on UNIX systems (eg Linux & MacOs) that have reasonnable chips (eg not M1 chips for example).__
-
 ## Purpose and "history"
 This repository is about two scripts to do spatial and temporal registration of 3D microscopy images.
 It was initially developed to help friends with their ever moving embryos living under a microscope.
@@ -27,7 +25,7 @@ For here onward we assume that you are running the commands from the `registrati
 
 Then, to install the whole thing, it is necessary to first install blockmatching. To do so you can run the following command:
     
-    conda install vt -c morpheme -c trcabel
+    conda install vt -c morpheme
 
 Then, you can install the 3D-registration library either directly via pip:
 
