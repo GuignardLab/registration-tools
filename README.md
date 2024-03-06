@@ -93,4 +93,4 @@ Few example json files are provided to help the potential users. You can find in
 [Team Morphem - inria]: https://team.inria.fr/morpheme/
 [conda]: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
 [pip]: https://pypi.org/project/pip/
-[manual]: https://github.com/GuignardLab/registration-tools/blob/master/User-manual/user-manual.pdf
+[manual]: https://github.com/GuignardLab/registration-tools/blob/master/User-manual/usage/user-manual.pdf
