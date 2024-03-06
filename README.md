@@ -42,10 +42,6 @@ Or, if you want the latest version, by specifying the git repository:
 
     It can be found there: https://www.pconlife.com/viewfileinfo/pthreadvse2-dll/ . Make sure to download the version that matches your operating system (32 or 64 bits, most likely 64).
 
-- MacOs:
-
-    As there are no M1 binaries available yet, please use rosetta or install an intel version of conda.
-
 ## Usage
 
 Most of the description on how to use the two scripts is described in the [manual] (Note that the installation part is quite outdated, the remaining is ok).
