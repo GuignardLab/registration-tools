@@ -8,7 +8,7 @@ I found that actually quite a few people were interested so I made a  version of
 In theory, the main difficulty to make the whole thing work is to install the different libraries.
 
 ## Credits
-The whole thing is just a wrapping of the amazing blockmatching algorithm developed by [S. Ourselin et al.] and currently maintained Grégoire Malandin et al.@[Team Morphem - inria] (if I am not mistaking).
+The whole thing is just a wrapping of the amazing blockmatching algorithm developed by [S. Ourselin et al.] and currently maintained Grégoire Malandin et al.@[Team Morpheme - inria] (if I am not mistaking).
 
 ## Installation
 
@@ -90,7 +90,7 @@ and a path will be asked to be inputed.
 Few example json files are provided to help the potential users. You can find informations about what they do in the [manual].
 
 [S. Ourselin et al.]: http://www-sop.inria.fr/asclepios/Publications/Gregoire.Malandain/ourselin-miccai-2000.pdf
-[Team Morphem - inria]: https://team.inria.fr/morpheme/
+[Team Morpheme - inria]: https://team.inria.fr/morpheme/
 [conda]: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
 [pip]: https://pypi.org/project/pip/
 [manual]: https://github.com/GuignardLab/registration-tools/blob/master/User-manual/usage/user-manual.pdf
