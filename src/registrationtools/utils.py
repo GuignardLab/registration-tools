@@ -21,7 +21,7 @@ def get_paths():
         1 for image sequence, 2 for movie
     """
     path_correct = False
-    while path_correct == False:
+    while not path_correct :
         data_type = input(
             "Is your input data an image sequence or a tiff movie contained in one file ? (1 for image sequence, 2 for movie) : \n "
         )
@@ -30,14 +30,14 @@ def get_paths():
                 "The sequence has to be a serie of z stacks, one file per timeframe, one channel.\n The sequence of images should be in tiff format, with the same dimensions for each image.\n"
             )
             path_folder = input("Path to the folder : \n ")
-            paths_movies = sorted(glob(rf"{path_folder}/*.tif"))
+            paths_movies = sorted(glob(Path(path_folder) / "*.tif"))
             path_correct = True
 
         elif data_type == "2":
             path_folder = input(
                 "Path to the folder of the movie(s) (in tiff format only) : \n "
             )
-            paths_movies = sorted(glob(rf"{path_folder}/*.tif"))
+            paths_movies = sorted(glob(Path(path_folder) / "*.tif"))
             if len(paths_movies) > 0:
                 print(
                     "You have",
@@ -83,7 +83,7 @@ def get_dimensions(list_paths: list, data_type: int):
                 "These movies do not all have the same shape in (XYZ). \n",
             )
 
-        while dim_correct == False:
+        while not dim_correct :
             print("\nThe dimensions of one stack is ", movie_0.shape, ". \n")
             dimensions = input(
                 "What is the order of the dimensions (for example ZYX or XYZ) ? \n "
@@ -104,7 +104,7 @@ def get_dimensions(list_paths: list, data_type: int):
                     " \n The letters you choose has to be X, Y and Z and no other letters are allowed. \nEvery letter can be included only once. \n"
                 )
 
-            if dim_correct == True:
+            if dim_correct :
                 size_X = movie.shape[dimensions.find("X")]
                 size_Y = movie.shape[dimensions.find("Y")]
                 if "Z" in dimensions:
@@ -131,7 +131,7 @@ def get_dimensions(list_paths: list, data_type: int):
         movie = tifffile.imread(list_paths[0])
         name_movie = Path(list_paths[0]).stem
         dim_correct = False
-        while dim_correct == False:
+        while not dim_correct:
             print(
                 "\nThe dimensions of ", name_movie, "are ", movie.shape, ". \n"
             )
@@ -268,7 +268,7 @@ def reference_channel(channels: list):
             + str(channels)
             + ", you need a reference channel to compute the registration. A good option is generally a marker that is expressed ubiquitously\n"
         )
-        while channel_correct == False:
+        while not channel_correct :
             ch_ref = input("Name of the reference channel : \n ")
             if ch_ref not in channels:
                 print(
@@ -344,15 +344,15 @@ def cut_timesequence(
         movie, source=position_t, destination=0
     )  # i did not test this
     path_to_data = os.path.dirname(path_to_movie)
-    path_dir = rf"{path_to_data}\{directory}"
+    path_dir = Path(path_to_data) / directory
     check(os.path.isdir(path_dir)).is_(False).or_raise(
         Exception, "Please delete the folder " + directory + " and run again."
     )
     os.mkdir(os.path.join(path_to_data, directory))
-    os.mkdir(os.path.join(path_to_data + "/" + directory, "trsf"))
-    os.mkdir(os.path.join(path_to_data + "/" + directory, "output"))
-    os.mkdir(os.path.join(path_to_data + "/" + directory, "proj_output"))
-    os.mkdir(os.path.join(path_to_data + "/" + directory, "stackseq"))
+    os.mkdir(os.path.join(path_to_data, directory, "trsf"))
+    os.mkdir(os.path.join(path_to_data, directory, "output"))
+    os.mkdir(os.path.join(path_to_data, directory, "proj_output"))
+    os.mkdir(os.path.join(path_to_data, directory, "stackseq"))
 
     if depth <= 1:  # 2D situation
         if number_channels > 1:
@@ -364,25 +364,20 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, ind_current_channel, :, :]
-                tifffile.imwrite(
-                    path_to_data
-                    + "/"
-                    + directory
-                    + "/stackseq/movie_t"
-                    + str(format(t, "03d") + ".tif"),
-                    stack,
+                path_output = (
+                    Path(path_to_data) / directory / "stackseq" / "movie_t"
+                    + str(format(t, "03d")) / ".tif"
                 )
+                tifffile.imwrite(path_output, stack)
+
         else:
             for t in range(number_timepoints):
                 stack = movie[t, :, :]
-                tifffile.imwrite(
-                    path_to_data
-                    + "/"
-                    + directory
-                    + "/stackseq/movie_t"
-                    + str(format(t, "03d") + ".tif"),
-                    stack,
+                path_output = (
+                    Path(path_to_data) / directory / "stackseq" / "movie_t"
+                    + str(format(t, "03d")) / ".tif"
                 )
+                tifffile.imwrite(path_output, stack)
 
     elif depth > 1:  # 3D situation
         if number_channels > 1:
@@ -394,25 +389,19 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, :, ind_current_channel, :, :]
-                tifffile.imwrite(
-                    path_to_data
-                    + "/"
-                    + directory
-                    + "/stackseq/movie_t"
-                    + str(format(t, "03d") + ".tif"),
-                    stack,
+                path_output = (
+                    Path(path_to_data) / directory / "stackseq" / "movie_t"
+                    + str(format(t, "03d")) / ".tif"
                 )
+                tifffile.imwrite(path_output, stack)
         else:
             for t in range(number_timepoints):
                 stack = movie[t, :, :, :]
-                tifffile.imwrite(
-                    path_to_data
-                    + "/"
-                    + directory
-                    + "/stackseq/movie_t"
-                    + str(format(t, "03d") + ".tif"),
-                    stack,
+                path_output = (
+                    Path(path_to_data) / directory / "stackseq" / "movie_t"
+                    + str(format(t, "03d")) / ".tif"
                 )
+                tifffile.imwrite(path_output, stack)
 
     elif depth <= 1:  # 2D situation
         if number_channels > 1:
@@ -424,14 +413,11 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, ind_current_channel, :, :]
-                tifffile.imwrite(
-                    path_to_data
-                    + "/"
-                    + directory
-                    + "/stackseq/movie_t"
-                    + str(format(t, "03d") + ".tif"),
-                    stack,
+                path_output = (
+                    Path(path_to_data) / directory / "stackseq" / "movie_t"
+                    + str(format(t, "03d")) / ".tif"
                 )
+                tifffile.imwrite(path_output, stack)
 
 
 def get_voxel_sizes():
@@ -495,7 +481,7 @@ def get_trsf_type():
         list_trsf_types,
     )
     trsf_correct = False
-    while trsf_correct == False:
+    while not trsf_correct:
         trsf_type = str(
             input(
                 "\nWhich one do you want to use ? (please enter the name of the transformation only, no other character) \n "
@@ -608,9 +594,9 @@ def run_registration(
 
         folder = os.path.dirname(list_paths[0])
         path_to_data = rf"{folder}/"  # the timesequence is direclty the folder given by the user.
-        path_trsf = rf"{folder}/trsf/"
-        path_output = rf"{folder}/output/"
-        path_proj = rf"{folder}/proj_output/"
+        path_trsf = Path(folder) / "trsf"
+        path_output = Path(folder) / "output"
+        path_proj = Path(folder) / "proj_output"
         json_str = run_from_json(
             path_to_data=path_to_data,
             path_trsf=path_trsf,
@@ -633,10 +619,12 @@ def run_registration(
             name_movie = Path(path_movie).stem
             directory = name_movie + "_" + ch_ref
 
-            path_to_data = rf"{folder}/{directory}/stackseq/"
-            path_trsf = rf"{folder}/{directory}/trsf/"
-            path_output = rf"{folder}/{directory}/output/"
-            path_proj = rf"{folder}/{directory}/proj_output/"
+            path_to_data = (
+                rf"{folder}/{directory}/stackseq/"  # utiliser os.path.join
+            )
+            path_trsf = Path(folder) / directory / "trsf"
+            path_output = Path(folder) / directory / "output"
+            path_proj = Path(folder) / directory / "proj_output"
             json_str = run_from_json(
                 path_to_data=path_to_data,
                 path_trsf=path_trsf,
@@ -759,14 +747,16 @@ def save_sequences_as_stacks(
         name_movie = Path(path).stem
         movie = tifffile.imread(path)
         if data_type == "1":
-            path_output = path_to_data + rf"/output/"
+            path_output = Path(path_to_data) / "output"
             stack0 = tifffile.imread(
                 list_paths[0]
             )  # we use the first image (3D) to know the dimensions
         elif data_type == "2":
-            path_output = rf"{path_to_data}/{name_movie}_{channels[0]}/output/"
+            path_output = (
+                Path(path_to_data) / name_movie + "_" + channels[0] / "output"
+            )
             stack0 = tifffile.imread(
-                rf"{path_output}/movie_t000.tif"
+                Path(path_output) / "movie_t000.tif"
             )  # we use the first image (3D) to know the dimensions
         registered_movie = np.zeros(
             (
@@ -782,14 +772,14 @@ def save_sequences_as_stacks(
             directory = name_movie + "_" + c
             for t in range(movie.shape[0]):
                 stack = tifffile.imread(
-                    rf"{path_output}/movie_t{format(t,'03d')}.tif"
+                    Path(path_output) / rf"movie_t{format(t,'03d')}.tif"
                 )
                 # we take each stack in a given timepoint
                 registered_movie[t, :, ind_c, :, :] = (
                     stack  # and put it in a new hyperstack
                 )
         tifffile.imwrite(
-            path_to_data + rf"/{name_movie}_registered.tif",
+            path(path_to_data) / name_movie + "_registered.tif",
             registered_movie.astype(np.float32),
             imagej=True,
         )  # write a hyperstack in the main folder
@@ -821,7 +811,7 @@ def save_jsonfile(list_paths, json_string):
         )
     )
     if keep_same_dir == 1:
-        path_to_json = rf"{path_to_data}\jsonfiles"
+        path_to_json = Path(path_to_data) / "jsonfiles"
         os.mkdir(os.path.join(path_to_data, "jsonfiles"))
     else:
         path_to_json = input(
@@ -833,7 +823,7 @@ def save_jsonfile(list_paths, json_string):
     print("saving", len(json_string), "json files :")
     for ind_json, json in enumerate(json_string):
         with open(
-            path_to_json + "\param" + str(ind_json) + ".json", "w"
+            Path(path_to_json) / "param" + str(ind_json) + ".json", "w"
         ) as outfile:  # maybe not the best name
             outfile.write(json)
             print(path_to_json)
