@@ -3,7 +3,6 @@ import os
 import registrationtools
 import json
 import numpy as np
-from glob import glob
 from ensure import check  ##need to pip install !
 from pathlib import Path
 
@@ -21,23 +20,32 @@ def get_paths():
         1 for image sequence, 2 for movie
     """
     path_correct = False
-    while not path_correct :
+    while not path_correct:
         data_type = input(
             "Is your input data an image sequence or a tiff movie contained in one file ? (1 for image sequence, 2 for movie) : \n "
         )
         if data_type == "1":
             print(
-                "The sequence has to be a serie of z stacks, one file per timeframe, one channel.\n The sequence of images should be in tiff format, with the same dimensions for each image.\n"
+                "The sequence has to be a serie of z stacks, one file per timeframe, one channel.\n The sequence of images should be in tiff format, with the same dimensions for each image.  \n For now, the timeframes have to be named 'movie_t000.tif', 'movie_t001.tif' and so on.\n"
             )
             path_folder = input("Path to the folder : \n ")
-            paths_movies = sorted(glob(Path(path_folder) / "*.tif"))
+            paths_movies = list(Path(path_folder).glob("*.tif"))
             path_correct = True
-
+            if len(paths_movies) > 0:
+                path_correct = int(
+                    input(
+                        "You have",
+                        len(paths_movies),
+                        "timeframes; correct ? (1 for yes, 0 for no or to change folder) \n ",
+                    )
+                )
+            else:
+                print("There is no tiff file in the folder. \n")
         elif data_type == "2":
             path_folder = input(
-                "Path to the folder of the movie(s) (in tiff format only) : \n "
+                "Path to the folder of the movie(s), in tif format only (all the movies in that folder are going to be registered) : \n "
             )
-            paths_movies = sorted(glob(Path(path_folder) / "*.tif"))
+            paths_movies = list(Path(path_folder).glob("*.tif"))
             if len(paths_movies) > 0:
                 print(
                     "You have",
@@ -49,7 +57,9 @@ def get_paths():
                         "", Path(path_movie).stem
                     )  # the empty str at the begining is to align the answers one space after the questions, for readability
                 path_correct = int(
-                    input("Correct ? (1 for yes, 0 for no) \n ")
+                    input(
+                        "Correct ? (1 for yes, 0 for no or to change folder) \n "
+                    )
                 )
             else:
                 print("There is no tiff file in the folder. \n")
@@ -83,7 +93,7 @@ def get_dimensions(list_paths: list, data_type: int):
                 "These movies do not all have the same shape in (XYZ). \n",
             )
 
-        while not dim_correct :
+        while not dim_correct:
             print("\nThe dimensions of one stack is ", movie_0.shape, ". \n")
             dimensions = input(
                 "What is the order of the dimensions (for example ZYX or XYZ) ? \n "
@@ -104,7 +114,7 @@ def get_dimensions(list_paths: list, data_type: int):
                     " \n The letters you choose has to be X, Y and Z and no other letters are allowed. \nEvery letter can be included only once. \n"
                 )
 
-            if dim_correct :
+            if dim_correct:
                 size_X = movie.shape[dimensions.find("X")]
                 size_Y = movie.shape[dimensions.find("Y")]
                 if "Z" in dimensions:
@@ -163,7 +173,7 @@ def get_dimensions(list_paths: list, data_type: int):
             else:
                 number_channels = 1
 
-            if dim_correct == True:
+            if dim_correct:
                 size_X = movie.shape[dimensions.find("X")]
                 size_Y = movie.shape[dimensions.find("Y")]
                 if "Z" in dimensions:
@@ -216,6 +226,15 @@ def get_dimensions(list_paths: list, data_type: int):
     return movie_dimensions
 
 
+# too complicated to ask filename -> for now the user has to name its files movie_t000.tif,movie_t001.tif
+# def get_filename(list_paths):
+#     name_correct = False
+#     while not name_correct:
+#         name = input(
+#             "Give the name of your files (example : 'movie_t{t:03d}.tif' if your names are 'movies_t001.tif,movies_t002.tif'). Don't forget the quotes.  \n "
+#         )
+#         name_correct=True
+#     return(name)
 def get_channels_name(number_channels: int):
     """
     Ask for the name of the channels, return a list of str containing all the channels
@@ -268,7 +287,7 @@ def reference_channel(channels: list):
             + str(channels)
             + ", you need a reference channel to compute the registration. A good option is generally a marker that is expressed ubiquitously\n"
         )
-        while not channel_correct :
+        while not channel_correct:
             ch_ref = input("Name of the reference channel : \n ")
             if ch_ref not in channels:
                 print(
@@ -364,18 +383,22 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, ind_current_channel, :, :]
-                path_output = (
-                    Path(path_to_data) / directory / "stackseq" / "movie_t"
-                    + str(format(t, "03d")) / ".tif"
+                path_output = os.path.join(
+                    Path(path_to_data),
+                    directory,
+                    "stackseq",
+                    "movie_t" + str(format(t, "03d")) + ".tif",
                 )
                 tifffile.imwrite(path_output, stack)
 
         else:
             for t in range(number_timepoints):
                 stack = movie[t, :, :]
-                path_output = (
-                    Path(path_to_data) / directory / "stackseq" / "movie_t"
-                    + str(format(t, "03d")) / ".tif"
+                path_output = os.path.join(
+                    Path(path_to_data),
+                    directory,
+                    "stackseq",
+                    "movie_t" + str(format(t, "03d")) + ".tif",
                 )
                 tifffile.imwrite(path_output, stack)
 
@@ -389,17 +412,21 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, :, ind_current_channel, :, :]
-                path_output = (
-                    Path(path_to_data) / directory / "stackseq" / "movie_t"
-                    + str(format(t, "03d")) / ".tif"
+                path_output = os.path.join(
+                    Path(path_to_data),
+                    directory,
+                    "stackseq",
+                    "movie_t" + str(format(t, "03d")) + ".tif",
                 )
                 tifffile.imwrite(path_output, stack)
         else:
             for t in range(number_timepoints):
                 stack = movie[t, :, :, :]
-                path_output = (
-                    Path(path_to_data) / directory / "stackseq" / "movie_t"
-                    + str(format(t, "03d")) / ".tif"
+                path_output = os.path.join(
+                    Path(path_to_data),
+                    directory,
+                    "stackseq",
+                    "movie_t" + str(format(t, "03d")) + ".tif",
                 )
                 tifffile.imwrite(path_output, stack)
 
@@ -413,9 +440,11 @@ def cut_timesequence(
             )  # we artificially change to the format TZCXY (reference in Fiji). Its just to cut into timesequence. does not modify the data
             for t in range(number_timepoints):
                 stack = movie[t, ind_current_channel, :, :]
-                path_output = (
-                    Path(path_to_data) / directory / "stackseq" / "movie_t"
-                    + str(format(t, "03d")) / ".tif"
+                path_output = os.path.join(
+                    Path(path_to_data),
+                    directory,
+                    "stackseq",
+                    "movie_t" + str(format(t, "03d")) + ".tif",
                 )
                 tifffile.imwrite(path_output, stack)
 
@@ -514,6 +543,7 @@ def data_preparation():
         if input is a movie : List of the paths of the different movies to register independently
     dimensions : list
         List of the dimensions of the data, in the format TZCYX
+    filename : str
     channels_float : list
         List of the names of the floating channels
     ch_ref : str
@@ -527,12 +557,10 @@ def data_preparation():
     """
 
     list_paths, data_type = get_paths()
-    print(data_type, list_paths)
     dimensions = get_dimensions(list_paths, data_type)
-    print(dimensions)
+    filename = "movie_t{t:03d}.tif"  # for now the user has no choice regarding the filename
     channels = get_channels_name(dimensions[2])
     channels_float, ch_ref = reference_channel(channels)
-    print(data_type)
     if data_type == "2":  # if the datatype=1, it is already a timesequence
         sort_by_channels_and_timepoints(
             list_paths=list_paths, channels=channels, dimensions=dimensions
@@ -543,6 +571,7 @@ def data_preparation():
 
     return (
         data_type,
+        filename,
         list_paths,
         dimensions[0],
         channels_float,
@@ -555,6 +584,7 @@ def data_preparation():
 
 def run_registration(
     data_type: int,
+    filename: str,
     list_paths: list,
     channels_float: list,
     ch_ref: str,
@@ -593,13 +623,16 @@ def run_registration(
     if data_type == "1":  # simpler because its only 1 movie with 1 channel
 
         folder = os.path.dirname(list_paths[0])
-        path_to_data = rf"{folder}/"  # the timesequence is direclty the folder given by the user.
+        path_to_data = Path(
+            folder
+        )  # the timesequence is direclty the folder given by the user.
         path_trsf = Path(folder) / "trsf"
         path_output = Path(folder) / "output"
         path_proj = Path(folder) / "proj_output"
         json_str = run_from_json(
             path_to_data=path_to_data,
             path_trsf=path_trsf,
+            filename=filename,
             path_output=path_output,
             path_proj=path_proj,
             voxel_size_input=voxel_size_input,
@@ -619,14 +652,13 @@ def run_registration(
             name_movie = Path(path_movie).stem
             directory = name_movie + "_" + ch_ref
 
-            path_to_data = (
-                rf"{folder}/{directory}/stackseq/"  # utiliser os.path.join
-            )
+            path_to_data = os.path.join(Path(folder), directory, "stackseq")
             path_trsf = Path(folder) / directory / "trsf"
             path_output = Path(folder) / directory / "output"
             path_proj = Path(folder) / directory / "proj_output"
             json_str = run_from_json(
                 path_to_data=path_to_data,
+                filename=filename,
                 path_trsf=path_trsf,
                 path_output=path_output,
                 path_proj=path_proj,
@@ -640,8 +672,15 @@ def run_registration(
             # registration rest of the channels
             for c in channels_float:
                 directory = name_movie + "_" + c
+                path_to_data = os.path.join(
+                    Path(folder), directory, "stackseq"
+                )
+                path_output = Path(folder) / directory / "output"
+                path_proj = Path(folder) / directory / "proj_output"
+                # we dont update path_trsf : the trsf directory is always the one of the reference channel
                 json_str = run_from_json(
                     path_to_data=path_to_data,
+                    filename=filename,
                     path_trsf=path_trsf,
                     path_output=path_output,
                     path_proj=path_proj,
@@ -656,10 +695,11 @@ def run_registration(
 
 
 def run_from_json(
-    path_to_data: str,
-    path_trsf: str,
-    path_output: str,
-    path_proj: str,
+    path_to_data: Path,
+    filename: str,
+    path_trsf: Path,
+    path_output: Path,
+    path_proj: Path,
     voxel_size_input: tuple,
     voxel_size_output: tuple,
     compute_trsf: int,
@@ -671,13 +711,14 @@ def run_from_json(
 
     Parameters
     ----------
-    path_to_data : str
+    path_to_data : Path
         Path to the data to register
-    path_trsf : str
+    filename : str
+    path_trsf : Path
         Path to the folder where the transformation files will be saved
-    path_output : str
+    path_output : Path
         Path to the folder where the registered images will be saved
-    path_proj : str
+    path_proj : Path
         Path to the folder where the projections will be saved
     voxel_size_input : tuple
         Tuple of the voxel size of the input image, in the format (ZYX)
@@ -696,13 +737,14 @@ def run_from_json(
         List of the json strings to save them in a json file if asked.
     """
 
-    json_string = []
     data_float = {
-        "path_to_data": path_to_data,
-        "file_name": "movie_t{t:03d}.tif",
-        "trsf_folder": path_trsf,
-        "output_format": path_output,
-        "projection_path": path_proj,
+        "path_to_data": str(
+            path_to_data
+        ),  # paths have to be a string to be integrated in the json
+        "file_name": filename,
+        "trsf_folder": str(path_trsf),
+        "output_format": str(path_output),
+        "projection_path": str(path_proj),
         "check_TP": 0,
         "voxel_size": voxel_size_input,
         "voxel_size_out": voxel_size_output,
@@ -718,7 +760,7 @@ def run_from_json(
         "out_bdv": "",
         "plot_trsf": 0,
     }
-    json_string.append(json.dumps(data_float))
+    json_string = json.dumps(data_float, indent=2)
     tr = registrationtools.TimeRegistration(data_float)
     tr.run_trsf()
     return json_string
@@ -741,51 +783,74 @@ def save_sequences_as_stacks(
     number_timepoints : int
         Number of timeframes
     """
-
-    for path in list_paths:
-        path_to_data = os.path.dirname(path)
-        name_movie = Path(path).stem
-        movie = tifffile.imread(path)
-        if data_type == "1":
-            path_output = Path(path_to_data) / "output"
-            stack0 = tifffile.imread(
-                list_paths[0]
-            )  # we use the first image (3D) to know the dimensions
-        elif data_type == "2":
-            path_output = (
-                Path(path_to_data) / name_movie + "_" + channels[0] / "output"
-            )
-            stack0 = tifffile.imread(
-                Path(path_output) / "movie_t000.tif"
-            )  # we use the first image (3D) to know the dimensions
+    if data_type == "1":
+        path_main_directory = os.path.dirname(list_paths[0])
+        stack0 = tifffile.imread(
+            os.path.join(Path(path_main_directory), "output", "movie_t000.tif")
+        )  # we use the first image (3D) to know the dimensions
         registered_movie = np.zeros(
             (
                 number_timepoints,
                 stack0.shape[0],
-                len(channels),
                 stack0.shape[1],
                 stack0.shape[2],
-            ),
-            dtype=np.float32,
-        )  # one movie per channel, of format (t,z,y,x).Datatype uint16 or float32 is necessary to export as hyperstack
-        for ind_c, c in enumerate(channels):
-            directory = name_movie + "_" + c
-            for t in range(movie.shape[0]):
-                stack = tifffile.imread(
-                    Path(path_output) / rf"movie_t{format(t,'03d')}.tif"
-                )
-                # we take each stack in a given timepoint
-                registered_movie[t, :, ind_c, :, :] = (
-                    stack  # and put it in a new hyperstack
-                )
-        tifffile.imwrite(
-            path(path_to_data) / name_movie + "_registered.tif",
-            registered_movie.astype(np.float32),
-            imagej=True,
-        )  # write a hyperstack in the main folder
-        print(
-            "saved registered", name_movie, "of size", registered_movie.shape
+            )
         )
+        for t in range(number_timepoints):
+            stack = tifffile.imread(
+                os.path.join(
+                    Path(path_main_directory),
+                    "output",
+                    rf"movie_t{format(t,'03d')}.tif",
+                )
+            )
+            registered_movie[t, :, :, :] = stack
+        name_movie = "movie"
+    elif data_type == "2":
+        for path in list_paths:
+            path_main_directory = os.path.dirname(path)
+            name_movie = Path(path).stem
+
+            stack0 = tifffile.imread(
+                os.path.join(
+                    Path(path_main_directory),
+                    name_movie + "_" + channels[0],
+                    "output",
+                    "movie_t000.tif",
+                )
+            )  # we use the first image (3D) to know the dimensions
+            registered_movie = np.zeros(
+                (
+                    number_timepoints,
+                    stack0.shape[0],
+                    len(channels),
+                    stack0.shape[1],
+                    stack0.shape[2],
+                ),
+                dtype=np.float32,
+            )  # one movie per channel, of format (t,z,y,x).Datatype uint16 or float32 is necessary to export as hyperstack
+            for ind_c, c in enumerate(channels):
+                for t in range(number_timepoints):
+                    stack = tifffile.imread(
+                        os.path.join(
+                            Path(path_main_directory),
+                            name_movie + "_" + c,
+                            "output",
+                            rf"movie_t{format(t,'03d')}.tif",
+                        )
+                    )
+                    # we take each stack in a given timepoint
+                    registered_movie[t, :, ind_c, :, :] = (
+                        stack  # and put it in a new hyperstack
+                    )
+    tifffile.imwrite(
+        os.path.join(
+            Path(path_main_directory), name_movie + "_registered.tif"
+        ),
+        registered_movie.astype(np.float32),
+        imagej=True,
+    )  # write a hyperstack in the main folder
+    print("saved registered", name_movie, "of size", registered_movie.shape)
 
 
 def save_jsonfile(list_paths, json_string):
@@ -799,32 +864,33 @@ def save_jsonfile(list_paths, json_string):
     json_string : list
         List of the json strings to save them in a json file if asked.
     """
-
-    path_to_data = os.dirname(list_paths[0])
+    path_main_directory = os.path.dirname(list_paths[0])
     keep_same_dir = int(
         input(
             str(
                 "Do you want to save your json files in the same master directory, in "
-                + path_to_data
+                + path_main_directory
                 + "\jsonfiles ? (1 for yes, 0 for no)"
             )
         )
     )
-    if keep_same_dir == 1:
-        path_to_json = Path(path_to_data) / "jsonfiles"
-        os.mkdir(os.path.join(path_to_data, "jsonfiles"))
+    if keep_same_dir:
+        path_to_json = Path(path_main_directory) / "jsonfiles"
+        os.mkdir(os.path.join(path_main_directory, "jsonfiles"))
     else:
         path_to_json = input(
             "In which folder do you want to write your jsonfile ?"
-        ).replace(
-            "\\", "/"
-        )  # if single backslashes, fine. If double backslashes (when copy/paste the Windows path), compatibility problems, thats why we replace by single slashes.')
+        )
+        # .replace(
+        #    "\\", "/"
+        # )  # if single backslashes, fine. If double backslashes (when copy/paste the Windows path), compatibility problems, thats why we replace by single slashes.')
 
     print("saving", len(json_string), "json files :")
-    for ind_json, json in enumerate(json_string):
+    for ind_json, jsonfile in enumerate(json_string):
         with open(
-            Path(path_to_json) / "param" + str(ind_json) + ".json", "w"
+            os.path.join(
+                Path(path_to_json), "param" + str(ind_json) + ".json"
+            ),
+            "w",
         ) as outfile:  # maybe not the best name
-            outfile.write(json)
-            print(path_to_json)
-    print("Done saving")
+            outfile.write(jsonfile)
