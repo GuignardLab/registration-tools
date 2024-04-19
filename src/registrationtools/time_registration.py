@@ -414,12 +414,18 @@ class TimeRegistration:
                             p.trsf_folder, "t%06d-%06d.klb" % (t_flo, t_ref)
                         )
                     )
+                elif p.keep_vectorfield:
+                    print(
+                        "The vectorfield cannot be stored in klb format without pyklb being installed. It will be stored in a .tif format."
+                    )
+                    res_trsf = (
+                        " -composition-with-initial -res-trsf "
+                        + os.path.join(
+                            p.trsf_folder, "t%06d-%06d.tif" % (t_flo, t_ref)
+                        )
+                    )
                 else:
                     res_trsf = ""
-                    if p.keep_vectorfield:
-                        print(
-                            "The vectorfield cannot be stored without pyklb being installed"
-                        )
                 call(
                     self.path_to_bin
                     + "blockmatching -ref "

@@ -27,6 +27,11 @@ Then, to install the whole thing, it is necessary to first install blockmatching
     
     conda install vt -c morpheme
 
+or,
+
+    conda install vt-python -n morpheme -c morpheme -c conda-forge
+
+
 Then, you can install the 3D-registration library either directly via pip:
 
     pip install 3D-registration

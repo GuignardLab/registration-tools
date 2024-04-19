@@ -1,0 +1,6 @@
+BASE continuumio/miniconda3:24.3.0-0
+
+RUN conda install vt-python -n morpheme -c morpheme -c conda-forge
+RUN pip install SimpleITK
+RUN pip install scikit-image
+RUN pip install git+https://github.com/gatocor/registration-tools
