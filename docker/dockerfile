@@ -1,6 +1,8 @@
-BASE continuumio/miniconda3:24.3.0-0
+FROM continuumio/miniconda3:22.11.1
 
-RUN conda install vt-python -n morpheme -c morpheme -c conda-forge
+RUN apt-get update
+COPY environment.yml .
+RUN conda env create -f environment.yml
 RUN pip install SimpleITK
 RUN pip install scikit-image
 RUN pip install git+https://github.com/gatocor/registration-tools

@@ -29,7 +29,7 @@ Then, to install the whole thing, it is necessary to first install blockmatching
 
 or,
 
-    conda install vt-python -n morpheme -c morpheme -c conda-forge
+    conda install vt-python -c morpheme -c conda-forge
 
 
 Then, you can install the 3D-registration library either directly via pip:
