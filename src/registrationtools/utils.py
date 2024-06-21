@@ -569,6 +569,7 @@ def data_preparation():
     voxel_size_input, voxel_size_output = get_voxel_sizes()
     trsf_type = get_trsf_type()
 
+    # print('Parameters : \ndata_type=',data_type,'\nfilename=',str(filename),'\nlist_paths=',list_paths,'\nnumber_timepoints=',dimensions[0],'\nchannels_float=',channels_float,'\nch_ref=',ch_ref,'\nvoxel_size_input=',voxel_size_input,'\nvoxel_size_output=',voxel_size_output,'\ntrsf_type=',trsf_type)
     return (
         data_type,
         filename,
@@ -592,6 +593,9 @@ def run_registration(
     voxel_size_output: tuple,
     trsf_type: str,
     number_timepoints: int,
+    first:int=0,
+    last:int=None,
+    ref_tp:int=None,
 ):
     """
     2nd function called in the notebook
@@ -620,6 +624,11 @@ def run_registration(
     """
 
     json_string = []
+    if last is None :
+        last = number_timepoints - 1
+    if ref_tp is None:
+        ref_tp = int(number_timepoints / 2)
+
     if data_type == "1":  # simpler because its only 1 movie with 1 channel
 
         folder = os.path.dirname(list_paths[0])
@@ -640,6 +649,9 @@ def run_registration(
             compute_trsf=1,
             trsf_type=trsf_type,
             number_timepoints=number_timepoints,
+            first=first,
+            last=last,
+            ref_tp=ref_tp
         )
         json_string.append(json_str)
 
@@ -667,6 +679,9 @@ def run_registration(
                 compute_trsf=1,
                 trsf_type=trsf_type,
                 number_timepoints=number_timepoints,
+                first=first,
+                last=last,
+                ref_tp=ref_tp
             )
             json_string.append(json_str)
             # registration rest of the channels
@@ -689,6 +704,9 @@ def run_registration(
                     compute_trsf=0,  # we do not compute the trsf again, we just apply it
                     trsf_type=trsf_type,
                     number_timepoints=number_timepoints,
+                    first=first,
+                    last=last,
+                    ref_tp=ref_tp
                 )
                 json_string.append(json_str)
     return json_string
@@ -705,6 +723,9 @@ def run_from_json(
     compute_trsf: int,
     trsf_type: str,
     number_timepoints: int,
+    first:int,
+    last:int,
+    ref_tp:int,
 ):
     """
     Does the actual registration of the data, and returns the json string to save it in a json file.
@@ -736,7 +757,6 @@ def run_from_json(
     json_string : list
         List of the json strings to save them in a json file if asked.
     """
-
     data_float = {
         "path_to_data": str(
             path_to_data
@@ -748,11 +768,11 @@ def run_from_json(
         "check_TP": 0,
         "voxel_size": voxel_size_input,
         "voxel_size_out": voxel_size_output,
-        "first": 0,
-        "last": number_timepoints - 1,
+        "first": first,
+        "last": last,
         "not_to_do": [],
         "compute_trsf": compute_trsf,
-        "ref_TP": int(number_timepoints / 2),
+        "ref_TP": ref_tp,
         "trsf_type": trsf_type,
         "padding": 1,
         "recompute": 1,
