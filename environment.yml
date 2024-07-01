@@ -72,4 +72,3 @@ dependencies:
       - transforms3d==0.4.1
       - tzdata==2024.1
       - zipp==3.18.1
-prefix: /homes/users/gtorregrosa/miniconda3/envs/morpheme
