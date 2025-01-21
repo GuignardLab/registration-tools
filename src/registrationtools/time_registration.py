@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from transforms3d.affines import decompose
 from transforms3d.euler import mat2euler
+import vt
 
 if sys.version_info[0] < 3:
     from future.builtins import input
@@ -349,58 +350,64 @@ class TimeRegistration:
                 th = ""
             if p.trsf_type != "vectorfield":
                 if p.pre_2D == 1:
-                    call(
-                        self.path_to_bin
-                        + "blockmatching -ref "
-                        + p_im_ref
-                        + " -flo "
-                        + p_im_flo
-                        + " -reference-voxel %f %f %f" % p.voxel_size
-                        + " -floating-voxel %f %f %f" % p.voxel_size
-                        + " -trsf-type rigid2D -py-hl %d -py-ll %d"
-                        % (
-                            p.registration_depth_start,
-                            p.registration_depth_end,
-                        )
-                        + " -res-trsf "
-                        + os.path.join(
-                            p.trsf_folder,
-                            "t%06d-%06d-tmp.txt" % (t_flo, t_ref),
-                        )
-                        + th,
-                        shell=True,
+                    vt.blockmatching(
+                        image_flo=vt.vtImage(p_im_flo),
+                        image_ref=vt.vtImage(p_im_ref),
+                        params=(
+                            " -reference-voxel {:f} {:f} {:f}".format(
+                                *p.voxel_size
+                            )
+                            + " -floating-voxel {:f} {:f} {:f}".format(
+                                *p.voxel_size
+                            )
+                            + " -trsf-type rigid2D -py-hl {:d} -py-ll {:d}".format(
+                                p.registration_depth_start,
+                                p.registration_depth_end,
+                            )
+                            + " -res-trsf "
+                            + os.path.join(
+                                p.trsf_folder,
+                                f"t{t_flo:06d}-{t_ref:06d}-tmp.txt",
+                            )
+                            + th
+                        ),
                     )
                     pre_trsf = (
                         " -init-trsf "
                         + os.path.join(
                             p.trsf_folder,
-                            "t%06d-%06d-tmp.txt" % (t_flo, t_ref),
+                            f"t{t_flo:06d}-{t_ref:06d}-tmp.txt",
                         )
                         + " -composition-with-initial "
                     )
                 else:
                     pre_trsf = ""
-                call(
-                    self.path_to_bin
-                    + "blockmatching -ref "
-                    + p_im_ref
-                    + " -flo "
-                    + p_im_flo
-                    + pre_trsf
-                    + " -reference-voxel %f %f %f" % p.voxel_size
-                    + " -floating-voxel %f %f %f" % p.voxel_size
-                    + " -trsf-type %s -py-hl %d -py-ll %d"
-                    % (
-                        p.trsf_type,
-                        p.registration_depth_start,
-                        p.registration_depth_end,
+                vt.blockmatching(
+                    image_flo=vt.vtImage(p_im_flo),
+                    image_ref=vt.vtImage(p_im_ref),
+                    params=(
+                        pre_trsf
+                        + " -reference-voxel {:f} {:f} {:f}".format(
+                            *p.voxel_size
+                        )
+                        + " -floating-voxel {:f} {:f} {:f}".format(
+                            *p.voxel_size
+                        )
+                        + " -trsf-type {:s} -py-hl {:d} -py-ll {:d}".format(
+                            p.trsf_type,
+                            p.registration_depth_start,
+                            p.registration_depth_end,
+                        )
+                        + " -res-trsf "
+                        + os.path.join(
+                            p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
+                        )
+                        + th
+                    ),
+                ).write(
+                    os.path.join(
+                        p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
                     )
-                    + " -res-trsf "
-                    + os.path.join(
-                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
-                    )
-                    + th,
-                    shell=True,
                 )
             else:
                 if p.apply_trsf:
@@ -506,23 +513,16 @@ class TimeRegistration:
         Returns:
             out_trsf (str): path to the result composed transformation
         """
-        out_trsf = trsf_p + "t%06d-%06d.txt" % (flo_t, ref_t)
+        out_trsf = trsf_p + f"t{flo_t:06d}-{ref_t:06d}.txt"
         if not os.path.exists(out_trsf):
             flo_int = tp_list[tp_list.index(flo_t) + np.sign(ref_t - flo_t)]
             # the call is recursive, to build `T_{flo\leftarrow ref}`
             # we need `T_{flo+1\leftarrow ref}` and `T_{flo\leftarrow ref-1}`
             trsf_1 = self.compose_trsf(flo_int, ref_t, trsf_p, tp_list)
             trsf_2 = self.compose_trsf(flo_t, flo_int, trsf_p, tp_list)
-            call(
-                self.path_to_bin
-                + "composeTrsf "
-                + out_trsf
-                + " -trsfs "
-                + trsf_2
-                + " "
-                + trsf_1,
-                shell=True,
-            )
+            trsf_1 = vt.vtTransformation(trsf_1)
+            trsf_2 = vt.vtTransformation(trsf_2)
+            vt.compose_trsf([trsf_1, trsf_2]).write(out_trsf)
         return out_trsf
 
     @staticmethod
@@ -1254,7 +1254,9 @@ class TimeRegistration:
                 if p.do_bdv:
                     self.build_bdv(p)
             except Exception as e:
-                print("Failure of %s" % p.origin_file_name)
+                print(
+                    f"!!!!!!!\n\n\nFailure of {p.origin_file_name}\n\n\n!!!!!!!"
+                )
                 print(e)
 
     def __init__(self, params=None):
