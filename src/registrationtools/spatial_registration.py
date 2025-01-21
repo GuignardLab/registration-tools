@@ -320,7 +320,10 @@ class SpatialRegistration:
         for file_name in f_names:
             if isinstance(file_name, str):
                 print("")
-                print("Extraction of the parameters from file %s" % file_name, end="\n\n")
+                print(
+                    "Extraction of the parameters from file %s" % file_name,
+                    end="\n\n",
+                )
             p = trsf_parameters(file_name)
             if not p.check_parameters_consistancy():
                 print("\n%s Failed the consistancy check, it will be skipped")
@@ -575,6 +578,7 @@ class SpatialRegistration:
                 init_trsf_command = " -init-trsf {:s}".format(init_trsf)
             else:
                 init_trsf_command = ""
+            res_trsf = None
             if not p.test_init:
                 for i, trsf_type in enumerate(p.trsf_types[:-1]):
                     if i != 0:
@@ -636,8 +640,8 @@ class SpatialRegistration:
                     )
                     + init_trsf_command
                     + " -res-trsf "
-                    + res_trsf
-                    +  # ' -res-voxel-trsf ' + res_voxel_trsf + \
+                    + res_trsf  # ' -res-voxel-trsf ' + res_voxel_trsf + \
+                    +
                     # ' -res ' + flo_out +\
                     " -composition-with-initial",
                     shell=True,
@@ -1022,7 +1026,6 @@ class SpatialRegistration:
                         self.apply_trsf(p)
                 if p.do_bdv:
                     self.build_bdv(p)
-
 
     def __init__(self, params=None, quiet=False, force_compute=True):
         self.force_compute = force_compute
