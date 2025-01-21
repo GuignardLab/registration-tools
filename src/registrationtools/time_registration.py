@@ -342,6 +342,10 @@ class TimeRegistration:
                 os.path.join(p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref))
             )
         ):
+            image_flo = vt.vtImage(p_im_flo)
+            image_flo.setSpacing(p.voxel_size)
+            image_ref = vt.vtImage(p_im_ref)
+            image_ref.setSpacing(p.voxel_size)
             if p.low_th is not None and 0 < p.low_th:
                 th = " -ref-lt {lt:f} -flo-lt {lt:f} -no-norma ".format(
                     lt=p.low_th
@@ -351,26 +355,19 @@ class TimeRegistration:
             if p.trsf_type != "vectorfield":
                 if p.pre_2D == 1:
                     vt.blockmatching(
-                        image_flo=vt.vtImage(p_im_flo),
-                        image_ref=vt.vtImage(p_im_ref),
+                        image_flo=image_flo,
+                        image_ref=image_ref,
                         params=(
-                            " -reference-voxel {:f} {:f} {:f}".format(
-                                *p.voxel_size
-                            )
-                            + " -floating-voxel {:f} {:f} {:f}".format(
-                                *p.voxel_size
-                            )
-                            + " -trsf-type rigid2D -py-hl {:d} -py-ll {:d}".format(
+                            " -trsf-type rigid2D -py-hl {:d} -py-ll {:d}".format(
                                 p.registration_depth_start,
                                 p.registration_depth_end,
                             )
-                            + " -res-trsf "
-                            + os.path.join(
-                                p.trsf_folder,
-                                f"t{t_flo:06d}-{t_ref:06d}-tmp.txt",
-                            )
                             + th
                         ),
+                    ).write(
+                        os.path.join(
+                            p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
+                        )
                     )
                     pre_trsf = (
                         " -init-trsf "
@@ -383,24 +380,14 @@ class TimeRegistration:
                 else:
                     pre_trsf = ""
                 vt.blockmatching(
-                    image_flo=vt.vtImage(p_im_flo),
-                    image_ref=vt.vtImage(p_im_ref),
+                    image_flo=image_flo,
+                    image_ref=image_ref,
                     params=(
                         pre_trsf
-                        + " -reference-voxel {:f} {:f} {:f}".format(
-                            *p.voxel_size
-                        )
-                        + " -floating-voxel {:f} {:f} {:f}".format(
-                            *p.voxel_size
-                        )
                         + " -trsf-type {:s} -py-hl {:d} -py-ll {:d}".format(
                             p.trsf_type,
                             p.registration_depth_start,
                             p.registration_depth_end,
-                        )
-                        + " -res-trsf "
-                        + os.path.join(
-                            p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
                         )
                         + th
                     ),
