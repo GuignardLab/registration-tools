@@ -21,6 +21,7 @@ from xml.dom import minidom
 from transforms3d.affines import decompose
 from transforms3d.euler import mat2euler
 import vt
+from itertools import product
 
 if sys.version_info[0] < 3:
     from future.builtins import input
@@ -354,7 +355,7 @@ class TimeRegistration:
                 th = ""
             if p.trsf_type != "vectorfield":
                 if p.pre_2D == 1:
-                    vt.blockmatching(
+                    trsf = vt.blockmatching(
                         image_flo=image_flo,
                         image_ref=image_ref,
                         params=(
@@ -364,7 +365,8 @@ class TimeRegistration:
                             )
                             + th
                         ),
-                    ).write(
+                    )
+                    trsf.write(
                         os.path.join(
                             p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
                         )
@@ -379,7 +381,7 @@ class TimeRegistration:
                     )
                 else:
                     pre_trsf = ""
-                vt.blockmatching(
+                trsf = vt.blockmatching(
                     image_flo=image_flo,
                     image_ref=image_ref,
                     params=(
@@ -391,7 +393,8 @@ class TimeRegistration:
                         )
                         + th
                     ),
-                ).write(
+                )
+                trsf.write(
                     os.path.join(
                         p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
                     )
@@ -402,62 +405,53 @@ class TimeRegistration:
                 else:
                     res = ""
                 if p.keep_vectorfield and pyklb_found:
-                    res_trsf = (
-                        " -composition-with-initial -res-trsf "
-                        + os.path.join(
-                            p.trsf_folder, "t%06d-%06d.klb" % (t_flo, t_ref)
-                        )
-                    )
+                    res_trsf = " -composition-with-initial"
                 else:
                     res_trsf = ""
                     if p.keep_vectorfield:
                         print(
                             "The vectorfield cannot be stored without pyklb being installed"
                         )
-                call(
-                    self.path_to_bin
-                    + "blockmatching -ref "
-                    + p_im_ref
-                    + " -flo "
-                    + p_im_flo
-                    + " -reference-voxel %f %f %f" % p.voxel_size
-                    + " -floating-voxel %f %f %f" % p.voxel_size
-                    + " -trsf-type affine -py-hl %d -py-ll %d"
-                    % (p.registration_depth_start, p.registration_depth_end)
-                    + " -res-trsf "
-                    + os.path.join(
-                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
-                    )
-                    + th,
-                    shell=True,
+                trsf = vt.blockmatching(
+                    image_flo=image_flo,
+                    image_ref=image_ref,
+                    params=(
+                        " -trsf-type affine -py-hl {:d} -py-ll {:d}".format(
+                            p.registration_depth_start,
+                            p.registration_depth_end,
+                        )
+                        + th
+                    ),
                 )
-                call(
-                    self.path_to_bin
-                    + "blockmatching -ref "
-                    + p_im_ref
-                    + " -flo "
-                    + p_im_flo
-                    + " -init-trsf "
-                    + os.path.join(
-                        p.trsf_folder, "t%06d-%06d.txt" % (t_flo, t_ref)
+                trsf.write(
+                    os.path.join(
+                        p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.txt"
                     )
-                    + res
-                    + " -reference-voxel %f %f %f" % p.voxel_size
-                    + " -floating-voxel %f %f %f" % p.voxel_size
-                    + " -trsf-type %s -py-hl %d -py-ll %d"
-                    % (
-                        p.trsf_type,
-                        p.registration_depth_start,
-                        p.registration_depth_end,
-                    )
-                    + res_trsf
-                    + (
-                        " -elastic-sigma {s:.1f} {s:.1f} {s:.1f} "
-                        + " -fluid-sigma {s:.1f} {s:.1f} {s:.1f}"
-                    ).format(s=p.sigma)
-                    + th,
-                    shell=True,
                 )
+                trsfVF = vt.blockmatching(
+                    image_flo=image_flo,
+                    image_ref=image_ref,
+                    init_trsf=trsf,
+                    params=(
+                        +res
+                        + " -trsf-type vectorfield -py-hl {:d} -py-ll {:d}".format(
+                            p.registration_depth_start,
+                            p.registration_depth_end,
+                        )
+                        + res_trsf
+                        + (
+                            " -elastic-sigma {s:.1f} {s:.1f} {s:.1f} "
+                            + " -fluid-sigma {s:.1f} {s:.1f} {s:.1f}"
+                        ).format(s=p.sigma)
+                        + th
+                    ),
+                )
+                if p.keep_vectorfield:
+                    trsfVF.write(
+                        os.path.join(
+                            p.trsf_folder, f"t{t_flo:06d}-{t_ref:06d}.klb"
+                        )
+                    )
 
     def run_produce_trsf(self, p: trsf_parameters):
         """
@@ -785,6 +779,7 @@ class TimeRegistration:
             ]
         else:
             im_shape = imread(p.A0.format(t=p.ref_TP)).shape
+
         im = SpatialImage(np.ones(im_shape), dtype=np.uint8)
         im.voxelsize = p.voxel_size
         if pyklb_found:
@@ -793,8 +788,10 @@ class TimeRegistration:
         else:
             template = os.path.join(p.trsf_folder, "tmp.tif")
             res_t = "template.tif"
-
-        imsave(template, im)
+        # imsave(template, im)
+        corner_points = vt.vtPointList(list(product(*zip((0,) * 3, im_shape))))
+        corner_points.setSpacing(p.voxel_size)
+        corner_points_arr = corner_points.copy_to_array()
         identity = np.identity(4)
 
         trsf_fmt_no_flo = trsf_fmt.replace("{flo:06d}", "%06d")
@@ -809,23 +806,56 @@ class TimeRegistration:
                 identity,
             )
 
-        call(
-            p.path_to_bin
-            + "changeMultipleTrsfs -trsf-format "
-            + os.path.join(p.trsf_folder, trsf_fmt_no_flo.format(ref=p.ref_TP))
-            + " -index-reference %d -first %d -last %d "
-            % (p.ref_TP, min(p.time_points), max(p.time_points))
-            + " -template "
-            + template
-            + " -res "
-            + os.path.join(
-                p.trsf_folder, new_trsf_fmt_no_flo.format(ref=p.ref_TP)
+        min_shape = np.array([np.inf, np.inf, np.inf])
+        max_shape = np.array([0, 0, 0])
+        for t in range(min(p.time_points), max(p.time_points) + 1):
+            trsf = vt.vtTransformation(
+                os.path.join(
+                    p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+                )
             )
-            + " -res-t "
-            + os.path.join(p.trsf_folder, res_t)
-            + " -trsf-type %s -vs %f %f %f" % ((p.trsf_type,) + p.voxel_size),
-            shell=True,
-        )
+            new_points = vt.apply_trsf_to_points(corner_points, trsf)
+            min_shape = np.minimum(
+                min_shape, np.min(new_points.copy_to_array(), axis=0)
+            )
+            max_shape = np.maximum(
+                max_shape, np.max(new_points.copy_to_array(), axis=0)
+            )
+        image_size = np.asarray(np.ceil(max_shape - min_shape), dtype="int")
+        translation = np.asarray(np.floor(min_shape), dtype="int")
+        imsave(os.path.join(p.trsf_folder, res_t), np.zeros(image_size))
+        translation_matrix = np.identity(4)
+        translation_matrix[:3, -1] = -translation
+        for t in range(min(p.time_points), max(p.time_points) + 1):
+            trsf = vt.vtTransformation(
+                os.path.join(
+                    p.trsf_folder, trsf_fmt.format(flo=t, ref=p.ref_TP)
+                )
+            )
+            padded_trsf = translation_matrix @ trsf.copy_to_array()
+            vt.vtTransformation(padded_trsf).write(
+                os.path.join(
+                    p.trsf_folder,
+                    new_trsf_fmt.format(flo=t, ref=p.ref_TP),
+                )
+            )
+        # call(
+        #     p.path_to_bin
+        #     + "changeMultipleTrsfs -trsf-format "
+        #     + os.path.join(p.trsf_folder, trsf_fmt_no_flo.format(ref=p.ref_TP))
+        #     + " -index-reference %d -first %d -last %d "
+        #     % (p.ref_TP, min(p.time_points), max(p.time_points))
+        #     + " -template "
+        #     + template
+        #     + " -res "
+        #     + os.path.join(
+        #         p.trsf_folder, new_trsf_fmt_no_flo.format(ref=p.ref_TP)
+        #     )
+        #     + " -res-t "
+        #     + os.path.join(p.trsf_folder, res_t)
+        #     + " -trsf-type %s -vs %f %f %f" % ((p.trsf_type,) + p.voxel_size),
+        #     shell=True,
+        # )
 
     def compute_trsfs(self, p: trsf_parameters):
         """
