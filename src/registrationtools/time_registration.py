@@ -823,9 +823,12 @@ class TimeRegistration:
             )
         image_size = np.asarray(np.ceil(max_shape - min_shape), dtype="int")
         translation = np.asarray(np.floor(min_shape), dtype="int")
-        imsave(os.path.join(p.trsf_folder, res_t), np.zeros(image_size))
+        imsave(
+            os.path.join(p.trsf_folder, res_t),
+            np.zeros(image_size, dtype=np.uint8),
+        )
         translation_matrix = np.identity(4)
-        translation_matrix[:3, -1] = -translation
+        translation_matrix[:3, -1] = -(translation)
         for t in range(min(p.time_points), max(p.time_points) + 1):
             trsf = vt.vtTransformation(
                 os.path.join(
