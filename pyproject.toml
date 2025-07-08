@@ -2,6 +2,60 @@
 requires = ["setuptools>=42.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+authors = [
+    { name = "Léo Guignard", email = "leo.guignard@univ-amu.fr"},
+]
+maintainers = [
+    {name = "Léo Guignard", email = "leo.guignard@univ-amu.fr"},
+]
+
+name = "3D-registration"
+description = "Some scripts to register images in space and time"
+version = "0.5.2"
+license = "MIT"
+license-files = [ "LICENSE" ]
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">= 3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "numpy",
+    "scipy",
+    "statsmodels",
+    "h5py",
+    "tifffile",
+    "importlib-resources",
+    "matplotlib",
+    "transforms3d",
+    "ensure",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/GuignardLab/registration-tools/issues"
+"Documentation" = "https://github.com/GuignardLab/registration-tools#README.md"
+"Source Code" = "https://github.com/GuignardLab/registration-tools"
+"User Support" = "https://github.com/GuignardLab/registration-tools/issues"
+
+[project.scripts]
+"spatial-registration" = "registrationtools:spatial_registration_run"
+"time-registration" = "registrationtools:time_registration_run"
+
+
 [tool.black]
 line-length = 79
 
@@ -20,10 +74,8 @@ push = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
     'current_version = "{version}"',
+    'version = "{version}"',
 ]
 "src/registrationtools/__init__.py" = [
     '__version__ = "{version}"',
-]
-"setup.cfg" = [
-    'version = {version}',
 ]

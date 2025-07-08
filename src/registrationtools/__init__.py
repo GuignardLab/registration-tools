@@ -28,6 +28,8 @@ if 8 < sys.version_info.minor:
     json_path_time = pkg / "JSON_time"
 
 __all__ = [
+    "SpatialRegistration",
+    "TimeRegistration",
     "get_paths",
     "dimensions",
     "get_channels_name",
