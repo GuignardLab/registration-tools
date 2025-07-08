@@ -15,7 +15,7 @@ maintainers = [
 
 name = "3D-registration"
 description = "Some scripts to register images in space and time"
-version = "0.5.2"
+version = "0.5.3"
 license = "MIT"
 license-files = [ "LICENSE" ]
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -64,7 +64,7 @@ profile = "black"
 line_length = 79
 
 [tool.bumpver]
-current_version = "0.5.2"
+current_version = "0.5.3"
 version_pattern = "MAJOR.MINOR.PATCH[-TAG]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
