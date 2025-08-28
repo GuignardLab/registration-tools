@@ -30,7 +30,6 @@ try:
     pyklb_found = True
 except Exception:
     pyklb_found = False
-    print("pyklb library not found, klb files will not be generated")
 
 
 class trsf_parameters(object):
