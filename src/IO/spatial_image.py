@@ -40,7 +40,7 @@ class SpatialImage(np.ndarray):
         vdim=None,
         info=None,
         dtype=None,
-        **kwargs
+        **kwargs,
     ):
         """Instantiate a new |SpatialImage|
 
