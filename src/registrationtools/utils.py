@@ -7,67 +7,103 @@ from ensure import check  ##need to pip install !
 from pathlib import Path
 
 
+# def get_paths_tifsequence():
+#     """
+#     Ask the user for the path to the data, check if it is an image sequence or a movie, and return the list of paths to the movies and the type of data
+
+#     Returns
+#     -------
+#     paths_movies : list
+#         if input is a timesequence : List of the paths of the timeframes
+#         if input is a movie : List of the paths of the different movies to register independently
+#     data_type : int
+#         1 for image sequence, 2 for movie
+#     """
+#     path_correct = False
+#     while not path_correct:
+#         data_type = input(
+#             "Is your input data an image sequence or a tiff movie contained in one file ? (1 for image sequence, 2 for movie) : \n "
+#         )
+#         if data_type == "1":
+#             print(
+#                 "The sequence has to be a serie of z stacks, one file per timeframe, one channel.\n The sequence of images should be in tiff format, with the same dimensions for each image.  \n For now, the timeframes have to be named 'movie_t000.tif', 'movie_t001.tif' and so on.\n"
+#             )
+#             path_folder = input("Path to the folder : \n ")
+#             paths_movies = list(Path(path_folder).glob("*.tif"))
+#             path_correct = True
+#             if len(paths_movies) > 0:
+#                 path_correct = int(
+#                     input(
+#                         "You have",
+#                         len(paths_movies),
+#                         "timeframes; correct ? (1 for yes, 0 for no or to change folder) \n ",
+#                     )
+#                 )
+#             else:
+#                 print("There is no tiff file in the folder. \n")
+#         elif data_type == "2":
+#             path_folder = input(
+#                 "Path to the folder of the movie(s), in tif format only (all the movies in that folder are going to be registered) : \n "
+#             )
+#             paths_movies = list(Path(path_folder).glob("*.tif"))
+#             if len(paths_movies) > 0:
+#                 print(
+#                     "You have",
+#                     len(paths_movies),
+#                     "movie(s), which is (are) : ",
+#                 )
+#                 for path_movie in paths_movies:
+#                     print(
+#                         "", Path(path_movie).stem
+#                     )  # the empty str at the begining is to align the answers one space after the questions, for readability
+#                 path_correct = int(
+#                     input(
+#                         "Correct ? (1 for yes, 0 for no or to change folder) \n "
+#                     )
+#                 )
+#             else:
+#                 print("There is no tiff file in the folder. \n")
+
+#     return (paths_movies, data_type)
+
 def get_paths():
     """
-    Ask the user for the path to the data, check if it is an image sequence or a movie, and return the list of paths to the movies and the type of data
+    Ask the user for the path to the data, and return the list of paths to the movies 
 
     Returns
     -------
     paths_movies : list
-        if input is a timesequence : List of the paths of the timeframes
-        if input is a movie : List of the paths of the different movies to register independently
-    data_type : int
-        1 for image sequence, 2 for movie
+        List of the paths of the different movies to register independently
+
     """
     path_correct = False
     while not path_correct:
-        data_type = input(
-            "Is your input data an image sequence or a tiff movie contained in one file ? (1 for image sequence, 2 for movie) : \n "
+        path_folder = input(
+            "Path to the folder of the movie(s), in tif format only (all the movies in that folder are going to be registered) : \n "
         )
-        if data_type == "1":
+        paths_movies = list(Path(path_folder).glob("*.tif"))
+        if len(paths_movies) > 0:
             print(
-                "The sequence has to be a serie of z stacks, one file per timeframe, one channel.\n The sequence of images should be in tiff format, with the same dimensions for each image.  \n For now, the timeframes have to be named 'movie_t000.tif', 'movie_t001.tif' and so on.\n"
+                "You have",
+                len(paths_movies),
+                "movie(s), which is (are) : ",
             )
-            path_folder = input("Path to the folder : \n ")
-            paths_movies = list(Path(path_folder).glob("*.tif"))
-            path_correct = True
-            if len(paths_movies) > 0:
-                path_correct = int(
-                    input(
-                        "You have",
-                        len(paths_movies),
-                        "timeframes; correct ? (1 for yes, 0 for no or to change folder) \n ",
-                    )
-                )
-            else:
-                print("There is no tiff file in the folder. \n")
-        elif data_type == "2":
-            path_folder = input(
-                "Path to the folder of the movie(s), in tif format only (all the movies in that folder are going to be registered) : \n "
-            )
-            paths_movies = list(Path(path_folder).glob("*.tif"))
-            if len(paths_movies) > 0:
+            for path_movie in paths_movies:
                 print(
-                    "You have",
-                    len(paths_movies),
-                    "movie(s), which is (are) : ",
+                    "", Path(path_movie).stem
+                )  # the empty str at the begining is to align the answers one space after the questions, for readability
+            path_correct = int(
+                input(
+                    "Correct ? (1 for yes, 0 for no or to change folder) \n "
                 )
-                for path_movie in paths_movies:
-                    print(
-                        "", Path(path_movie).stem
-                    )  # the empty str at the begining is to align the answers one space after the questions, for readability
-                path_correct = int(
-                    input(
-                        "Correct ? (1 for yes, 0 for no or to change folder) \n "
-                    )
-                )
-            else:
-                print("There is no tiff file in the folder. \n")
+            )
+        else:
+            print("There is no tiff file in the folder. \n")
 
-    return (paths_movies, data_type)
+    return (paths_movies)
 
 
-def get_dimensions(list_paths: list, data_type: int):
+def get_dimensions(list_paths: list):
     """
     Ask the user for the dimensions of the data, and return the dimensions in the format TZCYX
     Raise error if the other movies do not have the same C ot T dimensions.
@@ -76,146 +112,88 @@ def get_dimensions(list_paths: list, data_type: int):
     list_paths : list
         if input is a timesequence : List of the paths of the timeframes
         if input is a movie : List of the paths of the different movies to register independently
-    data_type : int
-        1 for image sequence, 2 for movie
     """
 
     dim_correct = False
-    if data_type == "1":
-        number_timepoints = len(list_paths)
-        number_channels = 1
-        movie_0 = tifffile.imread(list_paths[0])
-        print("The dimensions of the first movie are ", movie_0.shape, ". \n")
-        for i in range(len(list_paths)):
-            movie = tifffile.imread(list_paths[i])
-            check(movie.shape).equals(movie_0.shape).or_raise(
-                Exception,
-                "These movies do not all have the same shape in (XYZ). \n",
-            )
 
-        while not dim_correct:
-            print("\nThe dimensions of one stack is ", movie_0.shape, ". \n")
-            dimensions = input(
-                "What is the order of the dimensions (for example ZYX or XYZ) ? \n "
-            )
-            sorted_axes = sorted(dimensions)
-            if "".join(sorted_axes) == "XYZ":
-                number_channels = 1
-                dim_correct = True
-            elif "".join(sorted_axes) == "CXYZ":
-                print(
-                    "If you chose to give a timesequence, we can only register one channel at a time. \n"
-                )
-            elif len(sorted_axes) != len(movie.shape):
-                print("Error : Number of dimensions is incorrect. \n")
-                dim_correct = False
-            else:
-                print(
-                    " \n The letters you choose has to be X, Y and Z and no other letters are allowed. \nEvery letter can be included only once. \n"
-                )
-
-            if dim_correct:
-                size_X = movie.shape[dimensions.find("X")]
-                size_Y = movie.shape[dimensions.find("Y")]
-                if "Z" in dimensions:
-                    depth = movie.shape[dimensions.find("Z")]
-                else:
-                    depth = 1
-
-                print(
-                    "\nSo the movie has",
-                    number_channels,
-                    "channels, ",
-                    number_timepoints,
-                    "timepoints, the depth in z is",
-                    depth,
-                    "pixels and the XY plane measures ",
-                    size_X,
-                    "x",
-                    size_Y,
-                    "pixels.",
-                )
-                dim_correct = int(input("Correct ? (1 for yes, 0 for no) \n "))
-
-    elif data_type == "2":
-        movie = tifffile.imread(list_paths[0])
-        name_movie = Path(list_paths[0]).stem
-        dim_correct = False
-        while not dim_correct:
+    movie = tifffile.imread(list_paths[0])
+    name_movie = Path(list_paths[0]).stem
+    dim_correct = False
+    while not dim_correct:
+        print(
+            "\nThe dimensions of ", name_movie, "are ", movie.shape, ". \n"
+        )
+        dimensions = input(
+            "What is the order of the dimensions (for example TZCYX or XYZT) ? T stands for Time, C for channels if your image has multiple channels, Z for depth (or number or plans) and XY is your field of view. \n "
+        )
+        sorted_axes = sorted(dimensions)
+        if "".join(sorted_axes) == "CTXYZ":
+            number_channels = movie.shape[dimensions.find("C")]
+            dim_correct = True
+        elif "".join(sorted_axes) == "TXYZ":
+            number_channels = 1
+            dim_correct = True
+        elif "".join(sorted_axes) == "TXY":
+            number_channels = 1
+            dim_correct = True
+        elif len(sorted_axes) != len(movie.shape):
+            print("Error : Number of dimensions is incorrect. \n")
+            dim_correct = False
+        else:
             print(
-                "\nThe dimensions of ", name_movie, "are ", movie.shape, ". \n"
+                " \n The letters you choose has to be among these letters : X,Y,Z,C,T, with XYZT mandatory, and no other letters are allowed. \nEvery letter can be included only once. \n"
             )
-            dimensions = input(
-                "What is the order of the dimensions (for example TZCYX or XYZT) ? T stands for Time, C for channels if your image has multiple channels, Z for depth (or number or plans) and XY is your field of view. \n "
+
+        number_timepoints = movie.shape[dimensions.find("T")]
+
+        if "C" in dimensions:
+            number_channels = movie.shape[dimensions.find("C")]
+        else:
+            number_channels = 1
+
+        if dim_correct:
+            size_X = movie.shape[dimensions.find("X")]
+            size_Y = movie.shape[dimensions.find("Y")]
+            if "Z" in dimensions:
+                depth = movie.shape[dimensions.find("Z")]
+            else:
+                depth = 1
+
+            print(
+                "\nSo",
+                name_movie,
+                "has",
+                number_channels,
+                "channels, ",
+                number_timepoints,
+                "timepoints, the depth in z is",
+                depth,
+                "pixels and the XY plane measures ",
+                size_X,
+                "x",
+                size_Y,
+                "pixels.",
             )
-            sorted_axes = sorted(dimensions)
-            if "".join(sorted_axes) == "CTXYZ":
-                number_channels = movie.shape[dimensions.find("C")]
-                dim_correct = True
-            elif "".join(sorted_axes) == "TXYZ":
-                number_channels = 1
-                dim_correct = True
-            elif "".join(sorted_axes) == "TXY":
-                number_channels = 1
-                dim_correct = True
-            elif len(sorted_axes) != len(movie.shape):
-                print("Error : Number of dimensions is incorrect. \n")
-                dim_correct = False
-            else:
-                print(
-                    " \n The letters you choose has to be among these letters : X,Y,Z,C,T, with XYZT mandatory, and no other letters are allowed. \nEvery letter can be included only once. \n"
-                )
-
-            number_timepoints = movie.shape[dimensions.find("T")]
-
-            if "C" in dimensions:
-                number_channels = movie.shape[dimensions.find("C")]
-            else:
-                number_channels = 1
-
-            if dim_correct:
-                size_X = movie.shape[dimensions.find("X")]
-                size_Y = movie.shape[dimensions.find("Y")]
-                if "Z" in dimensions:
-                    depth = movie.shape[dimensions.find("Z")]
-                else:
-                    depth = 1
-
-                print(
-                    "\nSo",
-                    name_movie,
-                    "has",
-                    number_channels,
-                    "channels, ",
-                    number_timepoints,
-                    "timepoints, the depth in z is",
-                    depth,
-                    "pixels and the XY plane measures ",
-                    size_X,
-                    "x",
-                    size_Y,
-                    "pixels.",
-                )
-                dim_correct = int(input("Correct ? (1 for yes, 0 for no) \n "))
-        # checking if the movies have the same dimensions in C and T, otherwise the registration cannot be computed.
-        if (
-            "C" in dimensions
-        ):  # have to check beforehand if multichannels, otherwise, dimensions.find('C') will return -1 and mov.shape[dimensions.find('C')] will probably return the dimension of the X axis
-            for path in list_paths:
-                mov = tifffile.imread(path)
-                check(mov.shape[dimensions.find("T")]).equals(
-                    number_timepoints
-                ).or_raise(
-                    Exception,
-                    "These movies do not all have the same number of timepoints. \n",
-                )
-                check(mov.shape[dimensions.find("C")]).equals(
-                    number_channels
-                ).or_raise(
-                    Exception,
-                    "These movies do not all have the same number of channels. \n",
-                )
-                # if XYZ are not the same thats ok ?
+            dim_correct = int(input("Correct ? (1 for yes, 0 for no) \n "))
+    # checking if the movies have the same dimensions in C and T, otherwise the registration cannot be computed.
+    if (
+        "C" in dimensions
+    ):  # have to check beforehand if multichannels, otherwise, dimensions.find('C') will return -1 and mov.shape[dimensions.find('C')] will probably return the dimension of the X axis
+        for path in list_paths:
+            mov = tifffile.imread(path)
+            check(mov.shape[dimensions.find("T")]).equals(
+                number_timepoints
+            ).or_raise(
+                Exception,
+                "These movies do not all have the same number of timepoints. \n",
+            )
+            check(mov.shape[dimensions.find("C")]).equals(
+                number_channels
+            ).or_raise(
+                Exception,
+                "These movies do not all have the same number of channels. \n",
+            )
+            # if XYZ are not the same thats ok ?
     movie_dimensions = [
         number_timepoints,
         depth,
@@ -536,8 +514,6 @@ def data_preparation():
 
     Returns
     -------
-    data_type : int
-        1 for image sequence, 2 for movie
     list_paths : list
         if input is a timesequence : List of the paths of the timeframes
         if input is a movie : List of the paths of the different movies to register independently
@@ -556,22 +532,20 @@ def data_preparation():
         Name of the transformation type (rigid2D, rigid3D, translation2D, translation3D)
     """
 
-    list_paths, data_type = get_paths()
-    dimensions = get_dimensions(list_paths, data_type)
+    list_paths = get_paths()
+    dimensions = get_dimensions(list_paths)
     filename = "movie_t{t:03d}.tif"  # for now the user has no choice regarding the filename
     channels = get_channels_name(dimensions[2])
     channels_float, ch_ref = reference_channel(channels)
-    if data_type == "2":  # if the datatype=1, it is already a timesequence
-        sort_by_channels_and_timepoints(
-            list_paths=list_paths, channels=channels, dimensions=dimensions
-        )
+    sort_by_channels_and_timepoints(
+        list_paths=list_paths, channels=channels, dimensions=dimensions
+    )
 
     voxel_size_input, voxel_size_output = get_voxel_sizes()
     trsf_type = get_trsf_type()
 
     # print('Parameters : \ndata_type=',data_type,'\nfilename=',str(filename),'\nlist_paths=',list_paths,'\nnumber_timepoints=',dimensions[0],'\nchannels_float=',channels_float,'\nch_ref=',ch_ref,'\nvoxel_size_input=',voxel_size_input,'\nvoxel_size_output=',voxel_size_output,'\ntrsf_type=',trsf_type)
     return (
-        data_type,
         filename,
         list_paths,
         dimensions[0],
@@ -584,7 +558,6 @@ def data_preparation():
 
 
 def run_registration(
-    data_type: int,
     filename: str,
     list_paths: list,
     channels_float: list,
@@ -603,8 +576,6 @@ def run_registration(
 
     Parameters
     ----------
-    data_type : int
-        1 for image sequence, 2 for movie
     list_paths : list
         if input is a timesequence : List of the paths of the timeframes
         if input is a movie : List of the paths of the different movies to register independently
@@ -629,19 +600,22 @@ def run_registration(
     if ref_tp is None:
         ref_tp = int(number_timepoints / 2)
 
-    if data_type == "1":  # simpler because its only 1 movie with 1 channel
 
-        folder = os.path.dirname(list_paths[0])
-        path_to_data = Path(
-            folder
-        )  # the timesequence is direclty the folder given by the user.
-        path_trsf = Path(folder) / "trsf"
-        path_output = Path(folder) / "output"
-        path_proj = Path(folder) / "proj_output"
+    for (
+        path_movie
+    ) in list_paths:  # loop on each movie from the original folder
+        folder = os.path.dirname(path_movie)
+        name_movie = Path(path_movie).stem
+        directory = name_movie + "_" + ch_ref
+
+        path_to_data = os.path.join(Path(folder), directory, "stackseq")
+        path_trsf = Path(folder) / directory / "trsf"
+        path_output = Path(folder) / directory / "output"
+        path_proj = Path(folder) / directory / "proj_output"
         json_str = run_from_json(
             path_to_data=path_to_data,
-            path_trsf=path_trsf,
             filename=filename,
+            path_trsf=path_trsf,
             path_output=path_output,
             path_proj=path_proj,
             voxel_size_input=voxel_size_input,
@@ -654,20 +628,15 @@ def run_registration(
             ref_tp=ref_tp
         )
         json_string.append(json_str)
-
-    elif data_type == "2":
-
-        for (
-            path_movie
-        ) in list_paths:  # loop on each movie from the original folder
-            folder = os.path.dirname(path_movie)
-            name_movie = Path(path_movie).stem
-            directory = name_movie + "_" + ch_ref
-
-            path_to_data = os.path.join(Path(folder), directory, "stackseq")
-            path_trsf = Path(folder) / directory / "trsf"
+        # registration rest of the channels
+        for c in channels_float:
+            directory = name_movie + "_" + c
+            path_to_data = os.path.join(
+                Path(folder), directory, "stackseq"
+            )
             path_output = Path(folder) / directory / "output"
             path_proj = Path(folder) / directory / "proj_output"
+            # we dont update path_trsf : the trsf directory is always the one of the reference channel
             json_str = run_from_json(
                 path_to_data=path_to_data,
                 filename=filename,
@@ -676,7 +645,7 @@ def run_registration(
                 path_proj=path_proj,
                 voxel_size_input=voxel_size_input,
                 voxel_size_output=voxel_size_output,
-                compute_trsf=1,
+                compute_trsf=0,  # we do not compute the trsf again, we just apply it
                 trsf_type=trsf_type,
                 number_timepoints=number_timepoints,
                 first=first,
@@ -684,31 +653,6 @@ def run_registration(
                 ref_tp=ref_tp
             )
             json_string.append(json_str)
-            # registration rest of the channels
-            for c in channels_float:
-                directory = name_movie + "_" + c
-                path_to_data = os.path.join(
-                    Path(folder), directory, "stackseq"
-                )
-                path_output = Path(folder) / directory / "output"
-                path_proj = Path(folder) / directory / "proj_output"
-                # we dont update path_trsf : the trsf directory is always the one of the reference channel
-                json_str = run_from_json(
-                    path_to_data=path_to_data,
-                    filename=filename,
-                    path_trsf=path_trsf,
-                    path_output=path_output,
-                    path_proj=path_proj,
-                    voxel_size_input=voxel_size_input,
-                    voxel_size_output=voxel_size_output,
-                    compute_trsf=0,  # we do not compute the trsf again, we just apply it
-                    trsf_type=trsf_type,
-                    number_timepoints=number_timepoints,
-                    first=first,
-                    last=last,
-                    ref_tp=ref_tp
-                )
-                json_string.append(json_str)
     return json_string
 
 
@@ -787,7 +731,7 @@ def run_from_json(
 
 
 def save_sequences_as_stacks(
-    list_paths: list, data_type: int, channels: list, number_timepoints: int
+    list_paths: list, channels: list, number_timepoints: int
 ):
     """
     save the timesequence as a hyperstack in the main folder
@@ -796,73 +740,47 @@ def save_sequences_as_stacks(
     ----------
     list_paths : list
         List of the paths of the timeframes
-    data_type : int
-        1 for image sequence, 2 for movie
     channels : list
         List of the names of the channels
     number_timepoints : int
         Number of timeframes
     """
-    if data_type == "1":
-        path_main_directory = os.path.dirname(list_paths[0])
+    for path in list_paths:
+        path_main_directory = os.path.dirname(path)
+        name_movie = Path(path).stem
+
         stack0 = tifffile.imread(
-            os.path.join(Path(path_main_directory), "output", "movie_t000.tif")
+            os.path.join(
+                Path(path_main_directory),
+                name_movie + "_" + channels[0],
+                "output",
+                "movie_t000.tif",
+            )
         )  # we use the first image (3D) to know the dimensions
         registered_movie = np.zeros(
             (
                 number_timepoints,
                 stack0.shape[0],
+                len(channels),
                 stack0.shape[1],
                 stack0.shape[2],
-            )
-        )
-        for t in range(number_timepoints):
-            stack = tifffile.imread(
-                os.path.join(
-                    Path(path_main_directory),
-                    "output",
-                    rf"movie_t{format(t,'03d')}.tif",
-                )
-            )
-            registered_movie[t, :, :, :] = stack
-        name_movie = "movie"
-    elif data_type == "2":
-        for path in list_paths:
-            path_main_directory = os.path.dirname(path)
-            name_movie = Path(path).stem
-
-            stack0 = tifffile.imread(
-                os.path.join(
-                    Path(path_main_directory),
-                    name_movie + "_" + channels[0],
-                    "output",
-                    "movie_t000.tif",
-                )
-            )  # we use the first image (3D) to know the dimensions
-            registered_movie = np.zeros(
-                (
-                    number_timepoints,
-                    stack0.shape[0],
-                    len(channels),
-                    stack0.shape[1],
-                    stack0.shape[2],
-                ),
-                dtype=np.float32,
-            )  # one movie per channel, of format (t,z,y,x).Datatype uint16 or float32 is necessary to export as hyperstack
-            for ind_c, c in enumerate(channels):
-                for t in range(number_timepoints):
-                    stack = tifffile.imread(
-                        os.path.join(
-                            Path(path_main_directory),
-                            name_movie + "_" + c,
-                            "output",
-                            rf"movie_t{format(t,'03d')}.tif",
-                        )
+            ),
+            dtype=np.float32,
+        )  # one movie per channel, of format (t,z,y,x).Datatype uint16 or float32 is necessary to export as hyperstack
+        for ind_c, c in enumerate(channels):
+            for t in range(number_timepoints):
+                stack = tifffile.imread(
+                    os.path.join(
+                        Path(path_main_directory),
+                        name_movie + "_" + c,
+                        "output",
+                        rf"movie_t{format(t,'03d')}.tif",
                     )
-                    # we take each stack in a given timepoint
-                    registered_movie[t, :, ind_c, :, :] = (
-                        stack  # and put it in a new hyperstack
-                    )
+                )
+                # we take each stack in a given timepoint
+                registered_movie[t, :, ind_c, :, :] = (
+                    stack  # and put it in a new hyperstack
+                )
     tifffile.imwrite(
         os.path.join(
             Path(path_main_directory), name_movie + "_registered.tif"
