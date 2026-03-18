@@ -219,7 +219,7 @@ class trsf_parameters(object):
                     param_dict[k] = v
 
         # Default parameters
-        self.check_TP = None
+        self.check_TP = False
         self.not_to_do = []
         self.compute_trsf = True
         self.ref_path = None
@@ -265,7 +265,8 @@ class trsf_parameters(object):
         self.origin_file_name = file_name
 
         if (
-            0 < len(self.projection_path)
+            self.projection_path is not None
+            and 0 < len(self.projection_path)
             and self.projection_path[-1] != os.path.sep
         ):
             self.projection_path = self.projection_path + os.path.sep
