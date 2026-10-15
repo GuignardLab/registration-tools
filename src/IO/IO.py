@@ -20,11 +20,6 @@ try:
 except Exception:
     warnings.warn("h5py library is not installed")
 
-try:
-    from .klb import read_klb, write_klb
-except Exception:
-    warnings.warn("KLB library is not installed")
-
 from .folder import read_folder
 
 
@@ -60,7 +55,10 @@ def imread(filename, parallel=True, SP_im=True):
     elif ext in [".h5", ".hdf5"]:
         return read_h5(filename)
     elif ext == ".klb":
-        return read_klb(filename, SP_im)
+        raise IOError(
+            "KLB files are no longer supported, please convert %s to TIFF"
+            % filename
+        )
     elif isdir(filename):
         return read_folder(filename, parallel)
 
@@ -84,7 +82,6 @@ def imsave(filename, img):
     filename = expusr(filename)
     root, ext = splitext(filename)
 
-    # assert isinstance(img, SpatialImage) or ext == '.klb'
     # -- images are always at least 3D! If the size of dimension 3 (indexed 2) is 1, then it is actually
     # a 2D image. If it is 4D it has vectorial or RGB[A] data. --
     head, tail = psplit(filename)
@@ -102,6 +99,9 @@ def imsave(filename, img):
     elif ext in [".tiff", ".tif"]:
         write_tif(filename, img)
     elif ext == ".klb":
-        write_klb(filename, img)
+        raise IOError(
+            "KLB files are no longer supported, please convert %s to TIFF"
+            % filename
+        )
     elif ext in [".h5", ".hdf5"]:
         write_h5(filename, img)

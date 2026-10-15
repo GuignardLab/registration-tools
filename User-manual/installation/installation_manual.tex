@@ -45,13 +45,10 @@ Number 2) is to run the notebooks in Python, if you need to run on multiple imag
 (registration) C:/Users/username> conda install -c trcabel -c morpheme vt
 \end{verbatim}
 
-If you are on Windows, you still need too follow this procedure (Mac ?):
-\begin{sloppypar}
-\item[-]Open this link : \url{https://www.pconlife.com/download/otherfile/185413/9ec519368844bffd89ed4ff61342b98d/}
-\end{sloppypar}
-\begin{sloppypar}
-Complete the captcha, download pthreadvse2.dll using the green button, and put the resulting file in the folder (with your actual username) : C:/Users/username/Anaconda3/envs/registration/Library/bin \\
-\end{sloppypar}
+If you are on Windows, you also need the threading library pthreadVSE2.dll. It is provided by the conda-forge package pthreads-win32, which installs it in the Library/bin folder of the environment:
+\begin{verbatim}
+(registration) C:/Users/username> conda install -c conda-forge pthreads-win32
+\end{verbatim}
 \item[-]Write applyTrsf in your terminal. If you get :
 Usage: applyTrsf [[-floating|-flo] image-in] [[-result|-res] image-out]
  [-transformation |-trsf %s|identity|fovcenter]
@@ -117,7 +114,7 @@ Then write :
 (base) C:/Users/username>conda config --add channels conda-forge
  \end{verbatim}
 And start the installation again, from conda create.
-\item[-]When running ApplyTrsf, if you get an error like “applyTrsf.exe - System Error. Executing the code is impossible because pthreadVSE2.dll cannot be found.”, it could mean you dropped the pthreadvse2.dll file in the wrong folder.
+\item[-]When running ApplyTrsf, if you get an error like “applyTrsf.exe - System Error. Executing the code is impossible because pthreadVSE2.dll cannot be found.”, install pthreads-win32 in the active environment (see above).
 \end{itemize}
 
 \section{Using the registration tools}
@@ -147,8 +144,7 @@ For more info about the parameters, check the \href{https:/github.com/GuignardLa
 \paragraph{}Troubleshooting
 \begin{itemize}
 \item[-]If some basic modules cannot be imported when you execute a code in VS Code, check in the bottom of the VS Code window that the interpreter is in the right environment : it should be written “3.10.8 (‘registration-env’:conda) “. If it is not, click on the button next to Python and select the right environment. 
-\item[-]The warning “pyklb library not found” or “KLB library is not installed” does not prevent the code from running normally. 
-\item[-]When running the code, if you get an error like “applyTrsf.exe - System Error. Executing the code is impossible because pthreadVSE2.dll cannot be found.”, it could mean that you did not provide the right path\_to\_bin. Careful to put your username right and a forward slash at the end.
+\item[-]When running the code, if you get an error like “applyTrsf.exe - System Error. Executing the code is impossible because pthreadVSE2.dll cannot be found.”, install pthreads-win32 in the active environment (see above), or check that path\_to\_bin points to the folder of the vt executables.
 \end{itemize}
 \subsection{If you are using the command line}
 To use the command line interface. It is running the json file directly in the terminal. There are examples of json files in the ?. You can open this type of file in any sort of code editor, modify it with your own paths and parameters. To run a json file, follow the procedure : In the research bar (windows icon, bottom left of the screen), search for Anaconda prompt. Selecting it opens a conda terminal. Write in this terminal :

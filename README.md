@@ -38,9 +38,11 @@ Or, if you want the latest version, by specifying the git repository:
 ### Troubleshooting
 - Windows:
 
-    If you are trying to run the script on Windows you might need to install `pthreadvse2.dll`. 
+    If you are trying to run the script on Windows you might need `pthreadVSE2.dll`.
+    It is provided by the conda-forge package `pthreads-win32`, which installs it in the
+    `Library\bin` folder of the active environment:
 
-    It can be found there: https://www.pconlife.com/viewfileinfo/pthreadvse2-dll/ . Make sure to download the version that matches your operating system (32 or 64 bits, most likely 64).
+        conda install -c conda-forge pthreads-win32
 
 ## Usage
 

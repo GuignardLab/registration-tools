@@ -143,7 +143,6 @@ Some Python libraries are also required:
 \item[-] h5py (\url{https://pypi.python.org/pypi/h5py})
 \item[-] pylibtiff (\url{https://github.com/pearu/pylibtiff})
 \end{enumerate}
-\item[-] pyklb (\url{https://github.com/bhoeckendorf/pyklb})
 \item[-] statsmodels (\url{https://www.statsmodels.org})
 \end{enumerate}
 Once everything is installed the python scripts are ready to run.}
@@ -474,7 +473,7 @@ Description of environment:
 \item[-] Path to images: \texttt{/path/to/time/series/T018/CH00-T0018.tif} (for time 18)
 \item[-] Time points: 0 to 200, time points 23 and 145 are defections and should be discarded.
 \item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
-\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.klb} (for time 18)
+\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.tif} (for time 18)
 \item[-] The output registered maximum intensity projection will be in \texttt{/path/to/output/projection/}
 \item[-] The voxel size of the image in x, y, z is respectively 0.593, 0.893, 5.
 \item[-] The chosen reference time point is time 100
@@ -488,7 +487,7 @@ Json file:
 \tab"path\_to\_data":"/path/to/time/series/T\{t:03d\}/",\\
 \tab"file\_name":"CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
-\tab"output\_format":"CH00-T\{t:04d\}-rigid.klb",\\
+\tab"output\_format":"CH00-T\{t:04d\}-rigid.tif",\\
 \tab"projection\_path":"/path/to/output/projection/",\\
 \tab"check\_TP":1,\\
 \tab"voxel\_size":[\\
@@ -513,11 +512,11 @@ Json file:
 Description of environment:
 \begin{itemize}
 \item[-] We want to compute and apply the transformations with cubic spline interpolation
-\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.tif} (for time 18)
 \item[-] Time points: 25 to 145, no time point should be discarded.
 \item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
-\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named \texttt{T18.klb} (for time 18)
-\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.klb}
+\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named \texttt{T18.tif} (for time 18)
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.tif}
 \item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
 \item[-] The chosen reference time point is time 25
 \item[-] Translation will be computed
@@ -528,9 +527,9 @@ Json file:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/",\\
-\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"file\_name":"CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
-\tab"output\_format":"/path/to/output/T\{t:d\}.klb",\\
+\tab"output\_format":"/path/to/output/T\{t:d\}.tif",\\
 \tab"check\_TP":1,\\
 \tab"voxel\_size":[\\
 \tab\tab1,\\
@@ -541,7 +540,7 @@ Json file:
 \tab"last":145,\\
 \tab"compute\_trsf":1,\\
 \tab"ref\_TP":25,\\
-\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_type":"translation",\\
 \tab"padding":1,\\
 \tab"apply\_trsf":1,\\
@@ -552,11 +551,11 @@ Json file:
 Description of environment:
 \begin{itemize}
 \item[-] We want to compute and apply the transformations with a trilinear interpolation
-\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.tif} (for time 18)
 \item[-] Time points: 0 to 100000, no time point should be discarded.
 \item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
-\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named as the original image name\texttt{CH00-T0018.klb} (for time 18)
-\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.klb}
+\item[-] The output registered images will be in the folder \texttt{/path/to/output/} and the registered image will be named as the original image name\texttt{CH00-T0018.tif} (for time 18)
+\item[-] The output registered maximum intensity projection will be in \texttt{/path/to/time/series/} and named \texttt{CH00-T-1.xyprojection.tif}
 \item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
 \item[-] The chosen reference time point is time 25
 \item[-] We only want to compute the transformation every other 100 time point and apply a lowess smoothing with a smoothing window size of 5
@@ -568,7 +567,7 @@ Json file:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/",\\
-\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"file\_name":"CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
 \tab"output\_format":"/path/to/output/",\\
 \tab"check\_TP":1,\\
@@ -581,7 +580,7 @@ Json file:
 \tab"last":100000,\\
 \tab"compute\_trsf":1,\\
 \tab"ref\_TP":25,\\
-\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_type":"translation",\\
 \tab"lowess\_interpolation":1,\\
 \tab"window\_size":5,\\
@@ -594,10 +593,10 @@ Json file:
 Description of environment:
 \begin{itemize}
 \item[-] We want to compute and apply the transformations with a cubic spline interpolation
-\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.klb} (for time 18)
+\item[-] Path to images: \texttt{/path/to/time/series/CH00-T0018.tif} (for time 18)
 \item[-] Time points: 0 to 200, no time point should be discarded.
 \item[-] The output transformation files will not be written (option available only for non-linear registration)
-\item[-] The output registered images will be in the original folder \texttt{/path/to/time/series/} and the registered image will be named as the original with the suffix \texttt{NL}: \texttt{CH00-T0018.NL.klb} (for time 18)
+\item[-] The output registered images will be in the original folder \texttt{/path/to/time/series/} and the registered image will be named as the original with the suffix \texttt{NL}: \texttt{CH00-T0018.NL.tif} (for time 18)
 \item[-] No maximum intensity projection
 \item[-] The voxel size of the image in x, y, z is respectively 1, 1, 6.
 \item[-] The chosen reference time point is time 25
@@ -609,7 +608,7 @@ Json file:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/",\\
-\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"file\_name":"CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
 \tab"suffix":"NL",\\
 \tab"check\_TP":1,\\
@@ -622,7 +621,7 @@ Json file:
 \tab"last":200,\\
 \tab"compute\_trsf":1,\\
 \tab"ref\_TP":25,\\
-\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.klb",\\
+\tab"path\_ref":"/path/to/time/series/CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_type":"vectorfield",\\
 \tab"registration\_depth":4,\\
 \tab"keep\_vectorfield":0,\\
@@ -636,11 +635,11 @@ Json file:
 \subsubsection{Computing the transformations on one channel and applying them onto a second one.}
 Description of environment:
 \begin{itemize}
-\item[-] We want to compute and apply the transformations on \texttt{/path/to/time/series/CH00-T0018.klb}
-\item[-] and apply the transformations with a tri-linear interpolation on \texttt{/path/to/time/series/CH01-T0018.klb}
+\item[-] We want to compute and apply the transformations on \texttt{/path/to/time/series/CH00-T0018.tif}
+\item[-] and apply the transformations with a tri-linear interpolation on \texttt{/path/to/time/series/CH01-T0018.tif}
 \item[-] Time points: 0 to 200, no time point should be discarded.
 \item[-] The output transformation files will be in \texttt{/path/to/output/trsf/}
-\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.klb} (for time 18) for \texttt{CH00} and \texttt{CH01-T0018-rigid.klb} for \texttt{CH01}
+\item[-] The output registered images will be in the folder \texttt{/path/to/time/series/T018/} and the registered image will be named \texttt{CH00-T0018-rigid.tif} (for time 18) for \texttt{CH00} and \texttt{CH01-T0018-rigid.tif} for \texttt{CH01}
 \item[-] The output registered maximum intensity projection will be in \texttt{/path/to/output/projection/}
 \item[-] The voxel size of the image in x, y, z is respectively 1, 1, 5.
 \item[-] The chosen reference time point is time 100
@@ -652,9 +651,9 @@ Json file for \texttt{CH00}:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/",\\
-\tab"file\_name":"CH00-T\{t:04d\}.klb",\\
+\tab"file\_name":"CH00-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
-\tab"output\_format":"CH00-T\{t:04d\}-rigid.klb",\\
+\tab"output\_format":"CH00-T\{t:04d\}-rigid.tif",\\
 \tab"projection\_path":"/path/to/output/projection/",\\
 \tab"check\_TP":1,\\
 \tab"voxel\_size":[\\
@@ -675,9 +674,9 @@ Json file for \texttt{CH01}:
 \begin{code}{0.8}
 \{\\
 \tab"path\_to\_data":"/path/to/time/series/",\\
-\tab"file\_name":"CH01-T\{t:04d\}.klb",\\
+\tab"file\_name":"CH01-T\{t:04d\}.tif",\\
 \tab"trsf\_folder":"/path/to/output/trsf/",\\
-\tab"output\_format":"CH01-T\{t:04d\}-rigid.klb",\\
+\tab"output\_format":"CH01-T\{t:04d\}-rigid.tif",\\
 \tab"projection\_path":"/path/to/output/projection/",\\
 \tab"check\_TP":1,\\
 \tab"voxel\_size":[\\
