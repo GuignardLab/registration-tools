@@ -238,9 +238,8 @@ Some Python libraries are also required:
 
     2.  pylibtiff (<https://github.com/pearu/pylibtiff>)
 
-4.  pyklb (<https://github.com/bhoeckendorf/pyklb>)
 
-5.  statsmodels (<https://www.statsmodels.org>)
+4.  statsmodels (<https://www.statsmodels.org>)
 
 Once everything is installed the python scripts are ready to run.
 

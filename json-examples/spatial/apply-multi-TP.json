@@ -1,10 +1,10 @@
 {
 	"path_to_data": "/media/Y/Exchange/Leo/Test-spatial/TM{t:06d}/",
-	"ref_im": "SPM00_TM{t:06d}_CM00_CHN00.klb",
+	"ref_im": "SPM00_TM{t:06d}_CM00_CHN00.tif",
 	"flo_ims": [
-		"SPM00_TM{t:06d}_CM01_CHN00.klb",
-		"SPM00_TM{t:06d}_CM02_CHN00.klb",
-		"SPM00_TM{t:06d}_CM03_CHN00.klb"
+		"SPM00_TM{t:06d}_CM01_CHN00.tif",
+		"SPM00_TM{t:06d}_CM02_CHN00.tif",
+		"SPM00_TM{t:06d}_CM03_CHN00.tif"
 	],
 	"compute_trsf": 0,
 	"trsf_paths": [

@@ -2,7 +2,7 @@
 	"path_to_data": "/media/Y/Exchange/Leo/Miquel/e127/e127_c0/",
 	"file_name": "e127_c0_t_{t:03d}.tif",
 	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-rigid/",
-	"output_format": "/media/Y/Exchange/Leo/TMP/registered-rigid/e127_c0_t_{t:03d}.klb",
+	"output_format": "/media/Y/Exchange/Leo/TMP/registered-rigid/e127_c0_t_{t:03d}.tif",
 	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-rigid-c0/",
 	"check_TP": 0,
 

@@ -24,13 +24,6 @@ from transforms3d.euler import mat2euler
 if sys.version_info[0] < 3:
     from future.builtins import input
 
-try:
-    from pyklb import readheader
-
-    pyklb_found = True
-except Exception:
-    pyklb_found = False
-
 
 class trsf_parameters(object):
     """
@@ -407,19 +400,15 @@ class TimeRegistration:
                     res = " -res " + p.A0_out.format(t=t_flo)
                 else:
                     res = ""
-                if p.keep_vectorfield and pyklb_found:
+                if p.keep_vectorfield:
                     res_trsf = (
                         " -composition-with-initial -res-trsf "
                         + os.path.join(
-                            p.trsf_folder, "t%06d-%06d.klb" % (t_flo, t_ref)
+                            p.trsf_folder, "t%06d-%06d.inr" % (t_flo, t_ref)
                         )
                     )
                 else:
                     res_trsf = ""
-                    if p.keep_vectorfield:
-                        print(
-                            "The vectorfield cannot be stored without pyklb being installed"
-                        )
                 call(
                     self.path_to_bin
                     + "blockmatching -ref "
@@ -625,7 +614,6 @@ class TimeRegistration:
             ".tif",
             ".inr",
             ".gz",
-            ".klb",
             ".h5",
             ".hdf5",
         ]
@@ -788,24 +776,14 @@ class TimeRegistration:
             p (trsf_parameters): parameter object
             trsf_fmt (srt): the string format for the initial transformations
         """
-        if not p.sequential and p.ref_path.split(".")[-1] == "klb":
-            im_shape = readheader(p.ref_path)["imagesize_tczyx"][-1:-4:-1]
-        elif not p.sequential:
+        if not p.sequential:
             im_shape = imread(p.ref_path).shape
-        elif p.A0.split(".")[-1] == "klb":
-            im_shape = readheader(p.A0.format(t=p.ref_TP))["imagesize_tczyx"][
-                -1:-4:-1
-            ]
         else:
             im_shape = imread(p.A0.format(t=p.ref_TP)).shape
         im = SpatialImage(np.ones(im_shape), dtype=np.uint8)
         im.voxelsize = p.voxel_size
-        if pyklb_found:
-            template = os.path.join(p.trsf_folder, "tmp.klb")
-            res_t = "template.klb"
-        else:
-            template = os.path.join(p.trsf_folder, "tmp.tif")
-            res_t = "template.tif"
+        template = os.path.join(p.trsf_folder, "tmp.tif")
+        res_t = "template.tif"
 
         imsave(template, im)
         identity = np.identity(4)
@@ -897,17 +875,8 @@ class TimeRegistration:
             trsf_fmt = "t{flo:06d}-{ref:06d}-interpolated.txt"
         if p.padding:
             trsf_fmt = "t{flo:06d}-{ref:06d}-padded.txt"
-            if pyklb_found:
-                template = os.path.join(p.trsf_folder, "template.klb")
-                X, Y, Z = readheader(template)["imagesize_tczyx"][-1:-4:-1]
-            else:
-                template = os.path.join(p.trsf_folder, "template.tif")
-                X, Y, Z = imread(template).shape
-        elif p.A0.split(".")[-1] == "klb":
-            X, Y, Z = readheader(p.A0.format(t=p.ref_TP))["imagesize_tczyx"][
-                -1:-4:-1
-            ]
-            template = p.A0.format(t=p.ref_TP)
+            template = os.path.join(p.trsf_folder, "template.tif")
+            X, Y, Z = imread(template).shape
         else:
             X, Y, Z = imread(p.A0.format(t=p.ref_TP)).shape
             template = p.A0.format(t=p.ref_TP)
@@ -1129,14 +1098,7 @@ class TimeRegistration:
 
         ViewSetups = ET.SubElement(SequenceDescription, "ViewSetups")
         ViewSetup = ET.SubElement(ViewSetups, "ViewSetup")
-        if p.im_ext == "klb":
-            im_size = tuple(
-                readheader(p.A0.format(t=p.ref_TP))["imagesize_tczyx"][
-                    -1:-4:-1
-                ]
-            )
-        else:
-            im_size = tuple(imread(p.A0.format(t=p.ref_TP)).shape)
+        im_size = tuple(imread(p.A0.format(t=p.ref_TP)).shape)
         self.do_viewSetup(ViewSetup, p, im_size, 0)
 
         Attributes = ET.SubElement(ViewSetups, "Attributes")
