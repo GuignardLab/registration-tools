@@ -6,7 +6,7 @@
 		"SPM00_TM000100_CM02_CHN00.klb",
 		"SPM00_TM000100_CM03_CHN00.klb"
 	],
-	"compute_trsf": 1,
+	"compute_trsf": true,
 	"trsf_paths": [
 		"/media/W/SV3/RC_15-07-09/multiview-registration/",
 		"/media/W/SV3/RC_15-07-09/multiview-registration/",
@@ -25,7 +25,7 @@
 		[752, 2048, 79]
 	],
 	"trsf_types": ["rigid", "affine"],
-	"apply_trsf": 0,
+	"apply_trsf": false,
 	"out_voxel": [5, 5, 5],
 	"out_pattern": "test-init",
 	"bdv_im": [
@@ -35,5 +35,5 @@
 		"W:\\SV3\\RC_15-07-09\\multiview-registration\\SPM00_TM000100_CM03_CHN00.klb"
 	],
 	"out_bdv": "/media/Y/Exchange/Leo/Test-spatial/bdv.xml",
-	"do_bdv": 1
+	"do_bdv": true
 }

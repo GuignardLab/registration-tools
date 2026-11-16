@@ -4,24 +4,24 @@
 	"trsf_folder": "/media/Y/Exchange/Leo/TMP/trsf-trans-no-prop-interp/",
 	"output_format": "/media/Y/Exchange/Leo/TMP/registered-trans-no-prop-interp/",
 	"projection_path": "/media/Y/Exchange/Leo/TMP/proj-trans-no-prop-interp/",
-	"check_TP": 0,
+	"check_TP": false,
 
 	"voxel_size": [0.593, 0.593, 5],
 	"first": 1,
 	"last": 61,
 	"not_to_do": [28],
 
-	"compute_trsf": 1,
+	"compute_trsf": true,
 	"ref_TP": 31,
 	"ref_path": "/media/Y/Exchange/Leo/Miquel/e127/e127_c1/e127_c1_t_{t:03d}.tif",
 	"trsf_type": "translation",
-	"padding": 1,
-	"trsf_interpolation": 1,
+	"padding": true,
+	"trsf_interpolation": true,
 	"step_size": 10,
 	"spline": 2,
-	"recompute": 1,
-	"sequential": 0,
+	"recompute": true,
+	"sequential": false,
 
-	"apply_trsf": 1
+	"apply_trsf": true
 }
 
